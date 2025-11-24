@@ -49,10 +49,19 @@ export const GET: RequestHandler = async (event) => {
 
 		// Générer nom de fichier avec timestamp
 		const timestamp = new Date().toISOString().split('T')[0];
-		const filename =
-			productIds && productIds.length > 0
-				? `wordpress_products_selection_${timestamp}.csv`
-				: `wordpress_products_all_${timestamp}.csv`;
+		let filename: string;
+
+		if (productIds && productIds.length === 1 && products.length === 1) {
+			// Un seul produit : utiliser son pro_cenov_id (sku)
+			const productSku = products[0].sku || 'product';
+			filename = `${productSku}.csv`;
+		} else if (productIds && productIds.length > 0) {
+			// Plusieurs produits sélectionnés : nom avec date
+			filename = `wordpress_products_selection_${timestamp}.csv`;
+		} else {
+			// Tous les produits : nom avec date
+			filename = `wordpress_products_all_${timestamp}.csv`;
+		}
 
 		console.log(`✅ Export WordPress terminé : ${filename}`);
 		console.log('🟢 Envoi de la réponse avec headers de téléchargement...');

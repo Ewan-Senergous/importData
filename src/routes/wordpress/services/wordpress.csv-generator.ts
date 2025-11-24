@@ -1,22 +1,48 @@
 import type { WordPressProduct } from '../repositories/wordpress.repository';
 
 /**
+ * Ajoute des guillemets à un header CSV SEULEMENT s'il contient des caractères spéciaux
+ * Règle WordPress : guillemets pour virgule, ?, (), espaces, apostrophes (droite ' ou courbe ') - sinon pas de guillemets
+ * @param header Header à éventuellement encadrer
+ * @returns Header avec ou sans guillemets selon le contenu
+ */
+function quoteHeaderIfNeeded(header: string): string {
+	// Si contient caractères spéciaux → guillemets
+	if (
+		header.includes(',') ||
+		header.includes('?') ||
+		header.includes(' ') ||
+		header.includes("'") ||  // Apostrophe droite
+		header.includes('\u2019') ||  // Apostrophe courbe '
+		header.includes('(') ||
+		header.includes(')')
+	) {
+		return `"${header}"`;
+	}
+	// Sinon → pas de guillemets
+	return header;
+}
+
+/**
  * En-têtes CSV fixes (colonnes de base du produit)
+ * IMPORTANT : WordPress utilise :
+ * 1. Guillemets SEULEMENT pour headers avec caractères spéciaux
+ * 2. Espaces INSÉCABLES (\u00A0) avant les points d'interrogation
  * @see https://woocommerce.com/document/product-csv-import-schema/
  */
 const BASE_CSV_HEADERS = [
-	'Type',
-	'UGS',
-	'Nom',
-	'Publié',
-	'Mis en avant ?',
-	'Visibilité dans le catalogue',
-	'Description courte',
-	'Description',
-	'En stock ?',
-	'Tarif régulier',
-	'Images',
-	'Brand'
+	'Type',                          // Simple → pas de guillemets
+	'UGS',                           // Simple → pas de guillemets
+	'Nom',                           // Simple → pas de guillemets
+	'Publié',                        // Simple → pas de guillemets
+	'Mis en avant\u00A0?',           // Espace insécable + "?" → sera quoté
+	'Visibilité dans le catalogue',  // A espaces → sera quoté
+	'Description courte',            // A espace → sera quoté
+	'Description',                   // Simple → pas de guillemets
+	'En stock\u00A0?',               // Espace insécable + "?" → sera quoté
+	'Tarif régulier',                // A espace → sera quoté
+	'Images',                        // Simple → pas de guillemets
+	'Brand'                          // Simple → pas de guillemets
 ] as const;
 
 /**
@@ -109,14 +135,18 @@ export function generateWordPressCSV(products: WordPressProduct[]): string {
 	const maxAttributes = Math.max(...products.map((p) => p.attributes.length), 0);
 
 	// Générer headers dynamiques
-	const headers: string[] = [...BASE_CSV_HEADERS];
+	// IMPORTANT : WordPress utilise :
+	// 1. Guillemets SEULEMENT pour headers avec caractères spéciaux
+	// 2. Apostrophe COURBE \u2019 (') au lieu d'apostrophe droite '
+	// 3. Espace à la fin de "Valeur(s) de l'attribut X " est obligatoire !
+	const headers: string[] = BASE_CSV_HEADERS.map(quoteHeaderIfNeeded);
 
 	for (let i = 1; i <= maxAttributes; i++) {
 		headers.push(
-			`Nom de l'attribut ${i}`,
-			`Valeur(s) de l'attribut ${i}`,
-			`Attribut ${i} visible`,
-			`Attribut ${i} global`
+			quoteHeaderIfNeeded(`Nom de l\u2019attribut ${i}`),        // Apostrophe courbe '
+			quoteHeaderIfNeeded(`Valeur(s) de l\u2019attribut ${i} `), // Apostrophe courbe ' + espace à la fin
+			quoteHeaderIfNeeded(`Attribut ${i} visible`),
+			quoteHeaderIfNeeded(`Attribut ${i} global`)
 		);
 	}
 

@@ -32,9 +32,8 @@ export interface ProductSummary {
 
 /**
  * Charge les attributs pour une liste de produits
- * Filtre : ignore si kat_value NULL/!NP!/"NULL" ou atr_value NULL
+ * AUCUN filtre appliqué : exporte TOUS les attributs avec leurs valeurs brutes
  * Tri : par kat_id croissant
- * Transformation : virgules → points
  */
 async function getProductAttributes(
 	productIds: number[]
@@ -52,13 +51,6 @@ async function getProductAttributes(
 			kit: {
 				select: {
 					kit_attribute: {
-						where: {
-							AND: [
-								{ kat_value: { not: null } },
-								{ kat_value: { not: '!NP!' } },
-								{ kat_value: { not: 'NULL' } }
-							]
-						},
 						select: {
 							kat_id: true,
 							kat_value: true,
@@ -88,14 +80,11 @@ async function getProductAttributes(
 				const atrValue =
 					ka.attribute_kit_attribute_fk_attribute_characteristicToattribute.atr_value;
 
-				// Ignorer si atr_value NULL
-				if (!atrValue) continue;
-
-				// Remplacer virgules par points
-				const value = (ka.kat_value || '').replace(/,/g, '.');
+				// Garder valeur brute de la BDD (même NULL, !NP!, etc.)
+				const value = ka.kat_value || '';
 
 				attributes.push({
-					name: atrValue,
+					name: atrValue || '',
 					value,
 					visible: ka.kat_visible ?? true,
 					global: ka.kat_global ?? true
