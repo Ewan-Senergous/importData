@@ -19,6 +19,7 @@ export interface WordPressProduct {
 	description: string | null;
 	in_stock: boolean;
 	regular_price: string | null;
+	categories: string | null; // Hiérarchies séparées par ", " (ex: "Cat A > Sub A, Cat B > Sub B")
 	images: string | null;
 	brand: string | null;
 	attributes: WordPressAttribute[];
@@ -109,6 +110,34 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
 	// Si des IDs sont fournis, filtrer les produits
 	if (productIds && productIds.length > 0) {
 		const products = await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
+      WITH RECURSIVE category_hierarchy AS (
+        -- Catégories racines
+        SELECT
+          cat_id,
+          fk_parent,
+          cat_label,
+          cat_wp_name,
+          COALESCE(cat_wp_name, cat_label) as display_name,
+          COALESCE(cat_wp_name, cat_label)::TEXT as path,
+          1 as level
+        FROM produit.category
+        WHERE fk_parent IS NULL
+
+        UNION ALL
+
+        -- Sous-catégories (récursion)
+        SELECT
+          c.cat_id,
+          c.fk_parent,
+          c.cat_label,
+          c.cat_wp_name,
+          COALESCE(c.cat_wp_name, c.cat_label),
+          ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
+          ch.level + 1
+        FROM produit.category c
+        INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
+        WHERE ch.level < 10
+      )
       SELECT
         p.pro_id,
         COALESCE(p.pro_type::text, 'simple') AS type,
@@ -121,6 +150,7 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
         p.pro_description AS description,
         COALESCE(p.in_stock, true) AS in_stock,
         pp.pp_amount::TEXT AS regular_price,
+        STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
         d.doc_link_source AS images,
         s.sup_label AS brand
 
@@ -147,8 +177,16 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
       -- Fournisseur (brand)
       LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
 
+      -- Catégories hiérarchiques
+      LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+      LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
+
       WHERE p.pro_cenov_id IS NOT NULL
         AND p.pro_id = ANY(${productIds}::int[])
+
+      GROUP BY p.pro_id, p.pro_type, p.pro_cenov_id, p.pro_name, p.is_published,
+               p.is_featured, p.pro_visibility, p.pro_short_description, p.pro_description,
+               p.in_stock, pp.pp_amount, d.doc_link_source, s.sup_label
 
       ORDER BY p.pro_id ASC;
     `;
@@ -165,6 +203,34 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
 
 	// Sinon, retourner tous les produits
 	const products = await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
+    WITH RECURSIVE category_hierarchy AS (
+      -- Catégories racines
+      SELECT
+        cat_id,
+        fk_parent,
+        cat_label,
+        cat_wp_name,
+        COALESCE(cat_wp_name, cat_label) as display_name,
+        COALESCE(cat_wp_name, cat_label)::TEXT as path,
+        1 as level
+      FROM produit.category
+      WHERE fk_parent IS NULL
+
+      UNION ALL
+
+      -- Sous-catégories (récursion)
+      SELECT
+        c.cat_id,
+        c.fk_parent,
+        c.cat_label,
+        c.cat_wp_name,
+        COALESCE(c.cat_wp_name, c.cat_label),
+        ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
+        ch.level + 1
+      FROM produit.category c
+      INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
+      WHERE ch.level < 10
+    )
     SELECT
       p.pro_id,
       COALESCE(p.pro_type::text, 'simple') AS type,
@@ -177,6 +243,7 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
       p.pro_description AS description,
       COALESCE(p.in_stock, true) AS in_stock,
       pp.pp_amount::TEXT AS regular_price,
+      STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
       d.doc_link_source AS images,
       s.sup_label AS brand
 
@@ -203,7 +270,15 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
     -- Fournisseur (brand)
     LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
 
+    -- Catégories hiérarchiques
+    LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+    LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
+
     WHERE p.pro_cenov_id IS NOT NULL
+
+    GROUP BY p.pro_id, p.pro_type, p.pro_cenov_id, p.pro_name, p.is_published,
+             p.is_featured, p.pro_visibility, p.pro_short_description, p.pro_description,
+             p.in_stock, pp.pp_amount, d.doc_link_source, s.sup_label
 
     ORDER BY p.pro_id ASC;
   `;

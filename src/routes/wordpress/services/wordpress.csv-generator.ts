@@ -41,6 +41,7 @@ const BASE_CSV_HEADERS = [
 	'Description',                   // Simple → pas de guillemets
 	'En stock\u00A0?',               // Espace insécable + "?" → sera quoté
 	'Tarif régulier',                // A espace → sera quoté
+	'Catégories',                    // Simple → pas de guillemets
 	'Images',                        // Simple → pas de guillemets
 	'Brand'                          // Simple → pas de guillemets
 ] as const;
@@ -87,6 +88,7 @@ function generateRow(product: WordPressProduct, maxAttributes: number): string {
 		escapeCSV(product.description),
 		product.in_stock ? '1' : '0',
 		escapeCSV(product.regular_price),
+		escapeCSV(product.categories),
 		escapeCSV(product.images),
 		escapeCSV(product.brand)
 	];
