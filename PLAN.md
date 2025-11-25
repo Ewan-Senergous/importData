@@ -6,8 +6,6 @@
 **Difficulté :** 6/10 🟡
 **Estimation :** 580 lignes, 6h
 
----
-
 ## ✅ Décisions Validées
 
 **Champs obligatoires :** Type, UGS, Nom, Publié, Mis en avant ?, Visibilité, Description courte, Description, En stock ?, Tarif régulier, Images, Brand
