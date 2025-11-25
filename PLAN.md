@@ -10,7 +10,7 @@
 
 **Champs obligatoires :** Type, UGS, Nom, Publié, Mis en avant ?, Visibilité, Description courte, Description, En stock ?, Tarif régulier, Images, Brand
 
-**Réponses aux questions critiques :**
+\*\*Réponses aux questions critiques :
 
 1. ✅ `is_published = false` par défaut (brouillon → activation manuelle)
 2. ✅ Si `pro_name` NULL → Utiliser `pro_cenov_id` comme fallback
