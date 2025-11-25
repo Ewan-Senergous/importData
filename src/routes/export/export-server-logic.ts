@@ -1,7 +1,7 @@
 // src/routes/export/export-server-logic.ts
 import * as XLSX from 'xlsx';
 import { XMLBuilder } from 'fast-xml-parser';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '../../generated/prisma-cenov/client';
 import {
 	getTableMetadata,
 	getClient,
@@ -10,6 +10,9 @@ import {
 	getAllDatabaseNames,
 	type DatabaseName
 } from '$lib/prisma-meta';
+
+// Récupérer Decimal depuis Prisma namespace (Prisma 7)
+const Decimal = Prisma.Decimal;
 import type { SharedExportData, ExtractionOptions, ExportConfig } from './+page.server';
 
 // Convertir récursivement tous les Decimal en nombres pour sérialisation JSON

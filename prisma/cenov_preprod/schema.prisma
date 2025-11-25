@@ -1,12 +1,11 @@
 generator cenov_preprod_client {
-  provider        = "prisma-client-js"
-  output          = "./generated"
+  provider        = "prisma-client"
+  output          = "../../src/generated/prisma-cenov-preprod"
   previewFeatures = ["views"]
 }
 
 datasource cenov_preprod_db {
   provider = "postgresql"
-  url      = env("CENOV_PREPROD_DATABASE_URL")
   schemas  = ["produit", "public"]
 }
 

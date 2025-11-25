@@ -15,6 +15,8 @@
 //
 // 💡 PRINCIPE : Si c'est utilisé par 2+ pages = ici, sinon = dans la page concernée
 import { browser, dev } from '$app/environment';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { env } from '$env/dynamic/private';
 
 // Types pour les modules Prisma
 interface PrismaModule {
@@ -34,7 +36,7 @@ interface PrismaModule {
 			};
 		};
 	};
-	PrismaClient: new () => Record<string, unknown>;
+	PrismaClient: new (config?: { adapter?: unknown }) => Record<string, unknown>;
 }
 
 // Variables globales typées
@@ -42,13 +44,21 @@ let Prisma: PrismaModule['Prisma'] | undefined;
 let PrismaClient: PrismaModule['PrismaClient'] | undefined;
 let prismaModule: PrismaModule | undefined;
 
-// Import côté serveur uniquement
+// Import côté serveur uniquement - Prisma 7 avec chemins dans src/generated
 async function initializePrisma() {
 	if (!browser && !prismaModule) {
-		const imported = (await import('@prisma/client')) as unknown as PrismaModule;
+		const imported = (await import('../generated/prisma-cenov/client')) as unknown as PrismaModule;
 		prismaModule = imported;
 		Prisma = imported.Prisma;
 		PrismaClient = imported.PrismaClient;
+
+		// Debug: vérifier si dmmf existe
+		console.log('[PRISMA-META] Prisma loaded, checking dmmf...');
+		console.log('[PRISMA-META] Prisma exists?', !!Prisma);
+		console.log('[PRISMA-META] Prisma.dmmf exists?', !!Prisma?.dmmf);
+		if (Prisma) {
+			console.log('[PRISMA-META] Prisma keys:', Object.keys(Prisma));
+		}
 	}
 }
 
@@ -80,48 +90,13 @@ async function initializeCenovDevPrisma() {
 		useDevViews
 	});
 
-	// TOUJOURS charger le client dev si possible pour categorie_attribut
+	// TOUJOURS charger le client dev - Simplifié avec Prisma 7
 	console.log('✅ [PRISMA-META] Chargement client dev (garantit les bonnes métadonnées)');
 	try {
-		let devPrismaModule: PrismaModule | undefined;
-
-		if (dev) {
-			// DEV: createRequire (gère CommonJS)
-			console.log('🛠️ [PRISMA-META] Mode DEV - createRequire');
-			try {
-				const { createRequire } = await import('node:module');
-				const { fileURLToPath } = await import('node:url');
-				const path = await import('node:path');
-
-				const __filename = fileURLToPath(import.meta.url);
-				const __dirname = path.dirname(__filename);
-				const require = createRequire(import.meta.url);
-
-				const devPrismaPath = path.resolve(__dirname, '../../prisma/cenov_dev/generated');
-				devPrismaModule = require(devPrismaPath) as unknown as PrismaModule;
-				console.log('✅ [PRISMA-META] createRequire réussi');
-			} catch (createRequireError) {
-				console.log('❌ [PRISMA-META] createRequire échoué:', createRequireError);
-				throw createRequireError;
-			}
-		} else {
-			// PROD: import() avec @vite-ignore (marche en production)
-			console.log('🚀 [PRISMA-META] Mode PROD - import()');
-			try {
-				const path = await import('node:path');
-				const { pathToFileURL } = await import('node:url');
-				const absolutePath = path.resolve(process.cwd(), 'prisma/cenov_dev/generated/index.js');
-				const fileUrl = pathToFileURL(absolutePath).href;
-
-				devPrismaModule = (await import(/* @vite-ignore */ fileUrl)) as unknown as PrismaModule;
-			} catch {
-				// Fallback import relatif
-				devPrismaModule = (await import(
-					/* @vite-ignore */ '../../prisma/cenov_dev/generated/index.js'
-				)) as unknown as PrismaModule;
-			}
-			console.log('✅ [PRISMA-META] import() réussi');
-		}
+		// Import direct depuis src/generated (Prisma 7)
+		const devPrismaModule = (await import(
+			'../generated/prisma-cenov-dev/client'
+		)) as unknown as PrismaModule;
 
 		if (devPrismaModule?.Prisma && devPrismaModule?.PrismaClient) {
 			CenovDevPrisma = devPrismaModule.Prisma;
@@ -147,45 +122,10 @@ async function initializeCenovPreprodPrisma() {
 
 	console.log('🧪 [PRISMA-META] Chargement client preprod');
 	try {
-		let preprodPrismaModule: PrismaModule | undefined;
-
-		if (dev) {
-			// DEV: createRequire (gère CommonJS)
-			console.log('🛠️ [PRISMA-META] Mode DEV - createRequire (preprod)');
-			try {
-				const { createRequire } = await import('node:module');
-				const { fileURLToPath } = await import('node:url');
-				const path = await import('node:path');
-
-				const __filename = fileURLToPath(import.meta.url);
-				const __dirname = path.dirname(__filename);
-				const require = createRequire(import.meta.url);
-
-				const preprodPrismaPath = path.resolve(__dirname, '../../prisma/cenov_preprod/generated');
-				preprodPrismaModule = require(preprodPrismaPath) as unknown as PrismaModule;
-				console.log('✅ [PRISMA-META] createRequire réussi (preprod)');
-			} catch (createRequireError) {
-				console.log('❌ [PRISMA-META] createRequire échoué (preprod):', createRequireError);
-				throw createRequireError;
-			}
-		} else {
-			// PROD: import() avec @vite-ignore
-			console.log('🚀 [PRISMA-META] Mode PROD - import() (preprod)');
-			try {
-				const path = await import('node:path');
-				const { pathToFileURL } = await import('node:url');
-				const absolutePath = path.resolve(process.cwd(), 'prisma/cenov_preprod/generated/index.js');
-				const fileUrl = pathToFileURL(absolutePath).href;
-
-				preprodPrismaModule = (await import(/* @vite-ignore */ fileUrl)) as unknown as PrismaModule;
-			} catch {
-				// Fallback import relatif
-				preprodPrismaModule = (await import(
-					/* @vite-ignore */ '../../prisma/cenov_preprod/generated/index.js'
-				)) as unknown as PrismaModule;
-			}
-			console.log('✅ [PRISMA-META] import() réussi (preprod)');
-		}
+		// Import direct depuis src/generated (Prisma 7)
+		const preprodPrismaModule = (await import(
+			'../generated/prisma-cenov-preprod/client'
+		)) as unknown as PrismaModule;
 
 		if (preprodPrismaModule?.Prisma && preprodPrismaModule?.PrismaClient) {
 			CenovPreprodPrisma = preprodPrismaModule.Prisma;
@@ -270,18 +210,100 @@ async function createDatabases(): Promise<DatabaseConfig> {
 		throw new Error('[PRISMA-META] Modules Prisma non initialisés');
 	}
 
+	// Créer les adapters PostgreSQL pour Prisma 7
+	const cenovAdapter = new PrismaPg({
+		connectionString: env.DATABASE_URL!
+	});
+
+	const devAdapter = new PrismaPg({
+		connectionString: env.CENOV_DEV_DATABASE_URL!
+	});
+
+	const preprodAdapter = new PrismaPg({
+		connectionString: env.CENOV_PREPROD_DATABASE_URL!
+	});
+
+	// Créer les clients Prisma
+	const cenovClient = new PrismaClient({ adapter: cenovAdapter }) as {
+		_runtimeDataModel: { models: Record<string, unknown> };
+	} & Record<string, unknown>;
+
+	const devClient = new CenovDevPrismaClient({ adapter: devAdapter }) as {
+		_runtimeDataModel: { models: Record<string, unknown> };
+	} & Record<string, unknown>;
+
+	const preprodClient = new CenovPreprodPrismaClient({ adapter: preprodAdapter }) as {
+		_runtimeDataModel: { models: Record<string, unknown> };
+	} & Record<string, unknown>;
+
+	// Dans Prisma 7, extraire le DMMF depuis _runtimeDataModel
+	const cenovDmmf = convertRuntimeDataModelToDMMF(cenovClient._runtimeDataModel);
+	const devDmmf = convertRuntimeDataModelToDMMF(devClient._runtimeDataModel);
+	const preprodDmmf = convertRuntimeDataModelToDMMF(preprodClient._runtimeDataModel);
+
 	return {
 		cenov: {
-			dmmf: Prisma.dmmf,
-			client: new PrismaClient()
+			dmmf: cenovDmmf,
+			client: cenovClient
 		},
 		cenov_dev: {
-			dmmf: CenovDevPrisma.dmmf,
-			client: new CenovDevPrismaClient()
+			dmmf: devDmmf,
+			client: devClient
 		},
 		cenov_preprod: {
-			dmmf: CenovPreprodPrisma.dmmf,
-			client: new CenovPreprodPrismaClient()
+			dmmf: preprodDmmf,
+			client: preprodClient
+		}
+	};
+}
+
+// Convertir le runtimeDataModel de Prisma 7 en format DMMF compatible
+function convertRuntimeDataModelToDMMF(runtimeDataModel: {
+	models: Record<string, unknown>;
+}): PrismaModule['Prisma']['dmmf'] {
+	const models = Object.entries(runtimeDataModel.models).map(([name, modelData]) => {
+		const model = modelData as {
+			fields: Array<{
+				name: string;
+				kind: string;
+				type: string;
+				isRequired?: boolean;
+				isId?: boolean;
+			}>;
+			dbName?: string;
+			schema?: string;
+			primaryKey?: { fields?: string[] } | null;
+			uniqueIndexes?: Array<{ fields?: string[] }>;
+		};
+
+		return {
+			name,
+			dbName: model.dbName,
+			schema: model.schema,
+			fields: model.fields.map((field) => ({
+				name: field.name,
+				kind: field.kind,
+				type: field.type,
+				isRequired: field.isRequired ?? false,
+				isId: field.isId ?? false
+			})),
+			primaryKey: model.primaryKey,
+			uniqueIndexes: model.uniqueIndexes
+		};
+	});
+
+	return {
+		datamodel: {
+			models: models as Array<{
+				name: string;
+				fields: Array<{
+					name: string;
+					type: string;
+					isRequired: boolean;
+					isId: boolean;
+					kind: string;
+				}>;
+			}>
 		}
 	};
 }

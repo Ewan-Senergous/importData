@@ -12,8 +12,8 @@ function quoteHeaderIfNeeded(header: string): string {
 		header.includes(',') ||
 		header.includes('?') ||
 		header.includes(' ') ||
-		header.includes("'") ||  // Apostrophe droite
-		header.includes('\u2019') ||  // Apostrophe courbe '
+		header.includes("'") || // Apostrophe droite
+		header.includes('\u2019') || // Apostrophe courbe '
 		header.includes('(') ||
 		header.includes(')')
 	) {
@@ -31,19 +31,19 @@ function quoteHeaderIfNeeded(header: string): string {
  * @see https://woocommerce.com/document/product-csv-import-schema/
  */
 const BASE_CSV_HEADERS = [
-	'Type',                          // Simple → pas de guillemets
-	'UGS',                           // Simple → pas de guillemets
-	'Nom',                           // Simple → pas de guillemets
-	'Publié',                        // Simple → pas de guillemets
-	'Mis en avant\u00A0?',           // Espace insécable + "?" → sera quoté
-	'Visibilité dans le catalogue',  // A espaces → sera quoté
-	'Description courte',            // A espace → sera quoté
-	'Description',                   // Simple → pas de guillemets
-	'En stock\u00A0?',               // Espace insécable + "?" → sera quoté
-	'Tarif régulier',                // A espace → sera quoté
-	'Catégories',                    // Simple → pas de guillemets
-	'Images',                        // Simple → pas de guillemets
-	'Brand'                          // Simple → pas de guillemets
+	'Type', // Simple → pas de guillemets
+	'UGS', // Simple → pas de guillemets
+	'Nom', // Simple → pas de guillemets
+	'Publié', // Simple → pas de guillemets
+	'Mis en avant\u00A0?', // Espace insécable + "?" → sera quoté
+	'Visibilité dans le catalogue', // A espaces → sera quoté
+	'Description courte', // A espace → sera quoté
+	'Description', // Simple → pas de guillemets
+	'En stock\u00A0?', // Espace insécable + "?" → sera quoté
+	'Tarif régulier', // A espace → sera quoté
+	'Catégories', // Simple → pas de guillemets
+	'Images', // Simple → pas de guillemets
+	'Brand' // Simple → pas de guillemets
 ] as const;
 
 /**
@@ -145,7 +145,7 @@ export function generateWordPressCSV(products: WordPressProduct[]): string {
 
 	for (let i = 1; i <= maxAttributes; i++) {
 		headers.push(
-			quoteHeaderIfNeeded(`Nom de l\u2019attribut ${i}`),        // Apostrophe courbe '
+			quoteHeaderIfNeeded(`Nom de l\u2019attribut ${i}`), // Apostrophe courbe '
 			quoteHeaderIfNeeded(`Valeur(s) de l\u2019attribut ${i} `), // Apostrophe courbe ' + espace à la fin
 			quoteHeaderIfNeeded(`Attribut ${i} visible`),
 			quoteHeaderIfNeeded(`Attribut ${i} global`)

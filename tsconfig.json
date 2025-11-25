@@ -12,9 +12,5 @@
 		"module": "es2020",
 		"moduleResolution": "bundler"
 	},
-	"exclude": [
-		"prisma/generated/**/*",
-		"prisma/cenov_dev/generated/**/*",
-		"prisma/cenov_preprod/generated/**/*"
-	]
+	"exclude": ["src/generated/**/*"]
 }

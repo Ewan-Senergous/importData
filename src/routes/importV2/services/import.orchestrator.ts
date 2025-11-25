@@ -1,5 +1,5 @@
 import { getClient } from '$lib/prisma-meta';
-import type { PrismaClient as CenovDevPrismaClient } from '../../../../prisma/cenov_dev/generated/index.js';
+import type { PrismaClient as CenovDevPrismaClient } from '../../../generated/prisma-cenov-dev/client';
 import {
 	loadAttributeReference,
 	loadAttributeUnitsEnriched,

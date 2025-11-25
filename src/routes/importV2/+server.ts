@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getClient } from '$lib/prisma-meta';
-import type { PrismaClient as CenovDevPrismaClient } from '../../../prisma/cenov_dev/generated/index.js';
+import type { PrismaClient as CenovDevPrismaClient } from '../../generated/prisma-cenov-dev/client';
 
 export const GET: RequestHandler = async ({ url }) => {
 	try {

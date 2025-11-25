@@ -1,10 +1,17 @@
 // src/lib/server/db.ts
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma-cenov/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
-// Créer le client Prisma avec des options explicites pour ES modules
+// Créer l'adapter PostgreSQL pour Prisma 7
+const adapter = new PrismaPg({
+	connectionString: env.DATABASE_URL!
+});
+
+// Créer le client Prisma avec l'adapter
 const prisma = new PrismaClient({
+	adapter,
 	log: ['error', 'warn'],
 	errorFormat: 'pretty'
 });

@@ -1,5 +1,5 @@
 import { getClient } from '$lib/prisma-meta';
-import type { PrismaClient as CenovDevPrismaClient } from '../../../../prisma/cenov_dev/generated';
+import type { PrismaClient as CenovDevPrismaClient } from '../../../generated/prisma-cenov-dev/client';
 
 export interface WordPressAttribute {
 	name: string;
