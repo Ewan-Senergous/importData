@@ -14,7 +14,7 @@
 // - Logique UI spécifique (ex: formatage pour DataTable → dans le composant)
 //
 // 💡 PRINCIPE : Si c'est utilisé par 2+ pages = ici, sinon = dans la page concernée
-import { browser, dev } from '$app/environment';
+import { browser } from '$app/environment';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { env } from '$env/dynamic/private';
 
@@ -51,14 +51,6 @@ async function initializePrisma() {
 		prismaModule = imported;
 		Prisma = imported.Prisma;
 		PrismaClient = imported.PrismaClient;
-
-		// Debug: vérifier si dmmf existe
-		console.log('[PRISMA-META] Prisma loaded, checking dmmf...');
-		console.log('[PRISMA-META] Prisma exists?', !!Prisma);
-		console.log('[PRISMA-META] Prisma.dmmf exists?', !!Prisma?.dmmf);
-		if (Prisma) {
-			console.log('[PRISMA-META] Prisma keys:', Object.keys(Prisma));
-		}
 	}
 }
 
@@ -70,28 +62,13 @@ let CenovDevPrismaClient: PrismaModule['PrismaClient'] | undefined;
 let CenovPreprodPrisma: PrismaModule['Prisma'] | undefined;
 let CenovPreprodPrismaClient: PrismaModule['PrismaClient'] | undefined;
 
-// Fonction helper pour déterminer si on utilise les vues dev (comme db.ts)
-function shouldUseDevViews() {
-	// Utiliser process.env directement (côté serveur uniquement)
-	if (browser) return false;
-	return process.env.USE_DEV_VIEWS === 'true' || dev;
-}
-
 // Initialisation du client de développement - Solution hybride dev/prod
 async function initializeCenovDevPrisma() {
 	if (browser) return;
 
 	await initializePrisma();
 
-	const useDevViews = shouldUseDevViews();
-	console.log('🔍 [PRISMA-META] Configuration:', {
-		USE_DEV_VIEWS: process.env.USE_DEV_VIEWS,
-		dev,
-		useDevViews
-	});
-
 	// TOUJOURS charger le client dev - Simplifié avec Prisma 7
-	console.log('✅ [PRISMA-META] Chargement client dev (garantit les bonnes métadonnées)');
 	try {
 		// Import direct depuis src/generated (Prisma 7)
 		const devPrismaModule = (await import(
@@ -101,16 +78,14 @@ async function initializeCenovDevPrisma() {
 		if (devPrismaModule?.Prisma && devPrismaModule?.PrismaClient) {
 			CenovDevPrisma = devPrismaModule.Prisma;
 			CenovDevPrismaClient = devPrismaModule.PrismaClient;
-			console.log('✅ [PRISMA-META] Client dev chargé avec succès');
 		} else {
 			throw new Error('Module dev invalide - Prisma/PrismaClient manquants');
 		}
 	} catch (error) {
-		console.log('❌ [PRISMA-META] Erreur client dev:', error);
+		console.warn('[PRISMA-META] Erreur chargement client dev:', error);
 		// Fallback au client principal
 		CenovDevPrisma = Prisma;
 		CenovDevPrismaClient = PrismaClient;
-		console.log('⚪ [PRISMA-META] Utilisation client principal en fallback');
 	}
 }
 
@@ -120,7 +95,6 @@ async function initializeCenovPreprodPrisma() {
 
 	await initializePrisma();
 
-	console.log('🧪 [PRISMA-META] Chargement client preprod');
 	try {
 		// Import direct depuis src/generated (Prisma 7)
 		const preprodPrismaModule = (await import(
@@ -130,16 +104,14 @@ async function initializeCenovPreprodPrisma() {
 		if (preprodPrismaModule?.Prisma && preprodPrismaModule?.PrismaClient) {
 			CenovPreprodPrisma = preprodPrismaModule.Prisma;
 			CenovPreprodPrismaClient = preprodPrismaModule.PrismaClient;
-			console.log('✅ [PRISMA-META] Client preprod chargé avec succès');
 		} else {
 			throw new Error('Module preprod invalide - Prisma/PrismaClient manquants');
 		}
 	} catch (error) {
-		console.log('❌ [PRISMA-META] Erreur client preprod:', error);
+		console.warn('[PRISMA-META] Erreur chargement client preprod:', error);
 		// Fallback au client principal
 		CenovPreprodPrisma = Prisma;
 		CenovPreprodPrismaClient = PrismaClient;
-		console.log('⚪ [PRISMA-META] Utilisation client principal en fallback (preprod)');
 	}
 }
 
@@ -183,10 +155,9 @@ interface DatabaseConfig {
 // Cache pour les bases de données (singleton)
 let databasesCache: DatabaseConfig | null = null;
 
-// Fonction pour invalider le cache (utile pour le debugging et les recharges)
+// Fonction pour invalider le cache (utile pour les recharges)
 export function clearDatabaseCache() {
 	databasesCache = null;
-	console.log('🔄 [PRISMA-META] Cache des bases de données vidé');
 }
 
 // Configuration des bases - création unique (côté serveur uniquement)
@@ -236,10 +207,32 @@ async function createDatabases(): Promise<DatabaseConfig> {
 		_runtimeDataModel: { models: Record<string, unknown> };
 	} & Record<string, unknown>;
 
-	// Dans Prisma 7, extraire le DMMF depuis _runtimeDataModel
-	const cenovDmmf = convertRuntimeDataModelToDMMF(cenovClient._runtimeDataModel);
-	const devDmmf = convertRuntimeDataModelToDMMF(devClient._runtimeDataModel);
-	const preprodDmmf = convertRuntimeDataModelToDMMF(preprodClient._runtimeDataModel);
+	// Dans Prisma 7, extraire le DMMF depuis _runtimeDataModel + schéma parsé depuis schema.prisma
+	// Lire les fichiers schema.prisma pour obtenir les annotations @@schema
+	const fs = await import('node:fs/promises');
+	const path = await import('node:path');
+	const { fileURLToPath } = await import('node:url');
+
+	// Déterminer le chemin du projet (remonter depuis src/lib vers la racine)
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = path.dirname(__filename);
+	const projectRoot = path.resolve(__dirname, '..', '..');
+
+	let cenovSchema = '';
+	let devSchema = '';
+	let preprodSchema = '';
+
+	try {
+		cenovSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov/schema.prisma'), 'utf-8');
+		devSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'), 'utf-8');
+		preprodSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'), 'utf-8');
+	} catch (error) {
+		console.warn('[PRISMA-META] Erreur lecture schema.prisma:', error);
+	}
+
+	const cenovDmmf = convertRuntimeDataModelToDMMF(cenovClient._runtimeDataModel, cenovSchema);
+	const devDmmf = convertRuntimeDataModelToDMMF(devClient._runtimeDataModel, devSchema);
+	const preprodDmmf = convertRuntimeDataModelToDMMF(preprodClient._runtimeDataModel, preprodSchema);
 
 	return {
 		cenov: {
@@ -257,10 +250,66 @@ async function createDatabases(): Promise<DatabaseConfig> {
 	};
 }
 
+// Structure pour les métadonnées parsées depuis schema.prisma
+interface ParsedModelMetadata {
+	schema: string;
+	primaryKeyFields: string[];
+	isView: boolean;
+}
+
+// Parser le schéma inline pour extraire le mapping modèle → métadonnées complètes
+function parseSchemaMetadata(inlineSchema: string): Map<string, ParsedModelMetadata> {
+	const metadataMap = new Map<string, ParsedModelMetadata>();
+
+	// Pattern pour capturer un modèle/vue complet avec son contenu
+	// Capture : (model|view) NomModel { ... contenu ... }
+	const blockRegex = /(model|view)\s+(\w+)\s*\{([^}]+)\}/g;
+
+	let blockMatch;
+	while ((blockMatch = blockRegex.exec(inlineSchema)) !== null) {
+		const [, type, modelName, content] = blockMatch;
+
+		// Parser le schéma (@@schema("nom"))
+		const schemaMatch = content.match(/@@schema\("([^"]+)"\)/);
+		const schema = schemaMatch ? schemaMatch[1] : 'public';
+
+		// Parser la clé primaire
+		const primaryKeyFields: string[] = [];
+
+		// 1. Clé primaire composite : @@id([field1, field2])
+		const compositeIdMatch = content.match(/@@id\(\[([^\]]+)\]/);
+		if (compositeIdMatch) {
+			const fields = compositeIdMatch[1].split(',').map(f => f.trim());
+			primaryKeyFields.push(...fields);
+		} else {
+			// 2. Clés primaires simples : field Type @id
+			const simpleIdRegex = /(\w+)\s+\w+[^\n]*@id/g;
+			let idMatch;
+			while ((idMatch = simpleIdRegex.exec(content)) !== null) {
+				primaryKeyFields.push(idMatch[1]);
+			}
+		}
+
+		metadataMap.set(modelName, {
+			schema,
+			primaryKeyFields,
+			isView: type === 'view'
+		});
+	}
+
+	return metadataMap;
+}
+
 // Convertir le runtimeDataModel de Prisma 7 en format DMMF compatible
-function convertRuntimeDataModelToDMMF(runtimeDataModel: {
-	models: Record<string, unknown>;
-}): PrismaModule['Prisma']['dmmf'] {
+function convertRuntimeDataModelToDMMF(
+	runtimeDataModel: {
+		models: Record<string, unknown>;
+	},
+	inlineSchema?: string
+): PrismaModule['Prisma']['dmmf'] {
+	// Parser le schéma inline pour obtenir les métadonnées complètes (schéma + clés primaires + type)
+	const metadataMap = inlineSchema ? parseSchemaMetadata(inlineSchema) : new Map<string, ParsedModelMetadata>();
+
 	const models = Object.entries(runtimeDataModel.models).map(([name, modelData]) => {
 		const model = modelData as {
 			fields: Array<{
@@ -276,18 +325,29 @@ function convertRuntimeDataModelToDMMF(runtimeDataModel: {
 			uniqueIndexes?: Array<{ fields?: string[] }>;
 		};
 
+		// Récupérer les métadonnées parsées depuis schema.prisma
+		const metadata = metadataMap.get(name);
+		const schema = metadata?.schema || 'public';
+		const primaryKeyFields = metadata?.primaryKeyFields || [];
+
+		// Construire l'objet primaryKey au format DMMF
+		const primaryKey = primaryKeyFields.length > 0 ? { fields: primaryKeyFields } : null;
+
+		// Marquer les champs comme isId selon les clés primaires parsées
+		const fieldsWithId = model.fields.map((field) => ({
+			name: field.name,
+			kind: field.kind,
+			type: field.type,
+			isRequired: field.isRequired ?? false,
+			isId: primaryKeyFields.includes(field.name) // ✅ FIXÉ : Détecter isId depuis schema.prisma
+		}));
+
 		return {
 			name,
 			dbName: model.dbName,
-			schema: model.schema,
-			fields: model.fields.map((field) => ({
-				name: field.name,
-				kind: field.kind,
-				type: field.type,
-				isRequired: field.isRequired ?? false,
-				isId: field.isId ?? false
-			})),
-			primaryKey: model.primaryKey,
+			schema, // ✅ FIXÉ : Utiliser le schéma parsé depuis schema.prisma
+			fields: fieldsWithId,
+			primaryKey, // ✅ FIXÉ : Utiliser la clé primaire parsée depuis schema.prisma
 			uniqueIndexes: model.uniqueIndexes
 		};
 	});
