@@ -1,5 +1,5 @@
 // src/routes/export/export-server-logic.ts
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { XMLBuilder } from 'fast-xml-parser';
 import { Prisma } from '../../generated/prisma-cenov/client';
 import {
@@ -74,7 +74,7 @@ export interface ExportFile {
 	size: number;
 }
 
-// Formatage centralisé des valeurs pour export
+// Formatage centralisé des valeurs pour export (CSV, JSON, XML)
 export function formatValueForExport(value: unknown): string {
 	// Formatage des valeurs nulles
 	if (value === null || value === undefined) {
@@ -103,6 +103,36 @@ export function formatValueForExport(value: unknown): string {
 
 	console.warn('Unexpected type in formatValueForExport:', typeof value, value);
 	return JSON.stringify(value);
+}
+
+// Formatage spécialisé pour Excel - garde les types natifs (number, Date, boolean)
+function formatValueForExcel(value: unknown): unknown {
+	// Valeurs nulles → null (Excel affiche une cellule vide)
+	if (value === null || value === undefined) {
+		return null;
+	}
+
+	// Types natifs Excel : garder tels quels
+	if (typeof value === 'number' || typeof value === 'boolean' || value instanceof Date) {
+		return value;
+	}
+
+	// Strings : garder telles quelles
+	if (typeof value === 'string') {
+		return value;
+	}
+
+	// BigInt : convertir en number pour Excel
+	if (typeof value === 'bigint') {
+		return Number(value);
+	}
+
+	// Objets : sérialiser en JSON
+	if (typeof value === 'object') {
+		return JSON.stringify(value);
+	}
+
+	return value;
 }
 
 // Extractions données tables
@@ -323,35 +353,14 @@ export async function generateExcelFile(
 	exportDataList: SharedExportData[],
 	config: ExportConfig
 ): Promise<ExportFile> {
-	const workbook = XLSX.utils.book_new();
+	const workbook = new ExcelJS.Workbook();
 	const usedSheetNames = new Set<string>();
 
+	// Métadonnées du workbook
+	workbook.creator = 'CENOV Export System';
+	workbook.created = new Date();
+
 	for (const tableData of exportDataList) {
-		// Préparation des données pour Excel
-		const worksheetData: unknown[][] = [];
-
-		// En-têtes
-		if (config.includeHeaders !== false) {
-			worksheetData.push(tableData.columns);
-		}
-
-		// Données
-		for (const row of tableData.data) {
-			const excelRow: unknown[] = [];
-			for (const column of tableData.columns) {
-				const value = formatValueForExport(row[column]);
-				excelRow.push(value);
-			}
-			worksheetData.push(excelRow);
-		}
-
-		// Création de la feuille de calcul
-		const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-		// Ajustement automatique de la largeur des colonnes
-		const colWidths = tableData.columns.map((col) => ({ wch: Math.max(col.length, 15) }));
-		worksheet['!cols'] = colWidths;
-
 		// Génération simple d'un nom de feuille : nom original + (1), (2) si doublon
 		let baseSheetName = tableData.tableName;
 
@@ -370,11 +379,42 @@ export async function generateExcelFile(
 
 		usedSheetNames.add(sheetName);
 
-		XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+		// Création de la feuille de calcul
+		const worksheet = workbook.addWorksheet(sheetName);
+
+		// Configuration des colonnes avec largeur automatique
+		worksheet.columns = tableData.columns.map((col) => ({
+			header: config.includeHeaders !== false ? col : undefined,
+			key: col,
+			width: Math.max(col.length, 15)
+		}));
+
+		// Ajout des données (si en-têtes inclus, ne pas les ajouter à nouveau)
+		if (config.includeHeaders !== false) {
+			// Les en-têtes sont déjà dans worksheet.columns
+			// Ajouter seulement les données (garder types natifs pour Excel)
+			for (const row of tableData.data) {
+				const excelRow: Record<string, unknown> = {};
+				for (const column of tableData.columns) {
+					excelRow[column] = formatValueForExcel(row[column]);
+				}
+				worksheet.addRow(excelRow);
+			}
+		} else {
+			// Pas d'en-têtes : ajouter toutes les données comme rows simples (garder types natifs)
+			for (const row of tableData.data) {
+				const excelRow: unknown[] = [];
+				for (const column of tableData.columns) {
+					const value = formatValueForExcel(row[column]);
+					excelRow.push(value);
+				}
+				worksheet.addRow(excelRow);
+			}
+		}
 	}
 
-	// Génération du buffer
-	const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+	// Génération du buffer (async avec ExcelJS)
+	const buffer = await workbook.xlsx.writeBuffer();
 
 	const fileName = await generateFileName(exportDataList, 'xlsx');
 
@@ -382,7 +422,7 @@ export async function generateExcelFile(
 		buffer: Buffer.from(buffer),
 		fileName,
 		mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-		size: buffer.length
+		size: buffer.byteLength
 	};
 }
 

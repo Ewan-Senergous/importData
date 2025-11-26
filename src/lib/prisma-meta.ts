@@ -224,8 +224,14 @@ async function createDatabases(): Promise<DatabaseConfig> {
 
 	try {
 		cenovSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov/schema.prisma'), 'utf-8');
-		devSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'), 'utf-8');
-		preprodSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'), 'utf-8');
+		devSchema = await fs.readFile(
+			path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'),
+			'utf-8'
+		);
+		preprodSchema = await fs.readFile(
+			path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'),
+			'utf-8'
+		);
 	} catch (error) {
 		console.warn('[PRISMA-META] Erreur lecture schema.prisma:', error);
 	}
@@ -279,7 +285,7 @@ function parseSchemaMetadata(inlineSchema: string): Map<string, ParsedModelMetad
 		// 1. Clé primaire composite : @@id([field1, field2])
 		const compositeIdMatch = content.match(/@@id\(\[([^\]]+)\]/);
 		if (compositeIdMatch) {
-			const fields = compositeIdMatch[1].split(',').map(f => f.trim());
+			const fields = compositeIdMatch[1].split(',').map((f) => f.trim());
 			primaryKeyFields.push(...fields);
 		} else {
 			// 2. Clés primaires simples : field Type @id
@@ -308,7 +314,9 @@ function convertRuntimeDataModelToDMMF(
 	inlineSchema?: string
 ): PrismaModule['Prisma']['dmmf'] {
 	// Parser le schéma inline pour obtenir les métadonnées complètes (schéma + clés primaires + type)
-	const metadataMap = inlineSchema ? parseSchemaMetadata(inlineSchema) : new Map<string, ParsedModelMetadata>();
+	const metadataMap = inlineSchema
+		? parseSchemaMetadata(inlineSchema)
+		: new Map<string, ParsedModelMetadata>();
 
 	const models = Object.entries(runtimeDataModel.models).map(([name, modelData]) => {
 		const model = modelData as {
