@@ -208,15 +208,12 @@ async function createDatabases(): Promise<DatabaseConfig> {
 	} & Record<string, unknown>;
 
 	// Dans Prisma 7, extraire le DMMF depuis _runtimeDataModel + schéma parsé depuis schema.prisma
-	// Lire les fichiers schema.prisma pour obtenir les annotations @@schema
+	// Utiliser process.cwd() au lieu de import.meta.url pour compatibilité DEV/PROD
 	const fs = await import('node:fs/promises');
 	const path = await import('node:path');
-	const { fileURLToPath } = await import('node:url');
 
-	// Déterminer le chemin du projet (remonter depuis src/lib vers la racine)
-	const __filename = fileURLToPath(import.meta.url);
-	const __dirname = path.dirname(__filename);
-	const projectRoot = path.resolve(__dirname, '..', '..');
+	// process.cwd() pointe toujours vers la racine du projet (DEV et PROD)
+	const projectRoot = process.cwd();
 
 	let cenovSchema = '';
 	let devSchema = '';
@@ -224,16 +221,11 @@ async function createDatabases(): Promise<DatabaseConfig> {
 
 	try {
 		cenovSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov/schema.prisma'), 'utf-8');
-		devSchema = await fs.readFile(
-			path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'),
-			'utf-8'
-		);
-		preprodSchema = await fs.readFile(
-			path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'),
-			'utf-8'
-		);
+		devSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'), 'utf-8');
+		preprodSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'), 'utf-8');
+		console.log('[PRISMA-META] Schémas chargés avec succès depuis:', projectRoot);
 	} catch (error) {
-		console.warn('[PRISMA-META] Erreur lecture schema.prisma:', error);
+		console.warn('[PRISMA-META] Erreur lecture schema.prisma depuis', projectRoot, ':', error);
 	}
 
 	const cenovDmmf = convertRuntimeDataModelToDMMF(cenovClient._runtimeDataModel, cenovSchema);

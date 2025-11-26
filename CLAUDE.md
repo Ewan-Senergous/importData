@@ -2,6 +2,22 @@
 
 Ce fichier fournit des instructions à Claude Code (claude.ai/code) pour travailler sur ce dépôt.
 
+## ⚠️ Chemins Fichiers: Utiliser process.cwd() en Production
+
+**CRITIQUE**: Ne JAMAIS utiliser `import.meta.url` + `fileURLToPath` pour résoudre chemins en production.
+
+```typescript
+// ❌ NE MARCHE PAS en production (bundle dans .svelte-kit/output/)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..', '..');
+
+// ✅ FONCTIONNE en DEV et PROD
+const projectRoot = process.cwd();
+```
+
+**Pourquoi**: `import.meta.url` pointe vers le bundle après build, pas la racine projet. `process.cwd()` pointe toujours vers la racine.
+
 ## 🔍 Bonnes Pratiques de Résolution de Problèmes
 
 **IMPORTANT : Rechercher sur le web quand bloqué**
