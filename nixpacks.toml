@@ -1,0 +1,31 @@
+# Configuration Nixpacks pour Prisma 7
+# Force Node.js 22 (requis par Prisma 7: ^20.19 || ^22.12 || >=24.0)
+
+[variables]
+CI = "true"
+NODE_ENV = "production"
+NPM_CONFIG_PRODUCTION = "false"
+
+[phases.setup]
+# Force Node.js 22 pour compatibilité Prisma 7
+nixPkgs = ["nodejs_22", "pnpm-9_x", "openssl"]
+nixLibs = ["libuuid", "libGL"]
+aptPkgs = ["curl", "wget"]
+nixOverlays = ["https://github.com/railwayapp/nix-npm-overlay/archive/main.tar.gz"]
+nixpkgsArchive = "ffeebf0acf3ae8b29f8c7049cd911b9636efd7e7"
+
+[phases.install]
+dependsOn = ["setup"]
+cmds = ["pnpm i --frozen-lockfile"]
+cacheDirectories = ["/root/.local/share/pnpm/store/v3"]
+
+[phases.build]
+dependsOn = ["install"]
+cmds = [
+    "pnpm run prisma:generate-all",
+    "pnpm run build"
+]
+cacheDirectories = ["node_modules/.cache"]
+
+[start]
+cmd = "node build"
