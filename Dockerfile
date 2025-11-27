@@ -12,8 +12,9 @@ COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 COPY . .
 
-# Installer et build
-RUN pnpm install --frozen-lockfile && \
+# Installer et build (ordre contrôlé manuellement)
+RUN pnpm install --frozen-lockfile --ignore-scripts && \
+    npx svelte-kit sync && \
     pnpm run prisma:generate-all && \
     pnpm run build
 
