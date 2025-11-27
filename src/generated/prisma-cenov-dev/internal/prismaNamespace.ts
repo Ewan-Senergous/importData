@@ -1824,11 +1824,11 @@ export const Kit_attributeScalarFieldEnum = {
 	fk_attribute_characteristic: 'fk_attribute_characteristic',
 	fk_attribute_unite: 'fk_attribute_unite',
 	kat_value: 'kat_value',
-	kat_visible: 'kat_visible',
-	kat_global: 'kat_global',
 	created_at: 'created_at',
 	updated_at: 'updated_at',
-	kat_id: 'kat_id'
+	kat_id: 'kat_id',
+	kat_global: 'kat_global',
+	kat_visible: 'kat_visible'
 } as const;
 
 export type Kit_attributeScalarFieldEnum =
@@ -1915,14 +1915,14 @@ export const ProductScalarFieldEnum = {
 	fk_ssfamily: 'fk_ssfamily',
 	fk_sfamily: 'fk_sfamily',
 	cat_code: 'cat_code',
-	pro_type: 'pro_type',
-	pro_name: 'pro_name',
-	is_published: 'is_published',
+	in_stock: 'in_stock',
 	is_featured: 'is_featured',
-	pro_visibility: 'pro_visibility',
-	pro_short_description: 'pro_short_description',
+	is_published: 'is_published',
 	pro_description: 'pro_description',
-	in_stock: 'in_stock'
+	pro_name: 'pro_name',
+	pro_short_description: 'pro_short_description',
+	pro_type: 'pro_type',
+	pro_visibility: 'pro_visibility'
 } as const;
 
 export type ProductScalarFieldEnum =

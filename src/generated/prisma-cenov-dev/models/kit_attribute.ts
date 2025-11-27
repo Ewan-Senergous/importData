@@ -45,11 +45,11 @@ export type Kit_attributeMinAggregateOutputType = {
 	fk_attribute_characteristic: number | null;
 	fk_attribute_unite: number | null;
 	kat_value: string | null;
-	kat_visible: boolean | null;
-	kat_global: boolean | null;
 	created_at: Date | null;
 	updated_at: Date | null;
 	kat_id: number | null;
+	kat_global: boolean | null;
+	kat_visible: boolean | null;
 };
 
 export type Kit_attributeMaxAggregateOutputType = {
@@ -57,11 +57,11 @@ export type Kit_attributeMaxAggregateOutputType = {
 	fk_attribute_characteristic: number | null;
 	fk_attribute_unite: number | null;
 	kat_value: string | null;
-	kat_visible: boolean | null;
-	kat_global: boolean | null;
 	created_at: Date | null;
 	updated_at: Date | null;
 	kat_id: number | null;
+	kat_global: boolean | null;
+	kat_visible: boolean | null;
 };
 
 export type Kit_attributeCountAggregateOutputType = {
@@ -69,11 +69,11 @@ export type Kit_attributeCountAggregateOutputType = {
 	fk_attribute_characteristic: number;
 	fk_attribute_unite: number;
 	kat_value: number;
-	kat_visible: number;
-	kat_global: number;
 	created_at: number;
 	updated_at: number;
 	kat_id: number;
+	kat_global: number;
+	kat_visible: number;
 	_all: number;
 };
 
@@ -96,11 +96,11 @@ export type Kit_attributeMinAggregateInputType = {
 	fk_attribute_characteristic?: true;
 	fk_attribute_unite?: true;
 	kat_value?: true;
-	kat_visible?: true;
-	kat_global?: true;
 	created_at?: true;
 	updated_at?: true;
 	kat_id?: true;
+	kat_global?: true;
+	kat_visible?: true;
 };
 
 export type Kit_attributeMaxAggregateInputType = {
@@ -108,11 +108,11 @@ export type Kit_attributeMaxAggregateInputType = {
 	fk_attribute_characteristic?: true;
 	fk_attribute_unite?: true;
 	kat_value?: true;
-	kat_visible?: true;
-	kat_global?: true;
 	created_at?: true;
 	updated_at?: true;
 	kat_id?: true;
+	kat_global?: true;
+	kat_visible?: true;
 };
 
 export type Kit_attributeCountAggregateInputType = {
@@ -120,11 +120,11 @@ export type Kit_attributeCountAggregateInputType = {
 	fk_attribute_characteristic?: true;
 	fk_attribute_unite?: true;
 	kat_value?: true;
-	kat_visible?: true;
-	kat_global?: true;
 	created_at?: true;
 	updated_at?: true;
 	kat_id?: true;
+	kat_global?: true;
+	kat_visible?: true;
 	_all?: true;
 };
 
@@ -224,11 +224,11 @@ export type Kit_attributeGroupByOutputType = {
 	fk_attribute_characteristic: number;
 	fk_attribute_unite: number | null;
 	kat_value: string | null;
-	kat_visible: boolean | null;
-	kat_global: boolean | null;
 	created_at: Date | null;
 	updated_at: Date | null;
 	kat_id: number;
+	kat_global: boolean | null;
+	kat_visible: boolean | null;
 	_count: Kit_attributeCountAggregateOutputType | null;
 	_avg: Kit_attributeAvgAggregateOutputType | null;
 	_sum: Kit_attributeSumAggregateOutputType | null;
@@ -256,11 +256,11 @@ export type kit_attributeWhereInput = {
 	fk_attribute_characteristic?: Prisma.IntFilter<'kit_attribute'> | number;
 	fk_attribute_unite?: Prisma.IntNullableFilter<'kit_attribute'> | number | null;
 	kat_value?: Prisma.StringNullableFilter<'kit_attribute'> | string | null;
-	kat_visible?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
-	kat_global?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
 	created_at?: Prisma.DateTimeNullableFilter<'kit_attribute'> | Date | string | null;
 	updated_at?: Prisma.DateTimeNullableFilter<'kit_attribute'> | Date | string | null;
 	kat_id?: Prisma.IntFilter<'kit_attribute'> | number;
+	kat_global?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
+	kat_visible?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute?: Prisma.XOR<
 		Prisma.AttributeScalarRelationFilter,
 		Prisma.attributeWhereInput
@@ -277,11 +277,11 @@ export type kit_attributeOrderByWithRelationInput = {
 	fk_attribute_characteristic?: Prisma.SortOrder;
 	fk_attribute_unite?: Prisma.SortOrderInput | Prisma.SortOrder;
 	kat_value?: Prisma.SortOrderInput | Prisma.SortOrder;
-	kat_visible?: Prisma.SortOrderInput | Prisma.SortOrder;
-	kat_global?: Prisma.SortOrderInput | Prisma.SortOrder;
 	created_at?: Prisma.SortOrderInput | Prisma.SortOrder;
 	updated_at?: Prisma.SortOrderInput | Prisma.SortOrder;
 	kat_id?: Prisma.SortOrder;
+	kat_global?: Prisma.SortOrderInput | Prisma.SortOrder;
+	kat_visible?: Prisma.SortOrderInput | Prisma.SortOrder;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute?: Prisma.attributeOrderByWithRelationInput;
 	attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeOrderByWithRelationInput;
 	kit?: Prisma.kitOrderByWithRelationInput;
@@ -297,10 +297,10 @@ export type kit_attributeWhereUniqueInput = Prisma.AtLeast<
 		fk_attribute_characteristic?: Prisma.IntFilter<'kit_attribute'> | number;
 		fk_attribute_unite?: Prisma.IntNullableFilter<'kit_attribute'> | number | null;
 		kat_value?: Prisma.StringNullableFilter<'kit_attribute'> | string | null;
-		kat_visible?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
-		kat_global?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
 		created_at?: Prisma.DateTimeNullableFilter<'kit_attribute'> | Date | string | null;
 		updated_at?: Prisma.DateTimeNullableFilter<'kit_attribute'> | Date | string | null;
+		kat_global?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
+		kat_visible?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
 		attribute_kit_attribute_fk_attribute_characteristicToattribute?: Prisma.XOR<
 			Prisma.AttributeScalarRelationFilter,
 			Prisma.attributeWhereInput
@@ -319,11 +319,11 @@ export type kit_attributeOrderByWithAggregationInput = {
 	fk_attribute_characteristic?: Prisma.SortOrder;
 	fk_attribute_unite?: Prisma.SortOrderInput | Prisma.SortOrder;
 	kat_value?: Prisma.SortOrderInput | Prisma.SortOrder;
-	kat_visible?: Prisma.SortOrderInput | Prisma.SortOrder;
-	kat_global?: Prisma.SortOrderInput | Prisma.SortOrder;
 	created_at?: Prisma.SortOrderInput | Prisma.SortOrder;
 	updated_at?: Prisma.SortOrderInput | Prisma.SortOrder;
 	kat_id?: Prisma.SortOrder;
+	kat_global?: Prisma.SortOrderInput | Prisma.SortOrder;
+	kat_visible?: Prisma.SortOrderInput | Prisma.SortOrder;
 	_count?: Prisma.kit_attributeCountOrderByAggregateInput;
 	_avg?: Prisma.kit_attributeAvgOrderByAggregateInput;
 	_max?: Prisma.kit_attributeMaxOrderByAggregateInput;
@@ -343,19 +343,19 @@ export type kit_attributeScalarWhereWithAggregatesInput = {
 	fk_attribute_characteristic?: Prisma.IntWithAggregatesFilter<'kit_attribute'> | number;
 	fk_attribute_unite?: Prisma.IntNullableWithAggregatesFilter<'kit_attribute'> | number | null;
 	kat_value?: Prisma.StringNullableWithAggregatesFilter<'kit_attribute'> | string | null;
-	kat_visible?: Prisma.BoolNullableWithAggregatesFilter<'kit_attribute'> | boolean | null;
-	kat_global?: Prisma.BoolNullableWithAggregatesFilter<'kit_attribute'> | boolean | null;
 	created_at?: Prisma.DateTimeNullableWithAggregatesFilter<'kit_attribute'> | Date | string | null;
 	updated_at?: Prisma.DateTimeNullableWithAggregatesFilter<'kit_attribute'> | Date | string | null;
 	kat_id?: Prisma.IntWithAggregatesFilter<'kit_attribute'> | number;
+	kat_global?: Prisma.BoolNullableWithAggregatesFilter<'kit_attribute'> | boolean | null;
+	kat_visible?: Prisma.BoolNullableWithAggregatesFilter<'kit_attribute'> | boolean | null;
 };
 
 export type kit_attributeCreateInput = {
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute: Prisma.attributeCreateNestedOneWithoutKit_attribute_kit_attribute_fk_attribute_characteristicToattributeInput;
 	attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeCreateNestedOneWithoutKit_attribute_kit_attribute_fk_attribute_uniteToattributeInput;
 	kit: Prisma.kitCreateNestedOneWithoutKit_attributeInput;
@@ -366,19 +366,19 @@ export type kit_attributeUncheckedCreateInput = {
 	fk_attribute_characteristic: number;
 	fk_attribute_unite?: number | null;
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
 	kat_id?: number;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 };
 
 export type kit_attributeUpdateInput = {
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute?: Prisma.attributeUpdateOneRequiredWithoutKit_attribute_kit_attribute_fk_attribute_characteristicToattributeNestedInput;
 	attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeUpdateOneWithoutKit_attribute_kit_attribute_fk_attribute_uniteToattributeNestedInput;
 	kit?: Prisma.kitUpdateOneRequiredWithoutKit_attributeNestedInput;
@@ -389,11 +389,11 @@ export type kit_attributeUncheckedUpdateInput = {
 	fk_attribute_characteristic?: Prisma.IntFieldUpdateOperationsInput | number;
 	fk_attribute_unite?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 };
 
 export type kit_attributeCreateManyInput = {
@@ -401,19 +401,19 @@ export type kit_attributeCreateManyInput = {
 	fk_attribute_characteristic: number;
 	fk_attribute_unite?: number | null;
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
 	kat_id?: number;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 };
 
 export type kit_attributeUpdateManyMutationInput = {
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 };
 
 export type kit_attributeUncheckedUpdateManyInput = {
@@ -421,11 +421,11 @@ export type kit_attributeUncheckedUpdateManyInput = {
 	fk_attribute_characteristic?: Prisma.IntFieldUpdateOperationsInput | number;
 	fk_attribute_unite?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 };
 
 export type Kit_attributeListRelationFilter = {
@@ -443,11 +443,11 @@ export type kit_attributeCountOrderByAggregateInput = {
 	fk_attribute_characteristic?: Prisma.SortOrder;
 	fk_attribute_unite?: Prisma.SortOrder;
 	kat_value?: Prisma.SortOrder;
-	kat_visible?: Prisma.SortOrder;
-	kat_global?: Prisma.SortOrder;
 	created_at?: Prisma.SortOrder;
 	updated_at?: Prisma.SortOrder;
 	kat_id?: Prisma.SortOrder;
+	kat_global?: Prisma.SortOrder;
+	kat_visible?: Prisma.SortOrder;
 };
 
 export type kit_attributeAvgOrderByAggregateInput = {
@@ -462,11 +462,11 @@ export type kit_attributeMaxOrderByAggregateInput = {
 	fk_attribute_characteristic?: Prisma.SortOrder;
 	fk_attribute_unite?: Prisma.SortOrder;
 	kat_value?: Prisma.SortOrder;
-	kat_visible?: Prisma.SortOrder;
-	kat_global?: Prisma.SortOrder;
 	created_at?: Prisma.SortOrder;
 	updated_at?: Prisma.SortOrder;
 	kat_id?: Prisma.SortOrder;
+	kat_global?: Prisma.SortOrder;
+	kat_visible?: Prisma.SortOrder;
 };
 
 export type kit_attributeMinOrderByAggregateInput = {
@@ -474,11 +474,11 @@ export type kit_attributeMinOrderByAggregateInput = {
 	fk_attribute_characteristic?: Prisma.SortOrder;
 	fk_attribute_unite?: Prisma.SortOrder;
 	kat_value?: Prisma.SortOrder;
-	kat_visible?: Prisma.SortOrder;
-	kat_global?: Prisma.SortOrder;
 	created_at?: Prisma.SortOrder;
 	updated_at?: Prisma.SortOrder;
 	kat_id?: Prisma.SortOrder;
+	kat_global?: Prisma.SortOrder;
+	kat_visible?: Prisma.SortOrder;
 };
 
 export type kit_attributeSumOrderByAggregateInput = {
@@ -760,10 +760,10 @@ export type kit_attributeUncheckedUpdateManyWithoutAttribute_kit_attribute_fk_at
 
 export type kit_attributeCreateWithoutKitInput = {
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute: Prisma.attributeCreateNestedOneWithoutKit_attribute_kit_attribute_fk_attribute_characteristicToattributeInput;
 	attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeCreateNestedOneWithoutKit_attribute_kit_attribute_fk_attribute_uniteToattributeInput;
 };
@@ -772,11 +772,11 @@ export type kit_attributeUncheckedCreateWithoutKitInput = {
 	fk_attribute_characteristic: number;
 	fk_attribute_unite?: number | null;
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
 	kat_id?: number;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 };
 
 export type kit_attributeCreateOrConnectWithoutKitInput = {
@@ -828,20 +828,20 @@ export type kit_attributeScalarWhereInput = {
 	fk_attribute_characteristic?: Prisma.IntFilter<'kit_attribute'> | number;
 	fk_attribute_unite?: Prisma.IntNullableFilter<'kit_attribute'> | number | null;
 	kat_value?: Prisma.StringNullableFilter<'kit_attribute'> | string | null;
-	kat_visible?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
-	kat_global?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
 	created_at?: Prisma.DateTimeNullableFilter<'kit_attribute'> | Date | string | null;
 	updated_at?: Prisma.DateTimeNullableFilter<'kit_attribute'> | Date | string | null;
 	kat_id?: Prisma.IntFilter<'kit_attribute'> | number;
+	kat_global?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
+	kat_visible?: Prisma.BoolNullableFilter<'kit_attribute'> | boolean | null;
 };
 
 export type kit_attributeCreateWithoutAttribute_kit_attribute_fk_attribute_characteristicToattributeInput =
 	{
 		kat_value?: string | null;
-		kat_visible?: boolean | null;
-		kat_global?: boolean | null;
 		created_at?: Date | string | null;
 		updated_at?: Date | string | null;
+		kat_global?: boolean | null;
+		kat_visible?: boolean | null;
 		attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeCreateNestedOneWithoutKit_attribute_kit_attribute_fk_attribute_uniteToattributeInput;
 		kit: Prisma.kitCreateNestedOneWithoutKit_attributeInput;
 	};
@@ -851,11 +851,11 @@ export type kit_attributeUncheckedCreateWithoutAttribute_kit_attribute_fk_attrib
 		fk_kit: number;
 		fk_attribute_unite?: number | null;
 		kat_value?: string | null;
-		kat_visible?: boolean | null;
-		kat_global?: boolean | null;
 		created_at?: Date | string | null;
 		updated_at?: Date | string | null;
 		kat_id?: number;
+		kat_global?: boolean | null;
+		kat_visible?: boolean | null;
 	};
 
 export type kit_attributeCreateOrConnectWithoutAttribute_kit_attribute_fk_attribute_characteristicToattributeInput =
@@ -877,10 +877,10 @@ export type kit_attributeCreateManyAttribute_kit_attribute_fk_attribute_characte
 
 export type kit_attributeCreateWithoutAttribute_kit_attribute_fk_attribute_uniteToattributeInput = {
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute: Prisma.attributeCreateNestedOneWithoutKit_attribute_kit_attribute_fk_attribute_characteristicToattributeInput;
 	kit: Prisma.kitCreateNestedOneWithoutKit_attributeInput;
 };
@@ -890,11 +890,11 @@ export type kit_attributeUncheckedCreateWithoutAttribute_kit_attribute_fk_attrib
 		fk_kit: number;
 		fk_attribute_characteristic: number;
 		kat_value?: string | null;
-		kat_visible?: boolean | null;
-		kat_global?: boolean | null;
 		created_at?: Date | string | null;
 		updated_at?: Date | string | null;
 		kat_id?: number;
+		kat_global?: boolean | null;
+		kat_visible?: boolean | null;
 	};
 
 export type kit_attributeCreateOrConnectWithoutAttribute_kit_attribute_fk_attribute_uniteToattributeInput =
@@ -980,19 +980,19 @@ export type kit_attributeCreateManyKitInput = {
 	fk_attribute_characteristic: number;
 	fk_attribute_unite?: number | null;
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
 	kat_id?: number;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 };
 
 export type kit_attributeUpdateWithoutKitInput = {
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute?: Prisma.attributeUpdateOneRequiredWithoutKit_attribute_kit_attribute_fk_attribute_characteristicToattributeNestedInput;
 	attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeUpdateOneWithoutKit_attribute_kit_attribute_fk_attribute_uniteToattributeNestedInput;
 };
@@ -1001,22 +1001,22 @@ export type kit_attributeUncheckedUpdateWithoutKitInput = {
 	fk_attribute_characteristic?: Prisma.IntFieldUpdateOperationsInput | number;
 	fk_attribute_unite?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 };
 
 export type kit_attributeUncheckedUpdateManyWithoutKitInput = {
 	fk_attribute_characteristic?: Prisma.IntFieldUpdateOperationsInput | number;
 	fk_attribute_unite?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 };
 
 export type kit_attributeCreateManyAttribute_kit_attribute_fk_attribute_characteristicToattributeInput =
@@ -1024,31 +1024,31 @@ export type kit_attributeCreateManyAttribute_kit_attribute_fk_attribute_characte
 		fk_kit: number;
 		fk_attribute_unite?: number | null;
 		kat_value?: string | null;
-		kat_visible?: boolean | null;
-		kat_global?: boolean | null;
 		created_at?: Date | string | null;
 		updated_at?: Date | string | null;
 		kat_id?: number;
+		kat_global?: boolean | null;
+		kat_visible?: boolean | null;
 	};
 
 export type kit_attributeCreateManyAttribute_kit_attribute_fk_attribute_uniteToattributeInput = {
 	fk_kit: number;
 	fk_attribute_characteristic: number;
 	kat_value?: string | null;
-	kat_visible?: boolean | null;
-	kat_global?: boolean | null;
 	created_at?: Date | string | null;
 	updated_at?: Date | string | null;
 	kat_id?: number;
+	kat_global?: boolean | null;
+	kat_visible?: boolean | null;
 };
 
 export type kit_attributeUpdateWithoutAttribute_kit_attribute_fk_attribute_characteristicToattributeInput =
 	{
 		kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 		created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 		attribute_kit_attribute_fk_attribute_uniteToattribute?: Prisma.attributeUpdateOneWithoutKit_attribute_kit_attribute_fk_attribute_uniteToattributeNestedInput;
 		kit?: Prisma.kitUpdateOneRequiredWithoutKit_attributeNestedInput;
 	};
@@ -1058,11 +1058,11 @@ export type kit_attributeUncheckedUpdateWithoutAttribute_kit_attribute_fk_attrib
 		fk_kit?: Prisma.IntFieldUpdateOperationsInput | number;
 		fk_attribute_unite?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 		kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 		created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	};
 
 export type kit_attributeUncheckedUpdateManyWithoutAttribute_kit_attribute_fk_attribute_characteristicToattributeInput =
@@ -1070,19 +1070,19 @@ export type kit_attributeUncheckedUpdateManyWithoutAttribute_kit_attribute_fk_at
 		fk_kit?: Prisma.IntFieldUpdateOperationsInput | number;
 		fk_attribute_unite?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 		kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 		created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	};
 
 export type kit_attributeUpdateWithoutAttribute_kit_attribute_fk_attribute_uniteToattributeInput = {
 	kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 	updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+	kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+	kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	attribute_kit_attribute_fk_attribute_characteristicToattribute?: Prisma.attributeUpdateOneRequiredWithoutKit_attribute_kit_attribute_fk_attribute_characteristicToattributeNestedInput;
 	kit?: Prisma.kitUpdateOneRequiredWithoutKit_attributeNestedInput;
 };
@@ -1092,11 +1092,11 @@ export type kit_attributeUncheckedUpdateWithoutAttribute_kit_attribute_fk_attrib
 		fk_kit?: Prisma.IntFieldUpdateOperationsInput | number;
 		fk_attribute_characteristic?: Prisma.IntFieldUpdateOperationsInput | number;
 		kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 		created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	};
 
 export type kit_attributeUncheckedUpdateManyWithoutAttribute_kit_attribute_fk_attribute_uniteToattributeInput =
@@ -1104,11 +1104,11 @@ export type kit_attributeUncheckedUpdateManyWithoutAttribute_kit_attribute_fk_at
 		fk_kit?: Prisma.IntFieldUpdateOperationsInput | number;
 		fk_attribute_characteristic?: Prisma.IntFieldUpdateOperationsInput | number;
 		kat_value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 		created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 		kat_id?: Prisma.IntFieldUpdateOperationsInput | number;
+		kat_global?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+		kat_visible?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
 	};
 
 export type kit_attributeSelect<
@@ -1119,11 +1119,11 @@ export type kit_attributeSelect<
 		fk_attribute_characteristic?: boolean;
 		fk_attribute_unite?: boolean;
 		kat_value?: boolean;
-		kat_visible?: boolean;
-		kat_global?: boolean;
 		created_at?: boolean;
 		updated_at?: boolean;
 		kat_id?: boolean;
+		kat_global?: boolean;
+		kat_visible?: boolean;
 		attribute_kit_attribute_fk_attribute_characteristicToattribute?:
 			| boolean
 			| Prisma.attributeDefaultArgs<ExtArgs>;
@@ -1143,11 +1143,11 @@ export type kit_attributeSelectCreateManyAndReturn<
 		fk_attribute_characteristic?: boolean;
 		fk_attribute_unite?: boolean;
 		kat_value?: boolean;
-		kat_visible?: boolean;
-		kat_global?: boolean;
 		created_at?: boolean;
 		updated_at?: boolean;
 		kat_id?: boolean;
+		kat_global?: boolean;
+		kat_visible?: boolean;
 		attribute_kit_attribute_fk_attribute_characteristicToattribute?:
 			| boolean
 			| Prisma.attributeDefaultArgs<ExtArgs>;
@@ -1167,11 +1167,11 @@ export type kit_attributeSelectUpdateManyAndReturn<
 		fk_attribute_characteristic?: boolean;
 		fk_attribute_unite?: boolean;
 		kat_value?: boolean;
-		kat_visible?: boolean;
-		kat_global?: boolean;
 		created_at?: boolean;
 		updated_at?: boolean;
 		kat_id?: boolean;
+		kat_global?: boolean;
+		kat_visible?: boolean;
 		attribute_kit_attribute_fk_attribute_characteristicToattribute?:
 			| boolean
 			| Prisma.attributeDefaultArgs<ExtArgs>;
@@ -1188,11 +1188,11 @@ export type kit_attributeSelectScalar = {
 	fk_attribute_characteristic?: boolean;
 	fk_attribute_unite?: boolean;
 	kat_value?: boolean;
-	kat_visible?: boolean;
-	kat_global?: boolean;
 	created_at?: boolean;
 	updated_at?: boolean;
 	kat_id?: boolean;
+	kat_global?: boolean;
+	kat_visible?: boolean;
 };
 
 export type kit_attributeOmit<
@@ -1202,11 +1202,11 @@ export type kit_attributeOmit<
 	| 'fk_attribute_characteristic'
 	| 'fk_attribute_unite'
 	| 'kat_value'
-	| 'kat_visible'
-	| 'kat_global'
 	| 'created_at'
 	| 'updated_at'
-	| 'kat_id',
+	| 'kat_id'
+	| 'kat_global'
+	| 'kat_visible',
 	ExtArgs['result']['kit_attribute']
 >;
 export type kit_attributeInclude<
@@ -1258,11 +1258,11 @@ export type $kit_attributePayload<
 			fk_attribute_characteristic: number;
 			fk_attribute_unite: number | null;
 			kat_value: string | null;
-			kat_visible: boolean | null;
-			kat_global: boolean | null;
 			created_at: Date | null;
 			updated_at: Date | null;
 			kat_id: number;
+			kat_global: boolean | null;
+			kat_visible: boolean | null;
 		},
 		ExtArgs['result']['kit_attribute']
 	>;
@@ -1886,11 +1886,11 @@ export interface kit_attributeFieldRefs {
 	readonly fk_attribute_characteristic: Prisma.FieldRef<'kit_attribute', 'Int'>;
 	readonly fk_attribute_unite: Prisma.FieldRef<'kit_attribute', 'Int'>;
 	readonly kat_value: Prisma.FieldRef<'kit_attribute', 'String'>;
-	readonly kat_visible: Prisma.FieldRef<'kit_attribute', 'Boolean'>;
-	readonly kat_global: Prisma.FieldRef<'kit_attribute', 'Boolean'>;
 	readonly created_at: Prisma.FieldRef<'kit_attribute', 'DateTime'>;
 	readonly updated_at: Prisma.FieldRef<'kit_attribute', 'DateTime'>;
 	readonly kat_id: Prisma.FieldRef<'kit_attribute', 'Int'>;
+	readonly kat_global: Prisma.FieldRef<'kit_attribute', 'Boolean'>;
+	readonly kat_visible: Prisma.FieldRef<'kit_attribute', 'Boolean'>;
 }
 
 // Custom InputTypes

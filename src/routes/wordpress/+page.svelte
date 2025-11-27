@@ -4,13 +4,14 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Download, Package, AlertCircle, Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	let isDownloading = $state(false);
 
 	// État de sélection
-	let selectedIds = $state<Set<number>>(new Set());
+	let selectedIds = new SvelteSet<number>();
 	let searchQuery = $state('');
 
 	// Filtrer produits selon recherche
@@ -24,21 +25,20 @@
 
 	// Toggle sélection individuelle
 	const toggleProduct = (id: number) => {
-		const newSet = new Set(selectedIds);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedIds.has(id)) {
+			selectedIds.delete(id);
 		} else {
-			newSet.add(id);
+			selectedIds.add(id);
 		}
-		selectedIds = newSet; // Réassignation pour réactivité
 	};
 
 	// Toggle tout/aucun
 	const toggleAll = () => {
 		if (selectedIds.size === filteredProducts.length && filteredProducts.length > 0) {
-			selectedIds = new Set(); // Désélectionner tout
+			selectedIds.clear(); // Désélectionner tout
 		} else {
-			selectedIds = new Set(filteredProducts.map((p) => p.pro_id)); // Sélectionner tout
+			selectedIds.clear();
+			filteredProducts.forEach((p) => selectedIds.add(p.pro_id)); // Sélectionner tout
 		}
 	};
 

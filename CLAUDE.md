@@ -133,6 +133,29 @@ pnpm test         # Exécuter les tests une fois
 
 **Opérations base de données :**
 
+**⚠️ Prisma 7 : Configuration requise**
+
+Chaque base nécessite un fichier `prisma.config.ts` dans son dossier (`prisma/cenov/`, `prisma/cenov_dev/`, `prisma/cenov_preprod/`) :
+
+```typescript
+import { config } from 'dotenv';
+import { defineConfig, env } from 'prisma/config';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+// Charger .env depuis la racine du projet
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+config({ path: resolve(__dirname, '../../.env') });
+
+export default defineConfig({
+	datasource: {
+		url: env('DATABASE_URL') // ou CENOV_DEV_DATABASE_URL, CENOV_PREPROD_DATABASE_URL
+	},
+	schema: './schema.prisma'
+});
+```
+
 **Base CENOV (Principale - Production) :**
 
 ```bash
@@ -169,32 +192,34 @@ pnpm prisma:pull-preprod                   # Récupérer schéma depuis BDD (cen
 pnpm prisma:generate-all                   # Générer les trois clients (automatique au pnpm install)
 ```
 
-**Commandes manuelles (si nécessaire) :**
+**⚠️ Commandes manuelles Prisma 7 (si nécessaire) :**
 
 ```bash
+# Avec Prisma 7, les commandes nécessitant la DB doivent être exécutées depuis le dossier contenant prisma.config.ts
+# Commandes qui nécessitent datasource.url : pull, push, migrate, studio
+
 # CENOV:
-npx prisma generate --schema prisma/cenov/schema.prisma
-npx prisma db push --schema prisma/cenov/schema.prisma
-npx prisma db pull --schema prisma/cenov/schema.prisma
-npx prisma studio --schema prisma/cenov/schema.prisma
-npx prisma migrate dev --schema prisma/cenov/schema.prisma
-npx prisma migrate deploy --schema prisma/cenov/schema.prisma
+cd prisma/cenov && npx prisma db pull
+cd prisma/cenov && npx prisma db push
+cd prisma/cenov && npx prisma migrate dev
+cd prisma/cenov && npx prisma studio
 
 # CENOV_DEV:
-npx prisma generate --schema prisma/cenov_dev/schema.prisma
-npx prisma db push --schema prisma/cenov_dev/schema.prisma
-npx prisma db pull --schema prisma/cenov_dev/schema.prisma
-npx prisma studio --schema prisma/cenov_dev/schema.prisma
-npx prisma migrate dev --schema prisma/cenov_dev/schema.prisma
-npx prisma migrate deploy --schema prisma/cenov_dev/schema.prisma
+cd prisma/cenov_dev && npx prisma db pull
+cd prisma/cenov_dev && npx prisma db push
+cd prisma/cenov_dev && npx prisma migrate dev
+cd prisma/cenov_dev && npx prisma studio
 
 # CENOV_PREPROD:
+cd prisma/cenov_preprod && npx prisma db pull
+cd prisma/cenov_preprod && npx prisma db push
+cd prisma/cenov_preprod && npx prisma migrate dev
+cd prisma/cenov_preprod && npx prisma studio
+
+# generate fonctionne toujours avec --schema depuis la racine
+npx prisma generate --schema prisma/cenov/schema.prisma
+npx prisma generate --schema prisma/cenov_dev/schema.prisma
 npx prisma generate --schema prisma/cenov_preprod/schema.prisma
-npx prisma db push --schema prisma/cenov_preprod/schema.prisma
-npx prisma db pull --schema prisma/cenov_preprod/schema.prisma
-npx prisma studio --schema prisma/cenov_preprod/schema.prisma
-npx prisma migrate dev --schema prisma/cenov_preprod/schema.prisma
-npx prisma migrate deploy --schema prisma/cenov_preprod/schema.prisma
 ```
 
 **Installation des dépendances :**

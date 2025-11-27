@@ -9,26 +9,6 @@ datasource cenov_dev_db {
   schemas  = ["produit", "public"]
 }
 
-enum ProductType {
-  simple
-  variable
-  grouped
-  external
-
-  @@map("product_type")
-  @@schema("produit")
-}
-
-enum ProductVisibility {
-  visible
-  catalog
-  search
-  hidden
-
-  @@map("product_visibility")
-  @@schema("produit")
-}
-
 model cross_ref {
   crf_id                Int       @default(autoincrement())
   fk_product            Int
@@ -65,11 +45,11 @@ model kit_attribute {
   fk_attribute_characteristic                                    Int
   fk_attribute_unite                                             Int?
   kat_value                                                      String?    @cenov_dev_db.VarChar(50)
-  kat_visible                                                    Boolean?   @default(true)
-  kat_global                                                     Boolean?   @default(true)
   created_at                                                     DateTime?  @default(now()) @cenov_dev_db.Timestamp(6)
   updated_at                                                     DateTime?  @default(now()) @cenov_dev_db.Timestamp(6)
   kat_id                                                         Int        @id @default(autoincrement())
+  kat_global                                                     Boolean?   @default(true)
+  kat_visible                                                    Boolean?   @default(true)
   attribute_kit_attribute_fk_attribute_characteristicToattribute attribute  @relation("kit_attribute_fk_attribute_characteristicToattribute", fields: [fk_attribute_characteristic], references: [atr_id], onDelete: NoAction, onUpdate: NoAction, map: "kit_attribute_fk_attribute_carac_fkey")
   attribute_kit_attribute_fk_attribute_uniteToattribute          attribute? @relation("kit_attribute_fk_attribute_uniteToattribute", fields: [fk_attribute_unite], references: [atr_id], onDelete: Cascade, onUpdate: NoAction, map: "kit_attribute_fk_attribute_fkey")
   kit                                                            kit        @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction)
@@ -156,33 +136,33 @@ model price_purchase {
 }
 
 model product {
-  pro_id           Int                @id @default(autoincrement())
-  pro_code         String?            @cenov_dev_db.VarChar(50)
-  fk_supplier      Int?
-  fk_kit           Int?
-  fk_family        Int?
-  sup_label        String?            @cenov_dev_db.VarChar(70)
-  sup_code         String?            @cenov_dev_db.VarChar(100)
-  created_at       DateTime?          @default(now()) @cenov_dev_db.Timestamp(6)
-  updated_at       DateTime?          @default(now()) @cenov_dev_db.Timestamp(6)
-  pro_cenov_id     String?            @unique @cenov_dev_db.VarChar(50)
-  fk_ssfamily      Int?
-  fk_sfamily       Int?
-  cat_code         String?            @cenov_dev_db.VarChar(50)
-  pro_type              ProductType       @default(simple)
-  pro_name              String?           @cenov_dev_db.VarChar(255)
-  is_published          Boolean           @default(false)
-  is_featured           Boolean           @default(false)
-  pro_visibility        ProductVisibility @default(visible)
-  pro_short_description String?   @cenov_dev_db.Text
-  pro_description       String?   @cenov_dev_db.Text
-  in_stock              Boolean   @default(true)
-  cross_ref        cross_ref[]
-  price_purchase   price_purchase[]
-  kit              kit?               @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction, map: "product_fk_kit_fkey")
-  supplier         supplier?          @relation(fields: [fk_supplier], references: [sup_id], onDelete: NoAction, onUpdate: NoAction, map: "product_fk_supplier_fkey")
-  product_category product_category[]
-  document         document[]
+  pro_id                Int                @id @default(autoincrement())
+  pro_code              String?            @cenov_dev_db.VarChar(50)
+  fk_supplier           Int?
+  fk_kit                Int?
+  fk_family             Int?
+  sup_label             String?            @cenov_dev_db.VarChar(70)
+  sup_code              String?            @cenov_dev_db.VarChar(100)
+  created_at            DateTime?          @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at            DateTime?          @default(now()) @cenov_dev_db.Timestamp(6)
+  pro_cenov_id          String?            @unique @cenov_dev_db.VarChar(50)
+  fk_ssfamily           Int?
+  fk_sfamily            Int?
+  cat_code              String?            @cenov_dev_db.VarChar(50)
+  in_stock              Boolean            @default(true)
+  is_featured           Boolean            @default(false)
+  is_published          Boolean            @default(false)
+  pro_description       String?
+  pro_name              String?            @cenov_dev_db.VarChar(255)
+  pro_short_description String?
+  pro_type              ProductType        @default(simple)
+  pro_visibility        ProductVisibility  @default(visible)
+  cross_ref             cross_ref[]
+  price_purchase        price_purchase[]
+  kit                   kit?               @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction, map: "product_fk_kit_fkey")
+  supplier              supplier?          @relation(fields: [fk_supplier], references: [sup_id], onDelete: NoAction, onUpdate: NoAction, map: "product_fk_supplier_fkey")
+  product_category      product_category[]
+  document              document[]
 
   @@unique([fk_supplier, pro_code])
   @@schema("produit")
@@ -352,5 +332,25 @@ view v_price_purchase {
   sup_id        Int?
   fk_document   Int?
 
+  @@schema("produit")
+}
+
+enum ProductType {
+  simple
+  variable
+  grouped
+  external
+
+  @@map("product_type")
+  @@schema("produit")
+}
+
+enum ProductVisibility {
+  visible
+  catalog
+  search
+  hidden
+
+  @@map("product_visibility")
   @@schema("produit")
 }

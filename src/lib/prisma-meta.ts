@@ -221,8 +221,14 @@ async function createDatabases(): Promise<DatabaseConfig> {
 
 	try {
 		cenovSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov/schema.prisma'), 'utf-8');
-		devSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'), 'utf-8');
-		preprodSchema = await fs.readFile(path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'), 'utf-8');
+		devSchema = await fs.readFile(
+			path.join(projectRoot, 'prisma/cenov_dev/schema.prisma'),
+			'utf-8'
+		);
+		preprodSchema = await fs.readFile(
+			path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'),
+			'utf-8'
+		);
 		console.log('[PRISMA-META] Schémas chargés avec succès depuis:', projectRoot);
 	} catch (error) {
 		console.warn('[PRISMA-META] Erreur lecture schema.prisma depuis', projectRoot, ':', error);

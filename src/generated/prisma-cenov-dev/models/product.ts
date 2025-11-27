@@ -57,14 +57,14 @@ export type ProductMinAggregateOutputType = {
 	fk_ssfamily: number | null;
 	fk_sfamily: number | null;
 	cat_code: string | null;
-	pro_type: $Enums.ProductType | null;
-	pro_name: string | null;
-	is_published: boolean | null;
-	is_featured: boolean | null;
-	pro_visibility: $Enums.ProductVisibility | null;
-	pro_short_description: string | null;
-	pro_description: string | null;
 	in_stock: boolean | null;
+	is_featured: boolean | null;
+	is_published: boolean | null;
+	pro_description: string | null;
+	pro_name: string | null;
+	pro_short_description: string | null;
+	pro_type: $Enums.ProductType | null;
+	pro_visibility: $Enums.ProductVisibility | null;
 };
 
 export type ProductMaxAggregateOutputType = {
@@ -81,14 +81,14 @@ export type ProductMaxAggregateOutputType = {
 	fk_ssfamily: number | null;
 	fk_sfamily: number | null;
 	cat_code: string | null;
-	pro_type: $Enums.ProductType | null;
-	pro_name: string | null;
-	is_published: boolean | null;
-	is_featured: boolean | null;
-	pro_visibility: $Enums.ProductVisibility | null;
-	pro_short_description: string | null;
-	pro_description: string | null;
 	in_stock: boolean | null;
+	is_featured: boolean | null;
+	is_published: boolean | null;
+	pro_description: string | null;
+	pro_name: string | null;
+	pro_short_description: string | null;
+	pro_type: $Enums.ProductType | null;
+	pro_visibility: $Enums.ProductVisibility | null;
 };
 
 export type ProductCountAggregateOutputType = {
@@ -105,14 +105,14 @@ export type ProductCountAggregateOutputType = {
 	fk_ssfamily: number;
 	fk_sfamily: number;
 	cat_code: number;
-	pro_type: number;
-	pro_name: number;
-	is_published: number;
-	is_featured: number;
-	pro_visibility: number;
-	pro_short_description: number;
-	pro_description: number;
 	in_stock: number;
+	is_featured: number;
+	is_published: number;
+	pro_description: number;
+	pro_name: number;
+	pro_short_description: number;
+	pro_type: number;
+	pro_visibility: number;
 	_all: number;
 };
 
@@ -148,14 +148,14 @@ export type ProductMinAggregateInputType = {
 	fk_ssfamily?: true;
 	fk_sfamily?: true;
 	cat_code?: true;
-	pro_type?: true;
-	pro_name?: true;
-	is_published?: true;
-	is_featured?: true;
-	pro_visibility?: true;
-	pro_short_description?: true;
-	pro_description?: true;
 	in_stock?: true;
+	is_featured?: true;
+	is_published?: true;
+	pro_description?: true;
+	pro_name?: true;
+	pro_short_description?: true;
+	pro_type?: true;
+	pro_visibility?: true;
 };
 
 export type ProductMaxAggregateInputType = {
@@ -172,14 +172,14 @@ export type ProductMaxAggregateInputType = {
 	fk_ssfamily?: true;
 	fk_sfamily?: true;
 	cat_code?: true;
-	pro_type?: true;
-	pro_name?: true;
-	is_published?: true;
-	is_featured?: true;
-	pro_visibility?: true;
-	pro_short_description?: true;
-	pro_description?: true;
 	in_stock?: true;
+	is_featured?: true;
+	is_published?: true;
+	pro_description?: true;
+	pro_name?: true;
+	pro_short_description?: true;
+	pro_type?: true;
+	pro_visibility?: true;
 };
 
 export type ProductCountAggregateInputType = {
@@ -196,14 +196,14 @@ export type ProductCountAggregateInputType = {
 	fk_ssfamily?: true;
 	fk_sfamily?: true;
 	cat_code?: true;
-	pro_type?: true;
-	pro_name?: true;
-	is_published?: true;
-	is_featured?: true;
-	pro_visibility?: true;
-	pro_short_description?: true;
-	pro_description?: true;
 	in_stock?: true;
+	is_featured?: true;
+	is_published?: true;
+	pro_description?: true;
+	pro_name?: true;
+	pro_short_description?: true;
+	pro_type?: true;
+	pro_visibility?: true;
 	_all?: true;
 };
 
@@ -308,14 +308,14 @@ export type ProductGroupByOutputType = {
 	fk_ssfamily: number | null;
 	fk_sfamily: number | null;
 	cat_code: string | null;
-	pro_type: $Enums.ProductType;
-	pro_name: string | null;
-	is_published: boolean;
-	is_featured: boolean;
-	pro_visibility: $Enums.ProductVisibility;
-	pro_short_description: string | null;
-	pro_description: string | null;
 	in_stock: boolean;
+	is_featured: boolean;
+	is_published: boolean;
+	pro_description: string | null;
+	pro_name: string | null;
+	pro_short_description: string | null;
+	pro_type: $Enums.ProductType;
+	pro_visibility: $Enums.ProductVisibility;
 	_count: ProductCountAggregateOutputType | null;
 	_avg: ProductAvgAggregateOutputType | null;
 	_sum: ProductSumAggregateOutputType | null;
@@ -352,14 +352,14 @@ export type productWhereInput = {
 	fk_ssfamily?: Prisma.IntNullableFilter<'product'> | number | null;
 	fk_sfamily?: Prisma.IntNullableFilter<'product'> | number | null;
 	cat_code?: Prisma.StringNullableFilter<'product'> | string | null;
-	pro_type?: Prisma.EnumProductTypeFilter<'product'> | $Enums.ProductType;
-	pro_name?: Prisma.StringNullableFilter<'product'> | string | null;
-	is_published?: Prisma.BoolFilter<'product'> | boolean;
-	is_featured?: Prisma.BoolFilter<'product'> | boolean;
-	pro_visibility?: Prisma.EnumProductVisibilityFilter<'product'> | $Enums.ProductVisibility;
-	pro_short_description?: Prisma.StringNullableFilter<'product'> | string | null;
-	pro_description?: Prisma.StringNullableFilter<'product'> | string | null;
 	in_stock?: Prisma.BoolFilter<'product'> | boolean;
+	is_featured?: Prisma.BoolFilter<'product'> | boolean;
+	is_published?: Prisma.BoolFilter<'product'> | boolean;
+	pro_description?: Prisma.StringNullableFilter<'product'> | string | null;
+	pro_name?: Prisma.StringNullableFilter<'product'> | string | null;
+	pro_short_description?: Prisma.StringNullableFilter<'product'> | string | null;
+	pro_type?: Prisma.EnumProductTypeFilter<'product'> | $Enums.ProductType;
+	pro_visibility?: Prisma.EnumProductVisibilityFilter<'product'> | $Enums.ProductVisibility;
 	cross_ref?: Prisma.Cross_refListRelationFilter;
 	price_purchase?: Prisma.Price_purchaseListRelationFilter;
 	kit?: Prisma.XOR<Prisma.KitNullableScalarRelationFilter, Prisma.kitWhereInput> | null;
@@ -385,14 +385,14 @@ export type productOrderByWithRelationInput = {
 	fk_ssfamily?: Prisma.SortOrderInput | Prisma.SortOrder;
 	fk_sfamily?: Prisma.SortOrderInput | Prisma.SortOrder;
 	cat_code?: Prisma.SortOrderInput | Prisma.SortOrder;
-	pro_type?: Prisma.SortOrder;
-	pro_name?: Prisma.SortOrderInput | Prisma.SortOrder;
-	is_published?: Prisma.SortOrder;
-	is_featured?: Prisma.SortOrder;
-	pro_visibility?: Prisma.SortOrder;
-	pro_short_description?: Prisma.SortOrderInput | Prisma.SortOrder;
-	pro_description?: Prisma.SortOrderInput | Prisma.SortOrder;
 	in_stock?: Prisma.SortOrder;
+	is_featured?: Prisma.SortOrder;
+	is_published?: Prisma.SortOrder;
+	pro_description?: Prisma.SortOrderInput | Prisma.SortOrder;
+	pro_name?: Prisma.SortOrderInput | Prisma.SortOrder;
+	pro_short_description?: Prisma.SortOrderInput | Prisma.SortOrder;
+	pro_type?: Prisma.SortOrder;
+	pro_visibility?: Prisma.SortOrder;
 	cross_ref?: Prisma.cross_refOrderByRelationAggregateInput;
 	price_purchase?: Prisma.price_purchaseOrderByRelationAggregateInput;
 	kit?: Prisma.kitOrderByWithRelationInput;
@@ -420,14 +420,14 @@ export type productWhereUniqueInput = Prisma.AtLeast<
 		fk_ssfamily?: Prisma.IntNullableFilter<'product'> | number | null;
 		fk_sfamily?: Prisma.IntNullableFilter<'product'> | number | null;
 		cat_code?: Prisma.StringNullableFilter<'product'> | string | null;
-		pro_type?: Prisma.EnumProductTypeFilter<'product'> | $Enums.ProductType;
-		pro_name?: Prisma.StringNullableFilter<'product'> | string | null;
-		is_published?: Prisma.BoolFilter<'product'> | boolean;
-		is_featured?: Prisma.BoolFilter<'product'> | boolean;
-		pro_visibility?: Prisma.EnumProductVisibilityFilter<'product'> | $Enums.ProductVisibility;
-		pro_short_description?: Prisma.StringNullableFilter<'product'> | string | null;
-		pro_description?: Prisma.StringNullableFilter<'product'> | string | null;
 		in_stock?: Prisma.BoolFilter<'product'> | boolean;
+		is_featured?: Prisma.BoolFilter<'product'> | boolean;
+		is_published?: Prisma.BoolFilter<'product'> | boolean;
+		pro_description?: Prisma.StringNullableFilter<'product'> | string | null;
+		pro_name?: Prisma.StringNullableFilter<'product'> | string | null;
+		pro_short_description?: Prisma.StringNullableFilter<'product'> | string | null;
+		pro_type?: Prisma.EnumProductTypeFilter<'product'> | $Enums.ProductType;
+		pro_visibility?: Prisma.EnumProductVisibilityFilter<'product'> | $Enums.ProductVisibility;
 		cross_ref?: Prisma.Cross_refListRelationFilter;
 		price_purchase?: Prisma.Price_purchaseListRelationFilter;
 		kit?: Prisma.XOR<Prisma.KitNullableScalarRelationFilter, Prisma.kitWhereInput> | null;
@@ -455,14 +455,14 @@ export type productOrderByWithAggregationInput = {
 	fk_ssfamily?: Prisma.SortOrderInput | Prisma.SortOrder;
 	fk_sfamily?: Prisma.SortOrderInput | Prisma.SortOrder;
 	cat_code?: Prisma.SortOrderInput | Prisma.SortOrder;
-	pro_type?: Prisma.SortOrder;
-	pro_name?: Prisma.SortOrderInput | Prisma.SortOrder;
-	is_published?: Prisma.SortOrder;
-	is_featured?: Prisma.SortOrder;
-	pro_visibility?: Prisma.SortOrder;
-	pro_short_description?: Prisma.SortOrderInput | Prisma.SortOrder;
-	pro_description?: Prisma.SortOrderInput | Prisma.SortOrder;
 	in_stock?: Prisma.SortOrder;
+	is_featured?: Prisma.SortOrder;
+	is_published?: Prisma.SortOrder;
+	pro_description?: Prisma.SortOrderInput | Prisma.SortOrder;
+	pro_name?: Prisma.SortOrderInput | Prisma.SortOrder;
+	pro_short_description?: Prisma.SortOrderInput | Prisma.SortOrder;
+	pro_type?: Prisma.SortOrder;
+	pro_visibility?: Prisma.SortOrder;
 	_count?: Prisma.productCountOrderByAggregateInput;
 	_avg?: Prisma.productAvgOrderByAggregateInput;
 	_max?: Prisma.productMaxOrderByAggregateInput;
@@ -491,16 +491,16 @@ export type productScalarWhereWithAggregatesInput = {
 	fk_ssfamily?: Prisma.IntNullableWithAggregatesFilter<'product'> | number | null;
 	fk_sfamily?: Prisma.IntNullableWithAggregatesFilter<'product'> | number | null;
 	cat_code?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
-	pro_type?: Prisma.EnumProductTypeWithAggregatesFilter<'product'> | $Enums.ProductType;
-	pro_name?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
-	is_published?: Prisma.BoolWithAggregatesFilter<'product'> | boolean;
+	in_stock?: Prisma.BoolWithAggregatesFilter<'product'> | boolean;
 	is_featured?: Prisma.BoolWithAggregatesFilter<'product'> | boolean;
+	is_published?: Prisma.BoolWithAggregatesFilter<'product'> | boolean;
+	pro_description?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
+	pro_name?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
+	pro_short_description?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
+	pro_type?: Prisma.EnumProductTypeWithAggregatesFilter<'product'> | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityWithAggregatesFilter<'product'>
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
-	pro_description?: Prisma.StringNullableWithAggregatesFilter<'product'> | string | null;
-	in_stock?: Prisma.BoolWithAggregatesFilter<'product'> | boolean;
 };
 
 export type productCreateInput = {
@@ -514,14 +514,14 @@ export type productCreateInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseCreateNestedManyWithoutProductInput;
 	kit?: Prisma.kitCreateNestedOneWithoutProductInput;
@@ -544,14 +544,14 @@ export type productUncheckedCreateInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refUncheckedCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseUncheckedCreateNestedManyWithoutProductInput;
 	product_category?: Prisma.product_categoryUncheckedCreateNestedManyWithoutProductInput;
@@ -569,16 +569,16 @@ export type productUpdateInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUpdateManyWithoutProductNestedInput;
 	kit?: Prisma.kitUpdateOneWithoutProductNestedInput;
@@ -601,16 +601,16 @@ export type productUncheckedUpdateInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUncheckedUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUncheckedUpdateManyWithoutProductNestedInput;
 	product_category?: Prisma.product_categoryUncheckedUpdateManyWithoutProductNestedInput;
@@ -631,14 +631,14 @@ export type productCreateManyInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 };
 
 export type productUpdateManyMutationInput = {
@@ -652,16 +652,16 @@ export type productUpdateManyMutationInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 export type productUncheckedUpdateManyInput = {
@@ -678,16 +678,16 @@ export type productUncheckedUpdateManyInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 export type ProductScalarRelationFilter = {
@@ -724,14 +724,14 @@ export type productCountOrderByAggregateInput = {
 	fk_ssfamily?: Prisma.SortOrder;
 	fk_sfamily?: Prisma.SortOrder;
 	cat_code?: Prisma.SortOrder;
-	pro_type?: Prisma.SortOrder;
-	pro_name?: Prisma.SortOrder;
-	is_published?: Prisma.SortOrder;
-	is_featured?: Prisma.SortOrder;
-	pro_visibility?: Prisma.SortOrder;
-	pro_short_description?: Prisma.SortOrder;
-	pro_description?: Prisma.SortOrder;
 	in_stock?: Prisma.SortOrder;
+	is_featured?: Prisma.SortOrder;
+	is_published?: Prisma.SortOrder;
+	pro_description?: Prisma.SortOrder;
+	pro_name?: Prisma.SortOrder;
+	pro_short_description?: Prisma.SortOrder;
+	pro_type?: Prisma.SortOrder;
+	pro_visibility?: Prisma.SortOrder;
 };
 
 export type productAvgOrderByAggregateInput = {
@@ -757,14 +757,14 @@ export type productMaxOrderByAggregateInput = {
 	fk_ssfamily?: Prisma.SortOrder;
 	fk_sfamily?: Prisma.SortOrder;
 	cat_code?: Prisma.SortOrder;
-	pro_type?: Prisma.SortOrder;
-	pro_name?: Prisma.SortOrder;
-	is_published?: Prisma.SortOrder;
-	is_featured?: Prisma.SortOrder;
-	pro_visibility?: Prisma.SortOrder;
-	pro_short_description?: Prisma.SortOrder;
-	pro_description?: Prisma.SortOrder;
 	in_stock?: Prisma.SortOrder;
+	is_featured?: Prisma.SortOrder;
+	is_published?: Prisma.SortOrder;
+	pro_description?: Prisma.SortOrder;
+	pro_name?: Prisma.SortOrder;
+	pro_short_description?: Prisma.SortOrder;
+	pro_type?: Prisma.SortOrder;
+	pro_visibility?: Prisma.SortOrder;
 };
 
 export type productMinOrderByAggregateInput = {
@@ -781,14 +781,14 @@ export type productMinOrderByAggregateInput = {
 	fk_ssfamily?: Prisma.SortOrder;
 	fk_sfamily?: Prisma.SortOrder;
 	cat_code?: Prisma.SortOrder;
-	pro_type?: Prisma.SortOrder;
-	pro_name?: Prisma.SortOrder;
-	is_published?: Prisma.SortOrder;
-	is_featured?: Prisma.SortOrder;
-	pro_visibility?: Prisma.SortOrder;
-	pro_short_description?: Prisma.SortOrder;
-	pro_description?: Prisma.SortOrder;
 	in_stock?: Prisma.SortOrder;
+	is_featured?: Prisma.SortOrder;
+	is_published?: Prisma.SortOrder;
+	pro_description?: Prisma.SortOrder;
+	pro_name?: Prisma.SortOrder;
+	pro_short_description?: Prisma.SortOrder;
+	pro_type?: Prisma.SortOrder;
+	pro_visibility?: Prisma.SortOrder;
 };
 
 export type productSumOrderByAggregateInput = {
@@ -931,12 +931,12 @@ export type productUpdateOneRequiredWithoutPrice_purchaseNestedInput = {
 	>;
 };
 
-export type EnumProductTypeFieldUpdateOperationsInput = {
-	set?: $Enums.ProductType;
-};
-
 export type BoolFieldUpdateOperationsInput = {
 	set?: boolean;
+};
+
+export type EnumProductTypeFieldUpdateOperationsInput = {
+	set?: $Enums.ProductType;
 };
 
 export type EnumProductVisibilityFieldUpdateOperationsInput = {
@@ -1094,14 +1094,14 @@ export type productCreateWithoutCross_refInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	price_purchase?: Prisma.price_purchaseCreateNestedManyWithoutProductInput;
 	kit?: Prisma.kitCreateNestedOneWithoutProductInput;
 	supplier?: Prisma.supplierCreateNestedOneWithoutProductInput;
@@ -1123,14 +1123,14 @@ export type productUncheckedCreateWithoutCross_refInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	price_purchase?: Prisma.price_purchaseUncheckedCreateNestedManyWithoutProductInput;
 	product_category?: Prisma.product_categoryUncheckedCreateNestedManyWithoutProductInput;
 	document?: Prisma.documentUncheckedCreateNestedManyWithoutProductInput;
@@ -1175,16 +1175,16 @@ export type productUpdateWithoutCross_refInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	price_purchase?: Prisma.price_purchaseUpdateManyWithoutProductNestedInput;
 	kit?: Prisma.kitUpdateOneWithoutProductNestedInput;
 	supplier?: Prisma.supplierUpdateOneWithoutProductNestedInput;
@@ -1206,16 +1206,16 @@ export type productUncheckedUpdateWithoutCross_refInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	price_purchase?: Prisma.price_purchaseUncheckedUpdateManyWithoutProductNestedInput;
 	product_category?: Prisma.product_categoryUncheckedUpdateManyWithoutProductNestedInput;
 	document?: Prisma.documentUncheckedUpdateManyWithoutProductNestedInput;
@@ -1232,14 +1232,14 @@ export type productCreateWithoutKitInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseCreateNestedManyWithoutProductInput;
 	supplier?: Prisma.supplierCreateNestedOneWithoutProductInput;
@@ -1260,14 +1260,14 @@ export type productUncheckedCreateWithoutKitInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refUncheckedCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseUncheckedCreateNestedManyWithoutProductInput;
 	product_category?: Prisma.product_categoryUncheckedCreateNestedManyWithoutProductInput;
@@ -1332,14 +1332,14 @@ export type productScalarWhereInput = {
 	fk_ssfamily?: Prisma.IntNullableFilter<'product'> | number | null;
 	fk_sfamily?: Prisma.IntNullableFilter<'product'> | number | null;
 	cat_code?: Prisma.StringNullableFilter<'product'> | string | null;
-	pro_type?: Prisma.EnumProductTypeFilter<'product'> | $Enums.ProductType;
-	pro_name?: Prisma.StringNullableFilter<'product'> | string | null;
-	is_published?: Prisma.BoolFilter<'product'> | boolean;
-	is_featured?: Prisma.BoolFilter<'product'> | boolean;
-	pro_visibility?: Prisma.EnumProductVisibilityFilter<'product'> | $Enums.ProductVisibility;
-	pro_short_description?: Prisma.StringNullableFilter<'product'> | string | null;
-	pro_description?: Prisma.StringNullableFilter<'product'> | string | null;
 	in_stock?: Prisma.BoolFilter<'product'> | boolean;
+	is_featured?: Prisma.BoolFilter<'product'> | boolean;
+	is_published?: Prisma.BoolFilter<'product'> | boolean;
+	pro_description?: Prisma.StringNullableFilter<'product'> | string | null;
+	pro_name?: Prisma.StringNullableFilter<'product'> | string | null;
+	pro_short_description?: Prisma.StringNullableFilter<'product'> | string | null;
+	pro_type?: Prisma.EnumProductTypeFilter<'product'> | $Enums.ProductType;
+	pro_visibility?: Prisma.EnumProductVisibilityFilter<'product'> | $Enums.ProductVisibility;
 };
 
 export type productCreateWithoutPrice_purchaseInput = {
@@ -1353,14 +1353,14 @@ export type productCreateWithoutPrice_purchaseInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refCreateNestedManyWithoutProductInput;
 	kit?: Prisma.kitCreateNestedOneWithoutProductInput;
 	supplier?: Prisma.supplierCreateNestedOneWithoutProductInput;
@@ -1382,14 +1382,14 @@ export type productUncheckedCreateWithoutPrice_purchaseInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refUncheckedCreateNestedManyWithoutProductInput;
 	product_category?: Prisma.product_categoryUncheckedCreateNestedManyWithoutProductInput;
 	document?: Prisma.documentUncheckedCreateNestedManyWithoutProductInput;
@@ -1434,16 +1434,16 @@ export type productUpdateWithoutPrice_purchaseInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUpdateManyWithoutProductNestedInput;
 	kit?: Prisma.kitUpdateOneWithoutProductNestedInput;
 	supplier?: Prisma.supplierUpdateOneWithoutProductNestedInput;
@@ -1465,16 +1465,16 @@ export type productUncheckedUpdateWithoutPrice_purchaseInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUncheckedUpdateManyWithoutProductNestedInput;
 	product_category?: Prisma.product_categoryUncheckedUpdateManyWithoutProductNestedInput;
 	document?: Prisma.documentUncheckedUpdateManyWithoutProductNestedInput;
@@ -1491,14 +1491,14 @@ export type productCreateWithoutProduct_categoryInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseCreateNestedManyWithoutProductInput;
 	kit?: Prisma.kitCreateNestedOneWithoutProductInput;
@@ -1520,14 +1520,14 @@ export type productUncheckedCreateWithoutProduct_categoryInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refUncheckedCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseUncheckedCreateNestedManyWithoutProductInput;
 	document?: Prisma.documentUncheckedCreateNestedManyWithoutProductInput;
@@ -1572,16 +1572,16 @@ export type productUpdateWithoutProduct_categoryInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUpdateManyWithoutProductNestedInput;
 	kit?: Prisma.kitUpdateOneWithoutProductNestedInput;
@@ -1603,16 +1603,16 @@ export type productUncheckedUpdateWithoutProduct_categoryInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUncheckedUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUncheckedUpdateManyWithoutProductNestedInput;
 	document?: Prisma.documentUncheckedUpdateManyWithoutProductNestedInput;
@@ -1629,14 +1629,14 @@ export type productCreateWithoutSupplierInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseCreateNestedManyWithoutProductInput;
 	kit?: Prisma.kitCreateNestedOneWithoutProductInput;
@@ -1657,14 +1657,14 @@ export type productUncheckedCreateWithoutSupplierInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refUncheckedCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseUncheckedCreateNestedManyWithoutProductInput;
 	product_category?: Prisma.product_categoryUncheckedCreateNestedManyWithoutProductInput;
@@ -1723,14 +1723,14 @@ export type productCreateWithoutDocumentInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseCreateNestedManyWithoutProductInput;
 	kit?: Prisma.kitCreateNestedOneWithoutProductInput;
@@ -1752,14 +1752,14 @@ export type productUncheckedCreateWithoutDocumentInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 	cross_ref?: Prisma.cross_refUncheckedCreateNestedManyWithoutProductInput;
 	price_purchase?: Prisma.price_purchaseUncheckedCreateNestedManyWithoutProductInput;
 	product_category?: Prisma.product_categoryUncheckedCreateNestedManyWithoutProductInput;
@@ -1804,16 +1804,16 @@ export type productUpdateWithoutDocumentInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUpdateManyWithoutProductNestedInput;
 	kit?: Prisma.kitUpdateOneWithoutProductNestedInput;
@@ -1835,16 +1835,16 @@ export type productUncheckedUpdateWithoutDocumentInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUncheckedUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUncheckedUpdateManyWithoutProductNestedInput;
 	product_category?: Prisma.product_categoryUncheckedUpdateManyWithoutProductNestedInput;
@@ -1863,14 +1863,14 @@ export type productCreateManyKitInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 };
 
 export type productUpdateWithoutKitInput = {
@@ -1884,16 +1884,16 @@ export type productUpdateWithoutKitInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUpdateManyWithoutProductNestedInput;
 	supplier?: Prisma.supplierUpdateOneWithoutProductNestedInput;
@@ -1914,16 +1914,16 @@ export type productUncheckedUpdateWithoutKitInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUncheckedUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUncheckedUpdateManyWithoutProductNestedInput;
 	product_category?: Prisma.product_categoryUncheckedUpdateManyWithoutProductNestedInput;
@@ -1943,16 +1943,16 @@ export type productUncheckedUpdateManyWithoutKitInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 export type productCreateManySupplierInput = {
@@ -1968,14 +1968,14 @@ export type productCreateManySupplierInput = {
 	fk_ssfamily?: number | null;
 	fk_sfamily?: number | null;
 	cat_code?: string | null;
-	pro_type?: $Enums.ProductType;
-	pro_name?: string | null;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: $Enums.ProductVisibility;
-	pro_short_description?: string | null;
-	pro_description?: string | null;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: string | null;
+	pro_name?: string | null;
+	pro_short_description?: string | null;
+	pro_type?: $Enums.ProductType;
+	pro_visibility?: $Enums.ProductVisibility;
 };
 
 export type productUpdateWithoutSupplierInput = {
@@ -1989,16 +1989,16 @@ export type productUpdateWithoutSupplierInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUpdateManyWithoutProductNestedInput;
 	kit?: Prisma.kitUpdateOneWithoutProductNestedInput;
@@ -2019,16 +2019,16 @@ export type productUncheckedUpdateWithoutSupplierInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	cross_ref?: Prisma.cross_refUncheckedUpdateManyWithoutProductNestedInput;
 	price_purchase?: Prisma.price_purchaseUncheckedUpdateManyWithoutProductNestedInput;
 	product_category?: Prisma.product_categoryUncheckedUpdateManyWithoutProductNestedInput;
@@ -2048,16 +2048,16 @@ export type productUncheckedUpdateManyWithoutSupplierInput = {
 	fk_ssfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	fk_sfamily?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	cat_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
-	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	is_featured?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	is_published?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	pro_type?: Prisma.EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType;
 	pro_visibility?:
 		| Prisma.EnumProductVisibilityFieldUpdateOperationsInput
 		| $Enums.ProductVisibility;
-	pro_short_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	pro_description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	in_stock?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 };
 
 /**
@@ -2145,14 +2145,14 @@ export type productSelect<
 		fk_ssfamily?: boolean;
 		fk_sfamily?: boolean;
 		cat_code?: boolean;
-		pro_type?: boolean;
-		pro_name?: boolean;
-		is_published?: boolean;
-		is_featured?: boolean;
-		pro_visibility?: boolean;
-		pro_short_description?: boolean;
-		pro_description?: boolean;
 		in_stock?: boolean;
+		is_featured?: boolean;
+		is_published?: boolean;
+		pro_description?: boolean;
+		pro_name?: boolean;
+		pro_short_description?: boolean;
+		pro_type?: boolean;
+		pro_visibility?: boolean;
 		cross_ref?: boolean | Prisma.product$cross_refArgs<ExtArgs>;
 		price_purchase?: boolean | Prisma.product$price_purchaseArgs<ExtArgs>;
 		kit?: boolean | Prisma.product$kitArgs<ExtArgs>;
@@ -2181,14 +2181,14 @@ export type productSelectCreateManyAndReturn<
 		fk_ssfamily?: boolean;
 		fk_sfamily?: boolean;
 		cat_code?: boolean;
-		pro_type?: boolean;
-		pro_name?: boolean;
-		is_published?: boolean;
-		is_featured?: boolean;
-		pro_visibility?: boolean;
-		pro_short_description?: boolean;
-		pro_description?: boolean;
 		in_stock?: boolean;
+		is_featured?: boolean;
+		is_published?: boolean;
+		pro_description?: boolean;
+		pro_name?: boolean;
+		pro_short_description?: boolean;
+		pro_type?: boolean;
+		pro_visibility?: boolean;
 		kit?: boolean | Prisma.product$kitArgs<ExtArgs>;
 		supplier?: boolean | Prisma.product$supplierArgs<ExtArgs>;
 	},
@@ -2212,14 +2212,14 @@ export type productSelectUpdateManyAndReturn<
 		fk_ssfamily?: boolean;
 		fk_sfamily?: boolean;
 		cat_code?: boolean;
-		pro_type?: boolean;
-		pro_name?: boolean;
-		is_published?: boolean;
-		is_featured?: boolean;
-		pro_visibility?: boolean;
-		pro_short_description?: boolean;
-		pro_description?: boolean;
 		in_stock?: boolean;
+		is_featured?: boolean;
+		is_published?: boolean;
+		pro_description?: boolean;
+		pro_name?: boolean;
+		pro_short_description?: boolean;
+		pro_type?: boolean;
+		pro_visibility?: boolean;
 		kit?: boolean | Prisma.product$kitArgs<ExtArgs>;
 		supplier?: boolean | Prisma.product$supplierArgs<ExtArgs>;
 	},
@@ -2240,14 +2240,14 @@ export type productSelectScalar = {
 	fk_ssfamily?: boolean;
 	fk_sfamily?: boolean;
 	cat_code?: boolean;
-	pro_type?: boolean;
-	pro_name?: boolean;
-	is_published?: boolean;
-	is_featured?: boolean;
-	pro_visibility?: boolean;
-	pro_short_description?: boolean;
-	pro_description?: boolean;
 	in_stock?: boolean;
+	is_featured?: boolean;
+	is_published?: boolean;
+	pro_description?: boolean;
+	pro_name?: boolean;
+	pro_short_description?: boolean;
+	pro_type?: boolean;
+	pro_visibility?: boolean;
 };
 
 export type productOmit<
@@ -2266,14 +2266,14 @@ export type productOmit<
 	| 'fk_ssfamily'
 	| 'fk_sfamily'
 	| 'cat_code'
-	| 'pro_type'
-	| 'pro_name'
-	| 'is_published'
+	| 'in_stock'
 	| 'is_featured'
-	| 'pro_visibility'
-	| 'pro_short_description'
+	| 'is_published'
 	| 'pro_description'
-	| 'in_stock',
+	| 'pro_name'
+	| 'pro_short_description'
+	| 'pro_type'
+	| 'pro_visibility',
 	ExtArgs['result']['product']
 >;
 export type productInclude<
@@ -2327,14 +2327,14 @@ export type $productPayload<
 			fk_ssfamily: number | null;
 			fk_sfamily: number | null;
 			cat_code: string | null;
-			pro_type: $Enums.ProductType;
-			pro_name: string | null;
-			is_published: boolean;
-			is_featured: boolean;
-			pro_visibility: $Enums.ProductVisibility;
-			pro_short_description: string | null;
-			pro_description: string | null;
 			in_stock: boolean;
+			is_featured: boolean;
+			is_published: boolean;
+			pro_description: string | null;
+			pro_name: string | null;
+			pro_short_description: string | null;
+			pro_type: $Enums.ProductType;
+			pro_visibility: $Enums.ProductVisibility;
 		},
 		ExtArgs['result']['product']
 	>;
@@ -2964,14 +2964,14 @@ export interface productFieldRefs {
 	readonly fk_ssfamily: Prisma.FieldRef<'product', 'Int'>;
 	readonly fk_sfamily: Prisma.FieldRef<'product', 'Int'>;
 	readonly cat_code: Prisma.FieldRef<'product', 'String'>;
-	readonly pro_type: Prisma.FieldRef<'product', 'ProductType'>;
-	readonly pro_name: Prisma.FieldRef<'product', 'String'>;
-	readonly is_published: Prisma.FieldRef<'product', 'Boolean'>;
-	readonly is_featured: Prisma.FieldRef<'product', 'Boolean'>;
-	readonly pro_visibility: Prisma.FieldRef<'product', 'ProductVisibility'>;
-	readonly pro_short_description: Prisma.FieldRef<'product', 'String'>;
-	readonly pro_description: Prisma.FieldRef<'product', 'String'>;
 	readonly in_stock: Prisma.FieldRef<'product', 'Boolean'>;
+	readonly is_featured: Prisma.FieldRef<'product', 'Boolean'>;
+	readonly is_published: Prisma.FieldRef<'product', 'Boolean'>;
+	readonly pro_description: Prisma.FieldRef<'product', 'String'>;
+	readonly pro_name: Prisma.FieldRef<'product', 'String'>;
+	readonly pro_short_description: Prisma.FieldRef<'product', 'String'>;
+	readonly pro_type: Prisma.FieldRef<'product', 'ProductType'>;
+	readonly pro_visibility: Prisma.FieldRef<'product', 'ProductVisibility'>;
 }
 
 // Custom InputTypes
