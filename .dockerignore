@@ -1,0 +1,47 @@
+# Dépendances
+node_modules
+.pnpm-store
+
+# Build artifacts
+build
+.svelte-kit
+dist
+
+# Environnement local
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Tests
+coverage
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Clients Prisma générés (seront régénérés dans le build)
+src/generated
+
+# Documentation
+README.md
+CLAUDE.md
+*.md
+
+# Scripts locaux
+scripts/BDD-IA
+scripts/Script\ DMMF
+
+# Fichiers temporaires
+*.tmp
+*.temp
