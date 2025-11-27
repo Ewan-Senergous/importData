@@ -22,8 +22,14 @@ cacheDirectories = ["/root/.local/share/pnpm/store/v3"]
 [phases.build]
 dependsOn = ["install"]
 cmds = [
+    "echo '🔍 [DEBUG] Starting Prisma generation for all schemas...'",
+    "node --version && pnpm --version",
+    "echo '📦 [DEBUG] Running prisma:generate-all...'",
     "pnpm run prisma:generate-all",
-    "pnpm run build"
+    "echo '✅ [DEBUG] Prisma generation completed successfully'",
+    "echo '🏗️ [DEBUG] Starting SvelteKit build...'",
+    "pnpm run build",
+    "echo '✅ [DEBUG] Build completed successfully'"
 ]
 cacheDirectories = ["node_modules/.cache"]
 
