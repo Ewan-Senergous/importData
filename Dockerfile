@@ -1,5 +1,5 @@
 # Dockerfile minimal pour test
-FROM node:24-alpine
+FROM node:22-alpine
 
 # Installer pnpm et dépendances système
 RUN corepack enable && corepack prepare pnpm@10.23.0 --activate && \
