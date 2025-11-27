@@ -3,9 +3,13 @@ import { env } from '$env/dynamic/private';
 
 export const actions: Actions = {
 	signIn: async ({ locals }) => {
-		await locals.logtoClient.signIn(env.SECRET_REDIRECT_URI);
+		const redirect = env.SECRET_REDIRECT_URI;
+		if (!redirect) throw new Error('Missing SECRET_REDIRECT_URI environment variable');
+		await locals.logtoClient.signIn(redirect);
 	},
 	signOut: async ({ locals }) => {
-		await locals.logtoClient.signOut(env.SECRET_POST_LOGOUT_URI);
+		const postLogout = env.SECRET_POST_LOGOUT_URI;
+		if (!postLogout) throw new Error('Missing SECRET_POST_LOGOUT_URI environment variable');
+		await locals.logtoClient.signOut(postLogout);
 	}
 };
