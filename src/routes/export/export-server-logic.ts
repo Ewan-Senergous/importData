@@ -383,14 +383,15 @@ export async function generateExcelFile(
 		const worksheet = workbook.addWorksheet(sheetName);
 
 		// Configuration des colonnes avec largeur automatique
+		const shouldIncludeHeaders = config.includeHeaders !== false;
 		worksheet.columns = tableData.columns.map((col) => ({
-			header: config.includeHeaders !== false ? col : undefined,
+			header: shouldIncludeHeaders ? col : undefined,
 			key: col,
 			width: Math.max(col.length, 15)
 		}));
 
 		// Ajout des données (si en-têtes inclus, ne pas les ajouter à nouveau)
-		if (config.includeHeaders !== false) {
+		if (shouldIncludeHeaders) {
 			// Les en-têtes sont déjà dans worksheet.columns
 			// Ajouter seulement les données (garder types natifs pour Excel)
 			for (const row of tableData.data) {

@@ -99,6 +99,18 @@ pnpm check     # Type checking avec Svelte
 
 La commande `/quality-check` exécute les 3 vérifications (`lint`, `format`, `check`) et génère un rapport structuré des erreurs.
 
+**⚠️ Bug Prisma Generate - Suppression Points-virgules :**
+
+`prisma generate` formate les fichiers générés SANS points-virgules, mais `pnpm format` les rajoute automatiquement.
+
+**Comportement attendu :**
+
+1. `pnpm prisma:generate` → Fichiers générés sans `;`
+2. `pnpm format` → Rajoute automatiquement les `;`
+3. Les points-virgules réapparaissent après formatage
+
+**Action :** Aucune action nécessaire, c'est le comportement normal. Prisma et Prettier ont des styles différents.
+
 **Workflow Git avec Gitmoji :**
 
 ```bash

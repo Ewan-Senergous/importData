@@ -6,7 +6,7 @@ import { env } from '$env/dynamic/private';
 
 // Créer l'adapter PostgreSQL pour Prisma 7
 const adapter = new PrismaPg({
-	connectionString: env.DATABASE_URL!
+	connectionString: env.DATABASE_URL
 });
 
 // Créer le client Prisma avec l'adapter

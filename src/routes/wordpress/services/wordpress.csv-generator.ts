@@ -63,7 +63,7 @@ function escapeCSV(value: string | null | undefined): string {
 
 	// Si contient guillemets, virgules ou sauts de ligne → encadrer et échapper
 	if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-		return `"${str.replace(/"/g, '""')}"`;
+		return `"${str.replaceAll('"', '""')}"`;
 	}
 
 	return str;

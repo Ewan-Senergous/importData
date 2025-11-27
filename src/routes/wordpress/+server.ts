@@ -51,7 +51,7 @@ export const GET: RequestHandler = async (event) => {
 		const timestamp = new Date().toISOString().split('T')[0];
 		let filename: string;
 
-		if (productIds && productIds.length === 1 && products.length === 1) {
+		if (productIds?.length === 1 && products.length === 1) {
 			// Un seul produit : utiliser son pro_cenov_id (sku)
 			const productSku = products[0].sku || 'product';
 			filename = `${productSku}.csv`;

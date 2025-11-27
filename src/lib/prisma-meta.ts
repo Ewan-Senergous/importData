@@ -183,15 +183,15 @@ async function createDatabases(): Promise<DatabaseConfig> {
 
 	// Créer les adapters PostgreSQL pour Prisma 7
 	const cenovAdapter = new PrismaPg({
-		connectionString: env.DATABASE_URL!
+		connectionString: env.DATABASE_URL
 	});
 
 	const devAdapter = new PrismaPg({
-		connectionString: env.CENOV_DEV_DATABASE_URL!
+		connectionString: env.CENOV_DEV_DATABASE_URL
 	});
 
 	const preprodAdapter = new PrismaPg({
-		connectionString: env.CENOV_PREPROD_DATABASE_URL!
+		connectionString: env.CENOV_PREPROD_DATABASE_URL
 	});
 
 	// Créer les clients Prisma
@@ -274,14 +274,16 @@ function parseSchemaMetadata(inlineSchema: string): Map<string, ParsedModelMetad
 		const [, type, modelName, content] = blockMatch;
 
 		// Parser le schéma (@@schema("nom"))
-		const schemaMatch = content.match(/@@schema\("([^"]+)"\)/);
+		const schemaRegex = /@@schema\("([^"]+)"\)/;
+		const schemaMatch = schemaRegex.exec(content);
 		const schema = schemaMatch ? schemaMatch[1] : 'public';
 
 		// Parser la clé primaire
 		const primaryKeyFields: string[] = [];
 
 		// 1. Clé primaire composite : @@id([field1, field2])
-		const compositeIdMatch = content.match(/@@id\(\[([^\]]+)\]/);
+		const compositeIdRegex = /@@id\(\[([^\]]+)\]/;
+		const compositeIdMatch = compositeIdRegex.exec(content);
 		if (compositeIdMatch) {
 			const fields = compositeIdMatch[1].split(',').map((f) => f.trim());
 			primaryKeyFields.push(...fields);
