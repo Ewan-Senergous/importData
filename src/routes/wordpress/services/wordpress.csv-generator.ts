@@ -3,7 +3,6 @@ import type { WordPressProduct } from '../repositories/wordpress.repository';
 /**
  * Ajoute des guillemets à un header CSV SEULEMENT s'il contient des caractères spéciaux
  * Règle WordPress : guillemets pour virgule, ?, (), espaces, apostrophes (droite ' ou courbe ') - sinon pas de guillemets
- * @param header Header à éventuellement encadrer
  * @returns Header avec ou sans guillemets selon le contenu
  */
 function quoteHeaderIfNeeded(header: string): string {
