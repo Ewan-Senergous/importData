@@ -89,63 +89,8 @@
 		Export WordPress :
 	</h1>
 
-	<!-- Card Statistiques -->
-	<Card.Root variant="blanc" class="w-full max-w-none">
-		<Card.Content>
-			<!-- Section Statistiques -->
-			<div class="mb-6">
-				<h2 class="mb-4 text-xl font-semibold text-black">📊 Base de données CENOV_DEV :</h2>
-
-				<!-- Grille de statistiques -->
-				<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-					<!-- Total Produits -->
-					<div class="rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
-						<div class="text-2xl font-bold text-blue-600">{data.stats.total}</div>
-						<div class="text-sm text-blue-800">Produits</div>
-					</div>
-
-					<!-- Publiés -->
-					<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-						<div class="text-2xl font-bold text-green-600">{data.stats.published}</div>
-						<div class="text-sm text-green-800">Publiés</div>
-					</div>
-
-					<!-- En stock -->
-					<div class="rounded-lg border border-purple-200 bg-purple-50 p-4 text-center">
-						<div class="text-2xl font-bold text-purple-600">{data.stats.in_stock}</div>
-						<div class="text-sm text-purple-800">En stock</div>
-					</div>
-
-					<!-- Sans nom -->
-					<div class="rounded-lg border border-orange-200 bg-orange-50 p-4 text-center">
-						<div class="text-2xl font-bold text-orange-700">{data.stats.missing_name}</div>
-						<div class="text-sm text-orange-800">Sans nom</div>
-					</div>
-				</div>
-
-				<!-- Avertissements -->
-				{#if data.stats.missing_name > 0 || data.stats.missing_price > 0}
-					<div class="rounded-lg border border-orange-200 bg-orange-50 p-4">
-						<h3 class="mb-2 flex items-center gap-2 font-medium text-orange-800">
-							<AlertCircle class="h-5 w-5" />
-							Avertissements
-						</h3>
-						<ul class="space-y-1 text-sm text-orange-700">
-							{#if data.stats.missing_name > 0}
-								<li>• {data.stats.missing_name} produits sans nom (champ vide)</li>
-							{/if}
-							{#if data.stats.missing_price > 0}
-								<li>• {data.stats.missing_price} produits sans prix</li>
-							{/if}
-						</ul>
-					</div>
-				{/if}
-			</div>
-		</Card.Content>
-	</Card.Root>
-
 	<!-- Card Sélection des produits -->
-	<Card.Root variant="blanc" class="mt-6 w-full max-w-none">
+	<Card.Root variant="blanc" class="w-full max-w-none">
 		<Card.Content>
 			<h2 class="mb-4 text-xl font-semibold">📋 Sélection des produits :</h2>
 
@@ -232,6 +177,61 @@
 					<li>• Champ nom vide si non renseigné</li>
 					<li>• Sélection vide = export de tous les produits</li>
 				</ul>
+			</div>
+		</Card.Content>
+	</Card.Root>
+
+	<!-- Card Statistiques -->
+	<Card.Root variant="blanc" class="mt-6 w-full max-w-none">
+		<Card.Content>
+			<!-- Section Statistiques -->
+			<div class="mb-6">
+				<h2 class="mb-4 text-xl font-semibold text-black">📊 Base de données CENOV_DEV :</h2>
+
+				<!-- Grille de statistiques -->
+				<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					<!-- Total Produits -->
+					<div class="rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
+						<div class="text-2xl font-bold text-blue-600">{data.stats.total}</div>
+						<div class="text-sm text-blue-800">Produits</div>
+					</div>
+
+					<!-- Publiés -->
+					<div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
+						<div class="text-2xl font-bold text-green-600">{data.stats.published}</div>
+						<div class="text-sm text-green-800">Publiés</div>
+					</div>
+
+					<!-- En stock -->
+					<div class="rounded-lg border border-purple-200 bg-purple-50 p-4 text-center">
+						<div class="text-2xl font-bold text-purple-600">{data.stats.in_stock}</div>
+						<div class="text-sm text-purple-800">En stock</div>
+					</div>
+
+					<!-- Sans nom -->
+					<div class="rounded-lg border border-orange-200 bg-orange-50 p-4 text-center">
+						<div class="text-2xl font-bold text-orange-700">{data.stats.missing_name}</div>
+						<div class="text-sm text-orange-800">Sans nom</div>
+					</div>
+				</div>
+
+				<!-- Avertissements -->
+				{#if data.stats.missing_name > 0 || data.stats.missing_price > 0}
+					<div class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+						<h3 class="mb-2 flex items-center gap-2 font-medium text-orange-800">
+							<AlertCircle class="h-5 w-5" />
+							Avertissements
+						</h3>
+						<ul class="space-y-1 text-sm text-orange-700">
+							{#if data.stats.missing_name > 0}
+								<li>• {data.stats.missing_name} produits sans nom (champ vide)</li>
+							{/if}
+							{#if data.stats.missing_price > 0}
+								<li>• {data.stats.missing_price} produits sans prix</li>
+							{/if}
+						</ul>
+					</div>
+				{/if}
 			</div>
 		</Card.Content>
 	</Card.Root>

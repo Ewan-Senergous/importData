@@ -85,13 +85,21 @@ function validateFormData(formData: FormData): { csvContent: string; error?: str
 // ACTIONS
 // ============================================================================
 export const actions: Actions = {
-	validate: async ({ request }) => {
+	validate: async ({ request, locals }) => {
 		try {
 			const formData = await request.formData();
 			const { csvContent, error } = validateFormData(formData);
 			if (error) return fail(400, { error });
 
 			const database = (formData.get('database') as 'cenov_dev' | 'cenov_preprod') || 'cenov_dev';
+
+			// ✅ Validation : seule cenov_dev accessible si non connecté
+			const isAuthenticated = !!locals.user;
+			if (!isAuthenticated && database !== 'cenov_dev') {
+				return fail(403, {
+					error: 'Seule la base cenov_dev est accessible sans connexion.'
+				});
+			}
 
 			const parsedData: ParsedCSVData = await parseCSVContent(csvContent, database);
 			if (!parsedData.success) return fail(400, { error: parsedData.error });
@@ -158,7 +166,7 @@ export const actions: Actions = {
 		}
 	},
 
-	process: async ({ request }) => {
+	process: async ({ request, locals }) => {
 		try {
 			const formData = await request.formData();
 
@@ -168,6 +176,14 @@ export const actions: Actions = {
 			}
 
 			const database = (formData.get('database') as 'cenov_dev' | 'cenov_preprod') || 'cenov_dev';
+
+			// ✅ Validation : seule cenov_dev accessible si non connecté
+			const isAuthenticated = !!locals.user;
+			if (!isAuthenticated && database !== 'cenov_dev') {
+				return fail(403, {
+					error: 'Seule la base cenov_dev est accessible sans connexion.'
+				});
+			}
 
 			const parsedData = await parseCSVContent(csvContent, database);
 			if (!parsedData.success) {
@@ -299,18 +315,38 @@ async function loadCategoriesForDatabase(database: 'cenov_dev' | 'cenov_preprod'
 	);
 }
 
-export const load: PageServerLoad = async () => {
-	// ✅ Charger les catégories des DEUX bases en parallèle
-	const [cenovDevCategories, cenovPreprodCategories] = await Promise.all([
-		loadCategoriesForDatabase('cenov_dev'),
-		loadCategoriesForDatabase('cenov_preprod')
-	]);
+export const load: PageServerLoad = async (event) => {
+	const { locals } = event;
+	const isAuthenticated = !!locals.user;
+
+	// ✅ Charger les catégories selon l'authentification
+	const categories: Partial<
+		Record<
+			'cenov_dev' | 'cenov_preprod',
+			Array<{
+				cat_id: number;
+				cat_code: string | null;
+				cat_label: string;
+				attributeCount: number;
+			}>
+		>
+	> = {
+		cenov_dev: await loadCategoriesForDatabase('cenov_dev')
+	};
+
+	// Charger cenov_preprod seulement si authentifié
+	if (isAuthenticated) {
+		categories.cenov_preprod = await loadCategoriesForDatabase('cenov_preprod');
+	}
+
+	const allowedDatabases: Array<'cenov_dev' | 'cenov_preprod'> = isAuthenticated
+		? ['cenov_dev', 'cenov_preprod']
+		: ['cenov_dev'];
 
 	return {
 		config: CONFIG,
-		categories: {
-			cenov_dev: cenovDevCategories,
-			cenov_preprod: cenovPreprodCategories
-		}
+		categories,
+		isAuthenticated,
+		allowedDatabases
 	};
 };

@@ -60,51 +60,50 @@
 
 				<!-- Mobile menu button & auth -->
 				<div class="flex items-center space-x-2 md:hidden">
-					{#if isAuthenticated(user)}
-						<button
-							class="rounded-md p-2 hover:bg-gray-200"
-							on:click={() => (mobileMenuOpen = !mobileMenuOpen)}
-							aria-label="Menu principal"
-						>
-							{#if mobileMenuOpen}
-								<X class="h-6 w-6 text-gray-700" />
-							{:else}
-								<Menu class="h-6 w-6 text-gray-700" />
-							{/if}
-						</button>
-					{:else}
+					<button
+						class="rounded-md p-2 hover:bg-gray-200"
+						on:click={() => (mobileMenuOpen = !mobileMenuOpen)}
+						aria-label="Menu principal"
+					>
+						{#if mobileMenuOpen}
+							<X class="h-6 w-6 text-gray-700" />
+						{:else}
+							<Menu class="h-6 w-6 text-gray-700" />
+						{/if}
+					</button>
+					{#if !isAuthenticated(user)}
 						<AuthButton {user} />
 					{/if}
 				</div>
 			</div>
 
-			<!-- Desktop Navigation -->
-			{#if isAuthenticated(user)}
-				<nav class="hidden border-t border-gray-200 md:block">
-					<div class="flex space-x-8 py-3">
-						{#each navItems as item (item.href)}
-							<a
-								href={resolve(item.href)}
-								class="text-sm font-medium transition-colors hover:text-[#e31206] {$page.url
-									.pathname === item.href
-									? 'border-b-2 border-[#e31206] pb-3 text-[#e31206]'
-									: 'text-gray-600'}"
-							>
-								{item.label}
-							</a>
-						{/each}
-					</div>
-				</nav>
-			{/if}
+			<!-- Desktop Navigation - Toujours visible -->
+			<nav class="hidden border-t border-gray-200 md:block">
+				<div class="flex space-x-8 py-3">
+					{#each navItems as item (item.href)}
+						<a
+							href={resolve(item.href)}
+							class="text-sm font-medium transition-colors hover:text-[#e31206] {$page.url
+								.pathname === item.href
+								? 'border-b-2 border-[#e31206] pb-3 text-[#e31206]'
+								: 'text-gray-600'}"
+						>
+							{item.label}
+						</a>
+					{/each}
+				</div>
+			</nav>
 
-			<!-- Mobile Navigation -->
-			{#if isAuthenticated(user) && mobileMenuOpen}
+			<!-- Mobile Navigation - Toujours visible si menu ouvert -->
+			{#if mobileMenuOpen}
 				<nav class="border-t border-gray-200 bg-gray-50 md:hidden">
-					<!-- User info in mobile -->
-					<div class="border-b border-gray-200 px-4 py-3">
-						<p class="text-sm font-medium text-gray-900">Bonjour,</p>
-						<p class="truncate text-sm text-gray-600">{user?.name || 'Client'}</p>
-					</div>
+					<!-- User info in mobile (seulement si connecté) -->
+					{#if isAuthenticated(user)}
+						<div class="border-b border-gray-200 px-4 py-3">
+							<p class="text-sm font-medium text-gray-900">Bonjour,</p>
+							<p class="truncate text-sm text-gray-600">{user?.name || 'Client'}</p>
+						</div>
+					{/if}
 
 					<!-- Navigation links -->
 					<div class="py-2">

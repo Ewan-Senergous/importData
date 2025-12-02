@@ -63,12 +63,19 @@
 		form = $bindable()
 	}: {
 		data: {
-			categories: Array<{
-				cat_id: number;
-				cat_code: string;
-				cat_label: string;
-				attributeCount: number;
-			}>;
+			categories: Partial<
+				Record<
+					'cenov_dev' | 'cenov_preprod',
+					Array<{
+						cat_id: number;
+						cat_code: string;
+						cat_label: string;
+						attributeCount: number;
+					}>
+				>
+			>;
+			isAuthenticated: boolean;
+			allowedDatabases: Array<'cenov_dev' | 'cenov_preprod'>;
 		};
 		form?: { validation?: ValidationResult; result?: ImportResult; error?: string } | null;
 	} = $props();
@@ -93,11 +100,7 @@
 		cat_label: string;
 		attributeCount: number;
 	};
-	let currentCategories = $derived(
-		(data.categories as unknown as Record<'cenov_dev' | 'cenov_preprod', CategoryItem[]>)[
-			selectedDatabase
-		]
-	);
+	let currentCategories = $derived(data.categories[selectedDatabase] || []);
 
 	// Catégories filtrées pour l'autocomplétion (sur base sélectionnée)
 	let filteredCategories = $derived.by(() => {
@@ -331,6 +334,17 @@
 						d'attributs.
 					</p>
 
+					<!-- ✅ Message d'information si non connecté -->
+					{#if !data.isAuthenticated}
+						<Alert.Root class="mb-4">
+							<AlertCircle class="h-4 w-4" />
+							<Alert.Title>Accès limité</Alert.Title>
+							<Alert.Description>
+								Seule la base de développement (cenov_dev) est accessible sans connexion.
+							</Alert.Description>
+						</Alert.Root>
+					{/if}
+
 					<!-- ✅ Sélection base de données -->
 					<Card.Root variant="bleu" class="mb-4 py-4">
 						<Card.Content class="px-4">
@@ -345,31 +359,23 @@
 										class="mr-2"
 									/>
 									<span class="text-sm"
-										>CENOV_DEV ({(
-											data.categories as unknown as Record<
-												'cenov_dev' | 'cenov_preprod',
-												CategoryItem[]
-											>
-										).cenov_dev.length} catégories)</span
+										>CENOV_DEV ({data.categories.cenov_dev?.length || 0} catégories)</span
 									>
 								</label>
-								<label class="flex cursor-pointer items-center">
-									<input
-										type="radio"
-										name="database_step0"
-										value="cenov_preprod"
-										bind:group={selectedDatabase}
-										class="mr-2"
-									/>
-									<span class="text-sm"
-										>CENOV_PREPROD ({(
-											data.categories as unknown as Record<
-												'cenov_dev' | 'cenov_preprod',
-												CategoryItem[]
-											>
-										).cenov_preprod.length} catégories)</span
-									>
-								</label>
+								{#if data.isAuthenticated && data.categories.cenov_preprod}
+									<label class="flex cursor-pointer items-center">
+										<input
+											type="radio"
+											name="database_step0"
+											value="cenov_preprod"
+											bind:group={selectedDatabase}
+											class="mr-2"
+										/>
+										<span class="text-sm"
+											>CENOV_PREPROD ({data.categories.cenov_preprod.length} catégories)</span
+										>
+									</label>
+								{/if}
 							</div>
 						</Card.Content>
 					</Card.Root>

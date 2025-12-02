@@ -3,7 +3,6 @@ import type { PageServerLoad, Actions } from './$types';
 import { z } from 'zod/v4';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { protect } from '$lib/auth/protect';
 import {
 	getAllDatabaseTables,
 	getTableMetadata,
@@ -175,8 +174,6 @@ async function getTablesInfo(): Promise<ExportTableInfo[]> {
 }
 
 export const load = (async (event) => {
-	await protect(event);
-
 	const { depends } = event;
 	depends('app:export');
 
@@ -214,8 +211,6 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
 	preview: async (event) => {
-		await protect(event);
-
 		const { request } = event;
 		const form = await superValidate(request, zod4(exportSchema));
 
@@ -274,8 +269,6 @@ export const actions: Actions = {
 	},
 
 	export: async (event) => {
-		await protect(event);
-
 		const { request } = event;
 		const form = await superValidate(request, zod4(exportSchema));
 
