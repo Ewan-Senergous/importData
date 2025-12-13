@@ -540,7 +540,10 @@
 				</div>
 			{:else if step === 2 && parsedPreview}
 				<div class="mb-6">
-					<h2 class="mb-4 text-xl font-semibold text-black">2. Preview des données : {fileName}</h2>
+					<h2 class="mb-4 text-xl font-semibold text-black">
+						<span class="block sm:inline">2. Preview des données :</span>
+						<span class="mt-1 block truncate text-base sm:mt-0 sm:inline sm:text-xl">{fileName}</span>
+					</h2>
 
 					<div class="mb-6 rounded-lg border bg-gray-50 p-4">
 						<h3 class="mb-2 font-medium">
@@ -552,7 +555,7 @@
 								validation
 							</p>
 						</div>
-						<div class="grid grid-cols-2 gap-2 text-sm">
+						<div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
 							{#each parsedPreview.columns as col (col.header)}
 								<div>
 									<span class="font-medium">{col.header}:</span>

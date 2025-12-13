@@ -308,7 +308,7 @@
 	}
 </script>
 
-<div class="container mx-auto my-8 max-w-4xl px-6 lg:max-w-7xl">
+<div class="container mx-auto my-8 max-w-4xl px-4 lg:max-w-7xl">
 	<div class="mb-6">
 		<h1 class="text-2xl font-bold">Export de données :</h1>
 		<p class="text-gray-600">
