@@ -46,20 +46,11 @@
 <div class="page-transition-container min-h-screen bg-gray-50 {loaded ? 'loaded' : ''}">
 	<header class="bg-white shadow">
 		<div class="container mx-auto px-4">
-			<!-- Desktop & Mobile Top bar -->
-			<div class="flex items-center justify-between py-4">
-				<a href={resolve('/')} class="text-xl font-bold text-[#e31206]">CenovDistribution</a>
-
-				<!-- Desktop user info & auth -->
-				<div class="hidden items-center space-x-4 md:flex">
-					{#if isAuthenticated(user)}
-						<span class="text-sm text-gray-700">Bonjour, {user?.name || 'Client'}</span>
-					{/if}
-					<AuthButton {user} />
-				</div>
-
-				<!-- Mobile menu button & auth -->
-				<div class="flex items-center space-x-2 md:hidden">
+			<!-- Mobile: Wrapper pour layout vertical -->
+			<div class="md:hidden">
+				<!-- Ligne 1: Titre + Menu burger -->
+				<div class="flex items-center justify-between py-4">
+					<a href={resolve('/')} class="text-xl font-bold text-[#e31206]">CenovDistribution</a>
 					<button
 						class="rounded-md p-2 hover:bg-gray-200"
 						on:click={() => (mobileMenuOpen = !mobileMenuOpen)}
@@ -71,9 +62,19 @@
 							<Menu class="h-6 w-6 text-gray-700" />
 						{/if}
 					</button>
-					{#if !isAuthenticated(user)}
-						<AuthButton {user} />
+				</div>
+			</div>
+
+			<!-- Desktop Top bar -->
+			<div class="hidden items-center justify-between py-4 md:flex">
+				<a href={resolve('/')} class="text-xl font-bold text-[#e31206]">CenovDistribution</a>
+
+				<!-- Desktop user info & auth -->
+				<div class="flex items-center space-x-4">
+					{#if isAuthenticated(user)}
+						<span class="text-sm text-gray-700">Bonjour, {user?.name || 'Client'}</span>
 					{/if}
+					<AuthButton {user} />
 				</div>
 			</div>
 
