@@ -298,26 +298,43 @@
 
 	<Alert.GlobalAlert />
 
-	<div class="mb-8 flex justify-between">
+	<!-- Stepper responsive : compact mobile, complet desktop -->
+	<div class="mb-8 flex justify-between gap-2">
 		<div class="step flex-1 {step >= 0 ? 'active' : ''}">
-			<div class="mb-2 text-center text-sm font-medium">0. Template</div>
-			<div class="mx-4 h-2 rounded {step >= 0 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
+			<!-- Mobile: numéro seul | Desktop: texte complet -->
+			<div class="mb-2 text-center text-sm font-medium sm:text-base">
+				<span class="sm:hidden">0</span>
+				<span class="hidden sm:inline">0. Template</span>
+			</div>
+			<div class="mx-1 h-2 rounded sm:mx-4 {step >= 0 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
 		</div>
 		<div class="step flex-1 {step >= 1 ? 'active' : ''}">
-			<div class="mb-2 text-center text-sm font-medium">1. Upload</div>
-			<div class="mx-4 h-2 rounded {step >= 1 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
+			<div class="mb-2 text-center text-sm font-medium sm:text-base">
+				<span class="sm:hidden">1</span>
+				<span class="hidden sm:inline">1. Upload</span>
+			</div>
+			<div class="mx-1 h-2 rounded sm:mx-4 {step >= 1 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
 		</div>
 		<div class="step flex-1 {step >= 2 ? 'active' : ''}">
-			<div class="mb-2 text-center text-sm font-medium">2. Preview</div>
-			<div class="mx-4 h-2 rounded {step >= 2 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
+			<div class="mb-2 text-center text-sm font-medium sm:text-base">
+				<span class="sm:hidden">2</span>
+				<span class="hidden sm:inline">2. Preview</span>
+			</div>
+			<div class="mx-1 h-2 rounded sm:mx-4 {step >= 2 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
 		</div>
 		<div class="step flex-1 {step >= 3 ? 'active' : ''}">
-			<div class="mb-2 text-center text-sm font-medium">3. Validation</div>
-			<div class="mx-4 h-2 rounded {step >= 3 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
+			<div class="mb-2 text-center text-sm font-medium sm:text-base">
+				<span class="sm:hidden">3</span>
+				<span class="hidden sm:inline">3. Validation</span>
+			</div>
+			<div class="mx-1 h-2 rounded sm:mx-4 {step >= 3 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
 		</div>
 		<div class="step flex-1 {step >= 4 ? 'active' : ''}">
-			<div class="mb-2 text-center text-sm font-medium">4. Import</div>
-			<div class="mx-4 h-2 rounded {step >= 4 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
+			<div class="mb-2 text-center text-sm font-medium sm:text-base">
+				<span class="sm:hidden">4</span>
+				<span class="hidden sm:inline">4. Import</span>
+			</div>
+			<div class="mx-1 h-2 rounded sm:mx-4 {step >= 4 ? 'bg-blue-500' : 'bg-gray-200'}"></div>
 		</div>
 	</div>
 
@@ -381,7 +398,7 @@
 					</Card.Root>
 
 					<!-- Autocomplétion pour sélectionner la catégorie -->
-					<div class="relative flex items-start gap-4">
+					<div class="relative flex flex-col items-stretch gap-4 sm:flex-row sm:items-start">
 						<div class="relative flex-1">
 							<div
 								class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"
@@ -449,14 +466,14 @@
 							{/if}
 						</div>
 
-						<!-- Bouton à droite -->
+						<!-- Bouton responsive : pleine largeur mobile, auto desktop -->
 						{#if selectedCategory}
-							<Button variant="vert" onclick={handleDownloadTemplate}>
+							<Button variant="vert" onclick={handleDownloadTemplate} class="w-full sm:w-auto">
 								Télécharger template CSV
 								<CircleArrowRight class="ml-2 h-4 w-4" />
 							</Button>
 						{:else}
-							<Button variant="noir" onclick={() => (step = 1)}>
+							<Button variant="noir" onclick={() => (step = 1)} class="w-full sm:w-auto">
 								Étape suivante
 								<CircleArrowRight class="ml-2 h-4 w-4" />
 							</Button>
