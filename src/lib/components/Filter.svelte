@@ -23,8 +23,15 @@
 	} = $props();
 
 	let searchTerm = $state('');
-	let selectedField = $state(fields.length > 0 ? fields[0].key : '');
+	let selectedField = $state('');
 	let sortOrder = $state('asc'); // 'asc' = Ordre naturel de la vue, 'desc' = Ordre inversé, 'id_desc' = Tri par atr_id DESC
+
+	// Initialiser selectedField quand fields change
+	$effect(() => {
+		if (fields.length > 0 && !selectedField) {
+			selectedField = fields[0].key;
+		}
+	});
 
 	const selectedFieldLabel = $derived(
 		fields.find((f) => f.key === selectedField)?.label ?? 'Sélectionner un champ'

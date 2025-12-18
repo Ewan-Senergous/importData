@@ -1,6 +1,7 @@
 <!-- src/routes/export/+page.svelte -->
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { untrack } from 'svelte';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Spinner } from '$lib/components/ui/spinner';
 	import * as Card from '$lib/components/ui/card';
@@ -81,17 +82,21 @@
 	// Props avec $props() - Mode Runes Svelte 5
 	let { data } = $props();
 
-	if (!data?.tables?.length) {
-		console.warn('⚠️ [CLIENT] Aucune table trouvée');
-	}
+	// Vérifier les tables dans un effet réactif
+	$effect(() => {
+		if (!data?.tables?.length) {
+			console.warn('⚠️ [CLIENT] Aucune table trouvée');
+		}
+	});
 
-	// Initialisation du formulaire SuperForm
+	// Initialisation du formulaire SuperForm avec untrack() pour capturer la valeur initiale
+	// untrack() indique explicitement à Svelte qu'on ne veut PAS la réactivité sur data.form
 	const {
 		form,
 		enhance: superEnhance,
 		submitting,
 		reset
-	} = superForm(data.form, {
+	} = superForm(untrack(() => data.form), {
 		dataType: 'json',
 		onUpdated: ({ form }) => {
 			if (form && form.data) {
@@ -192,19 +197,21 @@
 		}
 	});
 
-	// Récupération dynamique des bases de données depuis le serveur
-	const databases = data.databases as DatabaseName[];
+	// Récupération dynamique des bases de données depuis le serveur (Svelte 5 $derived)
+	const databases = $derived(data.databases as DatabaseName[]);
 
 	// Obtenir les schémas uniques (Svelte 5 $derived)
 	let uniqueSchemas = $derived([
 		...new Set((data?.tables || []).map((t: ExportTableInfo) => t.schema))
 	]);
 
-	// Formats d'export
-	const exportFormats = data.exportFormats.map((format) => ({
-		...format,
-		icon: format.value === 'xlsx' ? FileSpreadsheet : FileText
-	}));
+	// Formats d'export (Svelte 5 $derived)
+	const exportFormats = $derived(
+		data.exportFormats.map((format) => ({
+			...format,
+			icon: format.value === 'xlsx' ? FileSpreadsheet : FileText
+		}))
+	);
 
 	// Gestion des résultats d'export
 	function handleExportResult(result: ExportResult, fileData?: FileData) {

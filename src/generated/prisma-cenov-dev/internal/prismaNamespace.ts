@@ -400,10 +400,11 @@ export const ModelName = {
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 
-export interface TypeMapCb<GlobalOmitOptions = {}> extends runtime.Types.Utils.Fn<
-	{ extArgs: runtime.Types.Extensions.InternalArgs },
-	runtime.Types.Utils.Record<string, any>
-> {
+export interface TypeMapCb<GlobalOmitOptions = {}>
+	extends runtime.Types.Utils.Fn<
+		{ extArgs: runtime.Types.Extensions.InternalArgs },
+		runtime.Types.Utils.Record<string, any>
+	> {
 	returns: TypeMap<this['params']['extArgs'], GlobalOmitOptions>;
 }
 

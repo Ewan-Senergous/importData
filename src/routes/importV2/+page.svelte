@@ -75,7 +75,6 @@
 				>
 			>;
 			isAuthenticated: boolean;
-			allowedDatabases: Array<'cenov_dev' | 'cenov_preprod'>;
 		};
 		form?: { validation?: ValidationResult; result?: ImportResult; error?: string } | null;
 	} = $props();
@@ -542,7 +541,9 @@
 				<div class="mb-6">
 					<h2 class="mb-4 text-xl font-semibold text-black">
 						<span class="block sm:inline">2. Preview des données :</span>
-						<span class="mt-1 block truncate text-base sm:mt-0 sm:inline sm:text-xl">{fileName}</span>
+						<span class="mt-1 block truncate text-base sm:mt-0 sm:inline sm:text-xl"
+							>{fileName}</span
+						>
 					</h2>
 
 					<div class="mb-6 rounded-lg border bg-gray-50 p-4">

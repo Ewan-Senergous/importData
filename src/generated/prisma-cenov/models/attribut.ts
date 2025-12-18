@@ -1474,8 +1474,8 @@ export interface Prisma__attributClient<
 		| Null
 	>;
 	kit_attribute_kit_attribute_fk_attribute_unitToattribut<
-		T extends Prisma.attribut$kit_attribute_kit_attribute_fk_attribute_unitToattributArgs<ExtArgs> =
-			{}
+		T extends
+			Prisma.attribut$kit_attribute_kit_attribute_fk_attribute_unitToattributArgs<ExtArgs> = {}
 	>(
 		args?: Prisma.Subset<
 			T,

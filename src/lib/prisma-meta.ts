@@ -71,8 +71,9 @@ async function initializeCenovDevPrisma() {
 	// TOUJOURS charger le client dev - Simplifié avec Prisma 7
 	try {
 		// Import direct depuis src/generated (Prisma 7)
-		const devPrismaModule =
-			(await import('../generated/prisma-cenov-dev/client')) as unknown as PrismaModule;
+		const devPrismaModule = (await import(
+			'../generated/prisma-cenov-dev/client'
+		)) as unknown as PrismaModule;
 
 		if (devPrismaModule?.Prisma && devPrismaModule?.PrismaClient) {
 			CenovDevPrisma = devPrismaModule.Prisma;
@@ -96,8 +97,9 @@ async function initializeCenovPreprodPrisma() {
 
 	try {
 		// Import direct depuis src/generated (Prisma 7)
-		const preprodPrismaModule =
-			(await import('../generated/prisma-cenov-preprod/client')) as unknown as PrismaModule;
+		const preprodPrismaModule = (await import(
+			'../generated/prisma-cenov-preprod/client'
+		)) as unknown as PrismaModule;
 
 		if (preprodPrismaModule?.Prisma && preprodPrismaModule?.PrismaClient) {
 			CenovPreprodPrisma = preprodPrismaModule.Prisma;

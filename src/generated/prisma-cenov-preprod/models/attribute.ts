@@ -2297,8 +2297,8 @@ export interface Prisma__attributeClient<
 		| Null
 	>;
 	attribute_unit_attribute_unit_fk_attributeToattribute<
-		T extends Prisma.attribute$attribute_unit_attribute_unit_fk_attributeToattributeArgs<ExtArgs> =
-			{}
+		T extends
+			Prisma.attribute$attribute_unit_attribute_unit_fk_attributeToattributeArgs<ExtArgs> = {}
 	>(
 		args?: Prisma.Subset<
 			T,
@@ -2342,8 +2342,7 @@ export interface Prisma__attributeClient<
 	>;
 	kit_attribute_kit_attribute_fk_attribute_characteristicToattribute<
 		T extends
-			Prisma.attribute$kit_attribute_kit_attribute_fk_attribute_characteristicToattributeArgs<ExtArgs> =
-			{}
+			Prisma.attribute$kit_attribute_kit_attribute_fk_attribute_characteristicToattributeArgs<ExtArgs> = {}
 	>(
 		args?: Prisma.Subset<
 			T,
