@@ -15,8 +15,8 @@ import type * as Prisma from './prismaNamespace';
 
 const config: runtime.GetPrismaClientConfig = {
 	previewFeatures: ['views'],
-	clientVersion: '7.0.1',
-	engineVersion: 'f09f2815f091dbba658cdcd2264306d88bb5bda6',
+	clientVersion: '7.2.0',
+	engineVersion: '0c8ef2ce45c83248ab3df073180d5eda9e8be7a3',
 	activeProvider: 'postgresql',
 	inlineSchema:
 		'generator client {\n  provider        = "prisma-client"\n  output          = "../../src/generated/prisma-cenov"\n  previewFeatures = ["views"]\n}\n\ndatasource db {\n  provider = "postgresql"\n  schemas  = ["produit", "public"]\n}\n\nmodel categorie {\n  cat_id             Int                  @id @default(autoincrement())\n  fk_parent          Int?\n  cat_code           String               @db.VarChar(60)\n  cat_label          String               @db.VarChar(100)\n  categorie          categorie?           @relation("categorieTocategorie", fields: [fk_parent], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "produit_categorie_fk_parent_fkey")\n  other_categorie    categorie[]          @relation("categorieTocategorie")\n  categorie_attribut categorie_attribut[]\n  produit_categorie  produit_categorie[]\n\n  @@unique([fk_parent, cat_code], map: "produit_categorie_prc_code_index")\n  @@schema("produit")\n}\n\nmodel categorie_attribut {\n  fk_categorie Int\n  fk_attribute Int\n  attribut     attribut  @relation(fields: [fk_attribute], references: [atr_id], onDelete: NoAction, onUpdate: NoAction, map: "categorie_attribute_fk_attribute_fkey")\n  categorie    categorie @relation(fields: [fk_categorie], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "categorie_attribute_fk_categorie_fkey")\n\n  @@id([fk_categorie, fk_attribute])\n  @@schema("produit")\n}\n\nmodel cross_ref {\n  crf_id     Int\n  fk_produit Int\n  produit    produit @relation(fields: [fk_produit], references: [pro_id], onDelete: NoAction, onUpdate: NoAction, map: "cross_ref_produit_pro_id_fk")\n\n  @@id([crf_id, fk_produit])\n  @@schema("produit")\n}\n\nmodel famille {\n  fam_id        Int         @id(map: "produit_famille_pkey") @default(autoincrement())\n  fk_parent     Int?\n  fam_code      String      @db.VarChar(60)\n  fam_label     String      @db.VarChar(100)\n  fk_supplier   Int\n  fournisseur   fournisseur @relation(fields: [fk_supplier], references: [frs_id], onDelete: NoAction, onUpdate: NoAction, map: "famille_supplier_sup_id_fk")\n  famille       famille?    @relation("familleTofamille", fields: [fk_parent], references: [fam_id], onDelete: NoAction, onUpdate: NoAction, map: "produit_famille_fk_parent_fkey")\n  other_famille famille[]   @relation("familleTofamille")\n\n  @@unique([fk_parent, fam_code], map: "produit_famille_prf_code_index")\n  @@schema("produit")\n}\n\nmodel produit {\n  pro_id            Int                 @id @default(autoincrement())\n  pro_code          String              @db.VarChar(20)\n  fk_supplier       Int?\n  fk_kit            Int?\n  fk_famille        Int?\n  fk_sfamille       Int?\n  fk_ssfamille      Int?\n  created_at        DateTime?           @default(now()) @db.Timestamp(6)\n  updated_at        DateTime?           @default(now()) @db.Timestamp(6)\n  cross_ref         cross_ref[]\n  kit               kit?                @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction)\n  fournisseur       fournisseur?        @relation(fields: [fk_supplier], references: [frs_id], onDelete: NoAction, onUpdate: NoAction, map: "produit_supplier_sup_id_fk")\n  produit_categorie produit_categorie[]\n  tarif_achat       tarif_achat[]\n\n  @@schema("produit")\n}\n\nmodel produit_categorie {\n  fk_produit   Int\n  fk_categorie Int\n  categorie    categorie @relation(fields: [fk_categorie], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "produit_categorie_categorie_prc_id_fk")\n  produit      produit   @relation(fields: [fk_produit], references: [pro_id], onDelete: NoAction, onUpdate: NoAction, map: "produit_categorie_produit_pro_id_fk")\n\n  @@id([fk_produit, fk_categorie])\n  @@schema("produit")\n}\n\nmodel tarif_achat {\n  fk_produit      Int\n  taa_date        DateTime @db.Date\n  taa_montant     Float\n  taa_remise      Float?\n  taa_montant_net Float?   @default(dbgenerated("(taa_montant * ((1)::double precision - (taa_remise / (100)::double precision)))"))\n  produit         produit  @relation(fields: [fk_produit], references: [pro_id], onDelete: NoAction, onUpdate: NoAction, map: "cross_ref_produit_pro_id_fk")\n\n  @@id([fk_produit, taa_date])\n  @@index([fk_produit, taa_date], map: "tarif_achat_taa_date_fk_produit_index")\n  @@schema("produit")\n}\n\nmodel attribut {\n  atr_id                                                   Int                  @id(map: "attribute_pkey") @default(autoincrement())\n  atr_nat                                                  String               @db.VarChar(60)\n  atr_val                                                  String               @db.VarChar(60)\n  atr_label                                                String               @db.VarChar(100)\n  created_at                                               DateTime?            @default(now()) @db.Timestamp(6)\n  updated_at                                               DateTime?            @default(now()) @db.Timestamp(6)\n  atr_code                                                 String?              @db.VarChar(100)\n  categorie_attribut                                       categorie_attribut[]\n  kit_attribute_kit_attribute_fk_attribute_caracToattribut kit_attribute[]      @relation("kit_attribute_fk_attribute_caracToattribut")\n  kit_attribute_kit_attribute_fk_attribute_unitToattribut  kit_attribute[]      @relation("kit_attribute_fk_attribute_unitToattribut")\n\n  @@unique([atr_nat, atr_val], map: "idx_attribute")\n  @@schema("public")\n}\n\nmodel fournisseur {\n  frs_id    Int       @id(map: "supplier_pk") @default(autoincrement())\n  frs_code  String    @db.VarChar(10)\n  frs_label String    @db.VarChar(70)\n  famille   famille[]\n  produit   produit[]\n\n  @@index([frs_code], map: "supplier_sup_code_index")\n  @@schema("public")\n}\n\nmodel kit {\n  kit_id        Int             @id @default(autoincrement())\n  kit_label     String          @db.VarChar(100)\n  created_at    DateTime?       @default(now()) @db.Timestamp(6)\n  updated_at    DateTime?       @default(now()) @db.Timestamp(6)\n  produit       produit[]\n  kit_attribute kit_attribute[]\n  part_nc       part_nc[]\n\n  @@schema("public")\n}\n\nmodel kit_attribute {\n  fk_kit                                              Int\n  fk_attribute_carac                                  Int\n  fk_attribute_unit                                   Int\n  kat_valeur                                          String    @db.VarChar(50)\n  created_at                                          DateTime? @default(now()) @db.Timestamp(6)\n  updated_at                                          DateTime? @default(now()) @db.Timestamp(6)\n  kat_id                                              Int       @id @default(autoincrement())\n  attribut_kit_attribute_fk_attribute_caracToattribut attribut  @relation("kit_attribute_fk_attribute_caracToattribut", fields: [fk_attribute_carac], references: [atr_id], onDelete: NoAction, onUpdate: NoAction)\n  attribut_kit_attribute_fk_attribute_unitToattribut  attribut  @relation("kit_attribute_fk_attribute_unitToattribut", fields: [fk_attribute_unit], references: [atr_id], onDelete: Cascade, onUpdate: NoAction, map: "kit_attribute_fk_attribute_fkey")\n  kit                                                 kit       @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction)\n\n  @@schema("public")\n}\n\nmodel part_nc {\n  par_id     Int       @id(map: "part_pkey") @default(autoincrement())\n  fk_kit     Int?\n  par_label  String    @db.VarChar(100)\n  created_at DateTime? @default(now()) @db.Timestamp(6)\n  updated_at DateTime? @default(now()) @db.Timestamp(6)\n  kit        kit?      @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction, map: "part_fk_kit_fkey")\n\n  @@schema("public")\n}\n\nview v_tarif_achat {\n  fk_produit      Int\n  taa_date        DateTime @db.Date\n  taa_montant     Float\n  taa_remise      Float?\n  taa_montant_net Float?\n\n  @@schema("produit")\n}\n\nview produit_v_produit_categorie_attribut {\n  pro_id    Int\n  kit_label String @db.VarChar(100)\n  atr_id    Int\n  atr_label String @db.VarChar(100)\n  cat_label String @db.VarChar(100)\n\n  @@map("v_produit_categorie_attribut")\n  @@schema("produit")\n}\n\nview public_v_produit_categorie_attribut {\n  pro_id    Int\n  kit_label String @db.VarChar(100)\n  atr_id    Int\n  atr_label String @db.VarChar(100)\n  cat_label String @db.VarChar(100)\n\n  @@map("v_produit_categorie_attribut")\n  @@schema("public")\n}\n\nview v_categorie {\n  atr_0_id    Int\n  atr_0_label String  @db.VarChar(100)\n  atr_1_id    Int\n  atr_1_label String  @db.VarChar(100)\n  atr_2_id    Int?\n  atr_2_label String? @db.VarChar(100)\n  atr_3_id    Int?\n  atr_3_label String? @db.VarChar(100)\n  atr_4_id    Int?\n  atr_4_label String? @db.VarChar(100)\n  atr_5_id    Int?\n  atr_5_label String? @db.VarChar(100)\n  atr_6_id    Int?\n  atr_6_label String? @db.VarChar(100)\n  atr_7_id    Int?\n  atr_7_label String? @db.VarChar(100)\n\n  @@schema("public")\n}\n\nview v_kit_caracteristique {\n  kit_label String @db.VarChar(100)\n  atr_label String @db.VarChar(100)\n  valeur    String @db.VarChar(50)\n  unit      String @db.VarChar(60)\n\n  @@schema("public")\n}\n',
@@ -41,9 +41,8 @@ config.compilerWasm = {
 	getRuntime: async () => await import('@prisma/client/runtime/query_compiler_bg.postgresql.mjs'),
 
 	getQueryCompilerWasmModule: async () => {
-		const { wasm } = await import(
-			'@prisma/client/runtime/query_compiler_bg.postgresql.wasm-base64.mjs'
-		);
+		const { wasm } =
+			await import('@prisma/client/runtime/query_compiler_bg.postgresql.wasm-base64.mjs');
 		return await decodeBase64AsWasm(wasm);
 	}
 };
@@ -67,7 +66,7 @@ export interface PrismaClientConstructor {
 	 * const categories = await prisma.categorie.findMany()
 	 * ```
 	 *
-	 * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+	 * Read more in our [docs](https://pris.ly/d/client).
 	 */
 
 	new <
@@ -93,14 +92,14 @@ export interface PrismaClientConstructor {
  * const categories = await prisma.categorie.findMany()
  * ```
  *
- * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+ * Read more in our [docs](https://pris.ly/d/client).
  */
 
 export interface PrismaClient<
 	in LogOpts extends Prisma.LogLevel = never,
 	in out OmitOpts extends Prisma.PrismaClientOptions['omit'] = undefined,
-	in out ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs
+	in out ExtArgs extends runtime.Types.Extensions.InternalArgs =
+		runtime.Types.Extensions.DefaultArgs
 > {
 	[K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] };
 
@@ -126,7 +125,7 @@ export interface PrismaClient<
 	 * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
 	 * ```
 	 *
-	 * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+	 * Read more in our [docs](https://pris.ly/d/raw-queries).
 	 */
 	$executeRaw<T = unknown>(
 		query: TemplateStringsArray | Prisma.Sql,
@@ -141,7 +140,7 @@ export interface PrismaClient<
 	 * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
 	 * ```
 	 *
-	 * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+	 * Read more in our [docs](https://pris.ly/d/raw-queries).
 	 */
 	$executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -152,7 +151,7 @@ export interface PrismaClient<
 	 * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
 	 * ```
 	 *
-	 * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+	 * Read more in our [docs](https://pris.ly/d/raw-queries).
 	 */
 	$queryRaw<T = unknown>(
 		query: TemplateStringsArray | Prisma.Sql,
@@ -167,7 +166,7 @@ export interface PrismaClient<
 	 * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
 	 * ```
 	 *
-	 * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+	 * Read more in our [docs](https://pris.ly/d/raw-queries).
 	 */
 	$queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
 
