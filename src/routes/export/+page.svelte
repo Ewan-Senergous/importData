@@ -96,47 +96,50 @@
 		enhance: superEnhance,
 		submitting,
 		reset
-	} = superForm(untrack(() => data.form), {
-		dataType: 'json',
-		onUpdated: ({ form }) => {
-			if (form && form.data) {
-				if ('result' in form.data) {
-					const result = form.data.result as ExportResult;
-					const formData = form.data as Record<string, unknown>;
-					const fileData = formData.fileData as FileData | undefined;
-					handleExportResult(result, fileData);
+	} = superForm(
+		untrack(() => data.form),
+		{
+			dataType: 'json',
+			onUpdated: ({ form }) => {
+				if (form && form.data) {
+					if ('result' in form.data) {
+						const result = form.data.result as ExportResult;
+						const formData = form.data as Record<string, unknown>;
+						const fileData = formData.fileData as FileData | undefined;
+						handleExportResult(result, fileData);
+					}
+					if ('preview' in form.data) {
+						previewData = form.data.preview as Record<string, unknown[]>;
+						const formData = form.data as Record<string, unknown>;
+						previewConfig = formData.previewConfig as { includeHeaders: boolean } | null;
+						step = 3;
+					}
 				}
-				if ('preview' in form.data) {
-					previewData = form.data.preview as Record<string, unknown[]>;
-					const formData = form.data as Record<string, unknown>;
-					previewConfig = formData.previewConfig as { includeHeaders: boolean } | null;
-					step = 3;
+			},
+			onResult: ({ result }) => {
+				if (result.type === 'success' && result.data) {
+					if ('result' in result.data) {
+						const exportResult = result.data.result as ExportResult;
+						const resultData = result.data as Record<string, unknown>;
+						const fileData = resultData.fileData as FileData | undefined;
+						handleExportResult(exportResult, fileData);
+					}
+					if ('preview' in result.data) {
+						previewData = result.data.preview as Record<string, unknown[]>;
+						const resultData = result.data as Record<string, unknown>;
+						previewConfig = resultData.previewConfig as { includeHeaders: boolean } | null;
+						step = 3;
+					}
+				} else {
+					console.warn('⚠️ [CLIENT] Result type non-success:', result.type);
 				}
+			},
+			onError: (event) => {
+				console.error('❌ [CLIENT] Erreur de soumission SuperForm:', event);
+				Alert.alertActions.error("Une erreur est survenue lors de l'export");
 			}
-		},
-		onResult: ({ result }) => {
-			if (result.type === 'success' && result.data) {
-				if ('result' in result.data) {
-					const exportResult = result.data.result as ExportResult;
-					const resultData = result.data as Record<string, unknown>;
-					const fileData = resultData.fileData as FileData | undefined;
-					handleExportResult(exportResult, fileData);
-				}
-				if ('preview' in result.data) {
-					previewData = result.data.preview as Record<string, unknown[]>;
-					const resultData = result.data as Record<string, unknown>;
-					previewConfig = resultData.previewConfig as { includeHeaders: boolean } | null;
-					step = 3;
-				}
-			} else {
-				console.warn('⚠️ [CLIENT] Result type non-success:', result.type);
-			}
-		},
-		onError: (event) => {
-			console.error('❌ [CLIENT] Erreur de soumission SuperForm:', event);
-			Alert.alertActions.error("Une erreur est survenue lors de l'export");
 		}
-	});
+	);
 
 	// État de l'interface (Svelte 5 $state)
 	let step = $state(1);

@@ -1,15 +1,11 @@
 import type { Actions } from './$types';
-import { env } from '$env/dynamic/private';
+import { env } from '$lib/server/env';
 
 export const actions: Actions = {
 	signIn: async ({ locals }) => {
-		const redirect = env.SECRET_REDIRECT_URI;
-		if (!redirect) throw new Error('Missing SECRET_REDIRECT_URI environment variable');
-		await locals.logtoClient.signIn(redirect);
+		await locals.logtoClient.signIn(env.SECRET_REDIRECT_URI);
 	},
 	signOut: async ({ locals }) => {
-		const postLogout = env.SECRET_POST_LOGOUT_URI;
-		if (!postLogout) throw new Error('Missing SECRET_POST_LOGOUT_URI environment variable');
-		await locals.logtoClient.signOut(postLogout);
+		await locals.logtoClient.signOut(env.SECRET_POST_LOGOUT_URI);
 	}
 };

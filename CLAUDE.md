@@ -242,6 +242,50 @@ pnpm add <package>        # Ajouter une dépendance
 pnpm add -D <package>     # Ajouter une dépendance de dev
 ```
 
+## Variables d'Environnement
+
+**Système de validation centralisé avec @t3-oss/env-core**
+
+Le projet utilise une validation type-safe des variables d'environnement avec Zod. Les variables sont validées au démarrage de l'application - si une variable est manquante ou invalide, l'application refuse de démarrer avec un message d'erreur clair.
+
+**Architecture Split (Server/Client) :**
+
+```typescript
+// ✅ Variables serveur (secrets, URLs DB, config auth)
+import { env } from '$lib/server/env';
+
+const dbUrl = env.DATABASE_URL;           // Type: string (garanti présent)
+const limit = env.BODY_SIZE_LIMIT;        // Type: number (auto-converti)
+const useDevViews = env.USE_DEV_VIEWS;    // Type: boolean (auto-converti)
+
+// ✅ Variables publiques (futures, actuellement vide)
+import { env } from '$lib/env.client';
+// Les variables PUBLIC_* seront exposées au client
+```
+
+**Fichiers de configuration :**
+
+- `src/lib/server/env.ts` - Variables serveur uniquement (DATABASE_URL, SECRET_LOGTO_*, etc.)
+- `src/lib/env.client.ts` - Variables publiques (préfixe PUBLIC_*, actuellement vide)
+- `.env` - Fichier contenant toutes les variables d'environnement
+
+**Variables validées :**
+
+- `DATABASE_URL` - Base CENOV principale
+- `CENOV_DEV_DATABASE_URL` - Base développement
+- `CENOV_PREPROD_DATABASE_URL` - Base pré-production
+- `SECRET_LOGTO_*` - Configuration authentification Logto (endpoint, app ID, secret, cookie key, redirect URIs)
+- `BODY_SIZE_LIMIT` - Limite taille requêtes (défaut: 10MB, converti en number)
+- `USE_DEV_VIEWS` - Utiliser vues dev (défaut: false, converti en boolean)
+
+**Bénéfices :**
+
+- ✅ Type-safety totale - Plus besoin de non-null assertions (`!`)
+- ✅ Validation au démarrage - Échec rapide avec messages clairs
+- ✅ Transformations automatiques - String → Number/Boolean via Zod
+- ✅ Valeurs par défaut centralisées dans le schéma
+- ✅ Architecture sécurisée - Séparation server/client
+
 **Scripts BDD-IA (Export base de données) :**
 
 ```bash

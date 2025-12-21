@@ -2,7 +2,7 @@
 import { PrismaClient } from '../../generated/prisma-cenov/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
+import { env } from './env';
 
 // Créer l'adapter PostgreSQL pour Prisma 7
 const adapter = new PrismaPg({
@@ -18,7 +18,7 @@ const prisma = new PrismaClient({
 
 // Fonction helper pour déterminer l'environnement
 function useDevTables() {
-	return env.USE_DEV_VIEWS === 'true' || dev;
+	return env.USE_DEV_VIEWS || dev;
 }
 
 // Export du client Prisma et fonction helper

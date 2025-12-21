@@ -16,7 +16,7 @@
 // 💡 PRINCIPE : Si c'est utilisé par 2+ pages = ici, sinon = dans la page concernée
 import { browser } from '$app/environment';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { env } from '$env/dynamic/private';
+import { env } from './server/env';
 
 // Types pour les modules Prisma
 interface PrismaModule {
