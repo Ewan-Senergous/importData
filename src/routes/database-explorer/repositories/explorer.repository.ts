@@ -1,4 +1,4 @@
-import { getClient, getTableMetadata, countTableRows } from '$lib/prisma-meta';
+import { getClient, getTableMetadata, countTableRows, getDatabases } from '$lib/prisma-meta';
 import type { DatabaseName, FieldInfo } from '$lib/prisma-meta';
 
 /**
@@ -33,13 +33,14 @@ export interface TableDataResult {
 
 /**
  * Récupérer données paginées d'une table
+ * Utilise requête SQL brute pour récupérer les timestamps au format PostgreSQL brut
  */
 export async function getTableData(
 	database: DatabaseName,
 	tableName: string,
 	options: GetTableDataOptions = {}
 ): Promise<TableDataResult> {
-	const { page = 1, limit = 500, orderBy, filters } = options;
+	const { page = 1, limit = 500 } = options;
 
 	const client = await getClient(database);
 	const metadata = await getTableMetadata(database, tableName);
@@ -49,20 +50,69 @@ export async function getTableData(
 	}
 
 	const skip = (page - 1) * limit;
-	const where = filters || {};
-	const order = orderBy ? { [orderBy.field]: orderBy.order } : undefined;
+	const schema = metadata.schema || 'public';
 
-	// Cast explicite pour éviter l'erreur TypeScript "unknown"
-	const table = client[tableName] as {
-		findMany: (args: { skip: number; take: number; where: Record<string, unknown>; orderBy?: Record<string, string> }) => Promise<Record<string, unknown>[]>;
-	};
+	// Identifier les colonnes DateTime pour conversion en string (comme export ligne 206-207)
+	const timestampColumns = metadata.fields.filter((f) => f.type === 'DateTime' || f.isTimestamp);
 
-	const [data, total] = await Promise.all([
-		table.findMany({ skip, take: limit, where, orderBy: order }),
-		countTableRows(database, tableName)
-	]);
+	// Récupérer le vrai nom de table (@@map si défini)
+	let realTableName = tableName;
+	const databases = await getDatabases();
+	const model = databases[database].dmmf.datamodel.models.find((m) => m.name === tableName);
+	if (model) {
+		const modelWithMeta = model as { dbName?: string };
+		if (modelWithMeta.dbName) {
+			realTableName = modelWithMeta.dbName;
+		}
+	}
 
-	return { data, total, metadata };
+	// Construire sélections avec ::text pour timestamps (comme export lignes 224-233)
+	const selectColumns = '*';
+	let timestampSelects = '';
+
+	if (timestampColumns.length > 0) {
+		timestampSelects =
+			', ' +
+			timestampColumns
+				.map(
+					(col) =>
+						`"${col.name.replaceAll('"', '""')}"::text as "${col.name.replaceAll('"', '""')}_str"`
+				)
+				.join(', ');
+	}
+
+	// Requête SQL brute avec pagination
+	const qualifiedTableName = `"${schema.replaceAll('"', '""')}"."${realTableName.replaceAll('"', '""')}"`;
+	const query = `SELECT ${selectColumns}${timestampSelects} FROM ${qualifiedTableName} LIMIT ${limit} OFFSET ${skip}`;
+
+	try {
+		const rawData = (await (client as { $queryRawUnsafe: (query: string) => Promise<unknown[]> }).$queryRawUnsafe(
+			query
+		)) as Record<string, unknown>[];
+
+		// Post-traitement : remplacer colonnes Date par versions string (comme export lignes 267-277)
+		const data = rawData.map((row) => {
+			const processedRow = { ...row };
+			for (const col of timestampColumns) {
+				const stringKey = `${col.name}_str`;
+				if (processedRow[stringKey]) {
+					// Remplacer la version Date par la version string avec microsecondes
+					processedRow[col.name] = processedRow[stringKey];
+					// Supprimer la colonne temporaire _str
+					delete processedRow[stringKey];
+				}
+			}
+			return processedRow;
+		});
+
+		const total = await countTableRows(database, tableName);
+
+		return { data, total, metadata };
+	} catch (error) {
+		throw new Error(
+			`Erreur lors de la récupération des données de ${tableName}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+		);
+	}
 }
 
 /**

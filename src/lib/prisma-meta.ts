@@ -648,10 +648,36 @@ export async function countTableRows(database: DatabaseName, tableName: string):
 	}
 
 	try {
-		const client = await getClient(database);
-		const model = client[tableName] as { count: () => Promise<number> } | undefined;
-		return model ? await model.count() : 0;
-	} catch {
+		const databases = await getDatabases();
+		const client = databases[database].client;
+		const dmmf = databases[database].dmmf;
+
+		// Trouver le modèle Prisma correspondant à la table (même logique que getTableMetadata)
+		const modelDef = dmmf.datamodel.models.find((m) => {
+			const modelWithMeta = m as DMMFModelFromPrisma;
+			return (
+				modelWithMeta.dbName?.toLowerCase() === tableName.toLowerCase() ||
+				m.name.toLowerCase() === tableName.toLowerCase()
+			);
+		});
+
+		if (!modelDef) {
+			console.error(`❌ Model for table "${tableName}" not found in DMMF for ${database}`);
+			return 0;
+		}
+
+		// Utiliser le nom du modèle Prisma (pas le nom de la table)
+		const prismaModel = client[modelDef.name] as { count: () => Promise<number> } | undefined;
+
+		if (!prismaModel) {
+			console.error(`❌ Prisma model "${modelDef.name}" not found in client for ${database}`);
+			return 0;
+		}
+
+		const count = await prismaModel.count();
+		return count;
+	} catch (error) {
+		console.error(`❌ Error in countTableRows for ${tableName}:`, error);
 		return 0;
 	}
 }

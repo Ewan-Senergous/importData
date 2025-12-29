@@ -4,7 +4,6 @@
 	import { Modal } from 'flowbite-svelte';
 	import ExplorerSidebar from './services/ExplorerSidebar.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -51,6 +50,7 @@
 	// ===== EFFETS =====
 	// Charger les données quand la table sélectionnée change
 	$effect(() => {
+		console.log('🔄 $effect triggered - selectedTable:', selectedTable);
 		if (selectedTable) {
 			loadTableData();
 		}
@@ -58,19 +58,28 @@
 
 	// ===== HANDLERS =====
 	async function loadTableData() {
-		if (!selectedTable) return;
+		if (!selectedTable) {
+			return;
+		}
 
 		isLoading = true;
-		const formData = new FormData();
-		formData.append('database', selectedTable.database);
-		formData.append('tableName', selectedTable.tableName);
-		formData.append('page', String(currentPage));
 
 		try {
-			const response = await fetch('?/loadTable', { method: 'POST', body: formData });
+			const response = await fetch('/database-explorer/api/load-table', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					database: selectedTable.database,
+					tableName: selectedTable.tableName,
+					page: currentPage
+				})
+			});
+
 			const result = await response.json();
 
-			if (result.type === 'success') {
+			if (result.success) {
 				tableData = result.data || [];
 				tableMetadata = result.metadata;
 				totalRows = result.total || 0;
@@ -78,7 +87,7 @@
 				toast.error('Erreur lors du chargement de la table');
 			}
 		} catch (error) {
-			console.error('Erreur lors du chargement:', error);
+			console.error('❌ Erreur lors du chargement:', error);
 			toast.error('Erreur lors du chargement de la table');
 		} finally {
 			isLoading = false;
@@ -125,9 +134,7 @@
 		if (value === null || value === undefined) {
 			return '';
 		}
-		if (value instanceof Date) {
-			return value.toISOString();
-		}
+		// Les timestamps sont maintenant retournés comme strings brutes depuis la BDD
 		return String(value);
 	}
 </script>
@@ -137,6 +144,11 @@
 	:global([data-slot="sidebar-container"]) {
 		top: 138px !important;
 		height: calc(100vh - 138px) !important;
+	}
+
+	/* Hover bleu sur les lignes du tableau */
+	.group:hover :global(td) {
+		background-color: #bfdbfe !important;
 	}
 </style>
 
@@ -149,13 +161,13 @@
 				{#if !selectedTable}
 					<!-- Message de sélection -->
 					<div class="flex h-full items-center justify-center">
-						<Card.Root class="max-w-md">
+						<Card.Root class="max-w-lg">
 							<Card.Header>
-								<Card.Title class="flex items-center gap-2">
-									<Database class="size-5" />
+								<Card.Title class="flex items-center gap-2 text-xl">
+									<Database class="size-6" />
 									Database Explorer
 								</Card.Title>
-								<Card.Description>
+								<Card.Description class="text-base">
 									Sélectionnez une table ou une vue dans la barre latérale pour visualiser ses
 									données
 								</Card.Description>
@@ -191,65 +203,96 @@
 							<Loader2 class="text-primary size-8 animate-spin" />
 						</div>
 					{:else if tableData.length === 0}
-						<Card.Root>
-							<Card.Content class="text-muted-foreground py-12 text-center">
-								Aucune donnée disponible
-							</Card.Content>
-						</Card.Root>
-					{:else}
-						<Card.Root>
-							<Card.Content class="p-0">
-								<div class="overflow-x-auto">
-									<Table.Root>
-										<Table.Header>
-											<Table.Row>
-												{#if tableMetadata}
-													{#each tableMetadata.fields as field (field.name)}
-														<Table.Head>{field.name}</Table.Head>
-													{/each}
-													{#if !isReadOnly}
-														<Table.Head class="text-right">Actions</Table.Head>
-													{/if}
-												{/if}
-											</Table.Row>
-										</Table.Header>
-										<Table.Body>
-											{#each tableData as record, i (i)}
-												<Table.Row>
-													{#if tableMetadata}
-														{#each tableMetadata.fields as field (field.name)}
-															<Table.Cell>
-																{formatValue(record[field.name])}
-															</Table.Cell>
-														{/each}
-														{#if !isReadOnly}
-															<Table.Cell class="text-right">
-																<div class="flex justify-end gap-2">
-																	<Button
-																		variant="blanc"
-																		size="sm"
-																		onclick={() => openEditModal(record)}
-																	>
-																		<Pencil class="size-3.5" />
-																	</Button>
-																	<Button
-																		variant="rouge"
-																		size="sm"
-																		onclick={() => openDeleteModal(record)}
-																	>
-																		<Trash2 class="size-3.5" />
-																	</Button>
-																</div>
-															</Table.Cell>
-														{/if}
-													{/if}
-												</Table.Row>
+						<div class="relative overflow-x-auto">
+							<table class="w-full border-x border-black text-left text-sm">
+								<thead class="bg-blue-700 text-xs uppercase text-white">
+									<tr>
+										{#if tableMetadata}
+											{#each tableMetadata.fields as field (field.name)}
+												<th scope="col" class="w-14 whitespace-nowrap border-x border-black px-4 py-3">
+													{field.name}
+												</th>
 											{/each}
-										</Table.Body>
-									</Table.Root>
-								</div>
-							</Card.Content>
-						</Card.Root>
+											{#if !isReadOnly}
+												<th scope="col" class="w-14 border-x border-black px-4 py-3 text-right">
+													<span class="sr-only">Actions</span>
+												</th>
+											{/if}
+										{/if}
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td
+											colspan={tableMetadata ? tableMetadata.fields.length + (isReadOnly ? 0 : 1) : 1}
+											class="border-x border-black bg-white px-4 py-12 text-center text-muted-foreground"
+										>
+											<div class="flex flex-col items-center gap-2">
+												<Database class="size-12 text-gray-300" />
+												<p class="text-base font-medium">Aucune donnée disponible</p>
+												<p class="text-sm">Cette table ne contient aucun enregistrement pour le moment</p>
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					{:else}
+						<div class="relative overflow-x-auto">
+							<table class="w-full border-x border-black text-left text-sm">
+								<thead class="bg-blue-700 text-xs uppercase text-white">
+									<tr>
+										{#if tableMetadata}
+											{#each tableMetadata.fields as field (field.name)}
+												<th scope="col" class="w-14 whitespace-nowrap border-x border-black px-4 py-3">
+													{field.name}
+												</th>
+											{/each}
+											{#if !isReadOnly}
+												<th scope="col" class="w-14 border-x border-black px-4 py-3 text-right">
+													<span class="sr-only">Actions</span>
+												</th>
+											{/if}
+										{/if}
+									</tr>
+								</thead>
+								<tbody>
+									{#each tableData as record, i (i)}
+										<tr class="group border-b">
+											{#if tableMetadata}
+												{#each tableMetadata.fields as field (field.name)}
+													<td
+														class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
+															? 'bg-white'
+															: 'bg-gray-100'}"
+													>
+														{formatValue(record[field.name])}
+													</td>
+												{/each}
+												{#if !isReadOnly}
+													<td
+														class="w-14 border-x border-black px-4 py-3 text-right {i % 2 === 0
+															? 'bg-white'
+															: 'bg-gray-100'}"
+													>
+														<div class="flex justify-end gap-2">
+															<Button variant="bleu" size="sm" onclick={() => openEditModal(record)}>
+																<Pencil class="mr-2 size-4" />
+																Modifier
+															</Button>
+															<Button variant="rouge" size="sm" onclick={() => openDeleteModal(record)}>
+																<Trash2 class="mr-2 size-4" />
+																Supprimer
+															</Button>
+														</div>
+													</td>
+												{/if}
+											{/if}
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
 
 						<!-- Pagination -->
 						{#if totalPages > 1}
@@ -333,7 +376,11 @@
 							name={field.name}
 							type={field.type === 'DateTime' ? 'datetime-local' : 'text'}
 							required={field.isRequired}
-							value={modalState.record ? formatValue(modalState.record[field.name]) : ''}
+							value={field.type === 'DateTime' && modalState.record?.[field.name]
+								? new Date(modalState.record[field.name] as string).toISOString().slice(0, 16)
+								: modalState.record
+									? formatValue(modalState.record[field.name])
+									: ''}
 						/>
 						<p class="text-muted-foreground text-xs">
 							Type: {field.type}

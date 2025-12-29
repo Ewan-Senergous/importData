@@ -73,7 +73,7 @@
 							<Collapsible.Root open={expandedDatabases.has(database)}>
 								<Collapsible.Trigger
 									onclick={() => toggleDatabase(database)}
-									class="flex w-full items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent"
+									class="flex w-full items-center justify-between rounded-md px-3 py-2.5 hover:bg-accent cursor-pointer"
 								>
 									<div class="flex items-center gap-2">
 										<Database class="size-4" />
@@ -92,7 +92,7 @@
 										<Collapsible.Root open={expandedSchemas.has(`${database}-${schema}`)}>
 											<Collapsible.Trigger
 												onclick={() => toggleSchema(`${database}-${schema}`)}
-												class="flex w-full items-center justify-between rounded-md px-2 py-1 hover:bg-accent"
+												class="flex w-full items-center justify-between rounded-md px-3 py-2 hover:bg-accent cursor-pointer"
 											>
 												<div class="flex items-center gap-2">
 													<Folder class="size-3.5" />
@@ -112,7 +112,7 @@
 														<Collapsible.Trigger
 															onclick={() =>
 																toggleCategory(`${database}-${schema}-tables`)}
-															class="flex w-full items-center justify-between rounded-md px-2 py-1 text-xs hover:bg-accent"
+															class="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs hover:bg-accent cursor-pointer"
 														>
 															<div class="flex items-center gap-1.5">
 																<Table class="size-3" />
@@ -128,7 +128,7 @@
 																<Sidebar.MenuButton
 																	onclick={() =>
 																		selectTable(database, schema, table.name)}
-																	class="w-full justify-start text-xs hover:bg-accent"
+																	class="w-full justify-start text-xs hover:bg-accent cursor-pointer px-3 py-2"
 																>
 																	<Table class="size-3" />
 																	{table.name}
@@ -145,7 +145,7 @@
 													>
 														<Collapsible.Trigger
 															onclick={() => toggleCategory(`${database}-${schema}-views`)}
-															class="flex w-full items-center justify-between rounded-md px-2 py-1 text-xs hover:bg-accent"
+															class="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs hover:bg-accent cursor-pointer"
 														>
 															<div class="flex items-center gap-1.5">
 																<Eye class="size-3" />
@@ -161,7 +161,7 @@
 																<Sidebar.MenuButton
 																	onclick={() =>
 																		selectTable(database, schema, view.name)}
-																	class="w-full justify-start text-xs hover:bg-accent"
+																	class="w-full justify-start text-xs hover:bg-accent cursor-pointer px-3 py-2"
 																>
 																	<Eye class="size-3" />
 																	{view.name}
