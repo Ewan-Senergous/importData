@@ -45,7 +45,7 @@
 </svelte:head>
 
 <div class="page-transition-container min-h-screen bg-gray-50 {loaded ? 'loaded' : ''}">
-	<header class="bg-white shadow">
+	<header class="sticky top-0 z-50 bg-white shadow">
 		<div class="container mx-auto px-4">
 			<!-- Mobile: Wrapper pour layout vertical -->
 			<div class="md:hidden">

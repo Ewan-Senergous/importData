@@ -53,6 +53,11 @@
 		console.log('🔄 $effect triggered - selectedTable:', selectedTable);
 		if (selectedTable) {
 			loadTableData();
+			// Reset scroll à 0 quand on change de table
+			const container = document.querySelector('.h-full.overflow-auto.p-6');
+			if (container) {
+				container.scrollTop = 0;
+			}
 		}
 	});
 
@@ -140,7 +145,7 @@
 </script>
 
 <style>
-	/* Surcharge de la sidebar Shadcn pour qu'elle commence sous la navbar */
+	/* Surcharge de la sidebar Shadcn pour qu'elle commence sous la navbar sticky */
 	:global([data-slot="sidebar-container"]) {
 		top: 138px !important;
 		height: calc(100vh - 138px) !important;
