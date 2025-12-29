@@ -9,7 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Loader2, Plus, Pencil, Trash2, Database } from 'lucide-svelte';
+	import { Loader2, CirclePlus, CircleCheck, CircleX, Pencil, Trash2, Database } from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import type { TableSelection } from './services/explorer.service';
 	import type { TableMetadata } from './repositories/explorer.repository';
@@ -195,8 +195,8 @@
 						</div>
 
 						{#if !isReadOnly}
-							<Button variant="bleu" onclick={openCreateModal}>
-								<Plus class="size-4" />
+							<Button variant="vert" onclick={openCreateModal}>
+								<CirclePlus class="mr-2 h-4 w-4" />
 								Ajouter
 							</Button>
 						{/if}
@@ -367,9 +367,9 @@
 				/>
 			{/if}
 
-			<div class="space-y-4">
+			<div class="grid grid-cols-2 gap-4">
 				{#each displayedFields as field (field.name)}
-					<div class="space-y-2">
+					<div class="w-full">
 						<Label for={field.name}>
 							{field.name}
 							{#if field.isRequired}
@@ -395,9 +395,13 @@
 				{/each}
 			</div>
 
-			<div class="flex justify-end space-x-2 pt-4">
-				<Button type="button" variant="blanc" onclick={closeModal}>Annuler</Button>
-				<Button type="submit" variant="bleu">
+			<div class="col-span-2 flex justify-end space-x-2 pt-4">
+				<Button type="button" variant="noir" onclick={closeModal}>
+					<CircleX class="mr-2 h-4 w-4" />
+					Annuler
+				</Button>
+				<Button type="submit" variant="vert">
+					<CircleCheck class="mr-2 h-4 w-4" />
 					{modalState.mode === 'create' ? 'Créer' : 'Modifier'}
 				</Button>
 			</div>
@@ -459,8 +463,12 @@
 			</div>
 
 			<div class="flex justify-end space-x-2 pt-4">
-				<Button type="button" variant="blanc" onclick={closeModal}>Annuler</Button>
+				<Button type="button" variant="noir" onclick={closeModal}>
+					<CircleX class="mr-2 h-4 w-4" />
+					Annuler
+				</Button>
 				<Button type="submit" variant="rouge" disabled={deleteConfirmation !== 'SUPPRIMER'}>
+					<Trash2 class="mr-2 h-4 w-4" />
 					Supprimer définitivement
 				</Button>
 			</div>
