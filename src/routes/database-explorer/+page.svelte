@@ -3,6 +3,7 @@
 	import { toast } from 'svelte-sonner';
 	import { Modal } from 'flowbite-svelte';
 	import ExplorerSidebar from './services/ExplorerSidebar.svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar';
 	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -45,9 +46,7 @@
 	// ===== DERIVED STATES =====
 	let isReadOnly = $derived(tableMetadata?.category === 'view');
 	let totalPages = $derived(Math.ceil(totalRows / pageSize));
-	let displayedFields = $derived(
-		tableMetadata?.fields.filter((f) => !f.isPrimaryKey) || []
-	);
+	let displayedFields = $derived(tableMetadata?.fields.filter((f) => !f.isPrimaryKey) || []);
 
 	// ===== EFFETS =====
 	// Charger les données quand la table sélectionnée change
@@ -133,149 +132,156 @@
 	}
 </script>
 
-<div class="flex h-screen">
-	<!-- Sidebar -->
-	<div class="w-64 border-r bg-card">
-		<ExplorerSidebar allTables={data.allTables} on:tableSelect={handleTableSelect} />
-	</div>
+<style>
+	/* Surcharge de la sidebar Shadcn pour qu'elle commence sous la navbar */
+	:global([data-slot="sidebar-container"]) {
+		top: 138px !important;
+		height: calc(100vh - 138px) !important;
+	}
+</style>
 
-	<!-- Zone d'affichage principale -->
-	<div class="flex-1 overflow-auto p-6">
-		{#if !selectedTable}
-			<!-- Message de sélection -->
-			<div class="flex h-full items-center justify-center">
-				<Card.Root class="max-w-md">
-					<Card.Header>
-						<Card.Title class="flex items-center gap-2">
-							<Database class="size-5" />
-							Database Explorer
-						</Card.Title>
-						<Card.Description>
-							Sélectionnez une table ou une vue dans la barre latérale pour visualiser ses
-							données
-						</Card.Description>
-					</Card.Header>
-				</Card.Root>
-			</div>
-		{:else}
-			<!-- En-tête de la table -->
-			<div class="mb-4 flex items-center justify-between">
-				<div>
-					<h1 class="text-2xl font-bold">
-						{selectedTable.tableName}
-					</h1>
-					<p class="text-sm text-muted-foreground">
-						{selectedTable.database} • {selectedTable.schema}
-						{#if isReadOnly}
-							<Badge variant="vert" class="ml-2">Lecture seule</Badge>
-						{/if}
-					</p>
-				</div>
-
-				{#if !isReadOnly}
-					<Button variant="bleu" onclick={openCreateModal}>
-						<Plus class="size-4" />
-						Ajouter
-					</Button>
-				{/if}
-			</div>
-
-			<!-- Table de données -->
-			{#if isLoading}
-				<div class="flex items-center justify-center py-12">
-					<Loader2 class="size-8 animate-spin text-primary" />
-				</div>
-			{:else if tableData.length === 0}
-				<Card.Root>
-					<Card.Content class="py-12 text-center text-muted-foreground">
-						Aucune donnée disponible
-					</Card.Content>
-				</Card.Root>
-			{:else}
-				<Card.Root>
-					<Card.Content class="p-0">
-						<div class="overflow-x-auto">
-							<Table.Root>
-								<Table.Header>
-									<Table.Row>
-										{#if tableMetadata}
-											{#each tableMetadata.fields as field (field.name)}
-												<Table.Head>{field.name}</Table.Head>
-											{/each}
-											{#if !isReadOnly}
-												<Table.Head class="text-right">Actions</Table.Head>
-											{/if}
-										{/if}
-									</Table.Row>
-								</Table.Header>
-								<Table.Body>
-									{#each tableData as record, i (i)}
-										<Table.Row>
-											{#if tableMetadata}
-												{#each tableMetadata.fields as field (field.name)}
-													<Table.Cell>
-														{formatValue(record[field.name])}
-													</Table.Cell>
-												{/each}
-												{#if !isReadOnly}
-													<Table.Cell class="text-right">
-														<div class="flex justify-end gap-2">
-															<Button
-																variant="blanc"
-																size="sm"
-																onclick={() => openEditModal(record)}
-															>
-																<Pencil class="size-3.5" />
-															</Button>
-															<Button
-																variant="rouge"
-																size="sm"
-																onclick={() => openDeleteModal(record)}
-															>
-																<Trash2 class="size-3.5" />
-															</Button>
-														</div>
-													</Table.Cell>
-												{/if}
-											{/if}
-										</Table.Row>
-									{/each}
-								</Table.Body>
-							</Table.Root>
-						</div>
-					</Card.Content>
-				</Card.Root>
-
-				<!-- Pagination -->
-				{#if totalPages > 1}
-					<div class="mt-4 flex items-center justify-between">
-						<p class="text-sm text-muted-foreground">
-							Page {currentPage} sur {totalPages} ({totalRows} enregistrements)
-						</p>
-						<div class="flex gap-2">
-							<Button
-								variant="blanc"
-								size="sm"
-								disabled={currentPage === 1}
-								onclick={() => goToPage(currentPage - 1)}
-							>
-								Précédent
-							</Button>
-							<Button
-								variant="blanc"
-								size="sm"
-								disabled={currentPage === totalPages}
-								onclick={() => goToPage(currentPage + 1)}
-							>
-								Suivant
-							</Button>
-						</div>
+<Sidebar.Provider>
+		<Sidebar.Sidebar>
+			<ExplorerSidebar allTables={data.allTables} on:tableSelect={handleTableSelect} />
+		</Sidebar.Sidebar>
+		<Sidebar.SidebarInset>
+			<div class="h-full overflow-auto p-6">
+				{#if !selectedTable}
+					<!-- Message de sélection -->
+					<div class="flex h-full items-center justify-center">
+						<Card.Root class="max-w-md">
+							<Card.Header>
+								<Card.Title class="flex items-center gap-2">
+									<Database class="size-5" />
+									Database Explorer
+								</Card.Title>
+								<Card.Description>
+									Sélectionnez une table ou une vue dans la barre latérale pour visualiser ses
+									données
+								</Card.Description>
+							</Card.Header>
+						</Card.Root>
 					</div>
+				{:else}
+					<!-- En-tête de la table -->
+					<div class="mb-4 flex items-center justify-between">
+						<div>
+							<h1 class="text-2xl font-bold">
+								{selectedTable.tableName}
+							</h1>
+							<p class="text-muted-foreground text-sm">
+								{selectedTable.database} • {selectedTable.schema}
+								{#if isReadOnly}
+									<Badge variant="vert" class="ml-2">Lecture seule</Badge>
+								{/if}
+							</p>
+						</div>
+
+						{#if !isReadOnly}
+							<Button variant="bleu" onclick={openCreateModal}>
+								<Plus class="size-4" />
+								Ajouter
+							</Button>
+						{/if}
+					</div>
+
+					<!-- Table de données -->
+					{#if isLoading}
+						<div class="flex items-center justify-center py-12">
+							<Loader2 class="text-primary size-8 animate-spin" />
+						</div>
+					{:else if tableData.length === 0}
+						<Card.Root>
+							<Card.Content class="text-muted-foreground py-12 text-center">
+								Aucune donnée disponible
+							</Card.Content>
+						</Card.Root>
+					{:else}
+						<Card.Root>
+							<Card.Content class="p-0">
+								<div class="overflow-x-auto">
+									<Table.Root>
+										<Table.Header>
+											<Table.Row>
+												{#if tableMetadata}
+													{#each tableMetadata.fields as field (field.name)}
+														<Table.Head>{field.name}</Table.Head>
+													{/each}
+													{#if !isReadOnly}
+														<Table.Head class="text-right">Actions</Table.Head>
+													{/if}
+												{/if}
+											</Table.Row>
+										</Table.Header>
+										<Table.Body>
+											{#each tableData as record, i (i)}
+												<Table.Row>
+													{#if tableMetadata}
+														{#each tableMetadata.fields as field (field.name)}
+															<Table.Cell>
+																{formatValue(record[field.name])}
+															</Table.Cell>
+														{/each}
+														{#if !isReadOnly}
+															<Table.Cell class="text-right">
+																<div class="flex justify-end gap-2">
+																	<Button
+																		variant="blanc"
+																		size="sm"
+																		onclick={() => openEditModal(record)}
+																	>
+																		<Pencil class="size-3.5" />
+																	</Button>
+																	<Button
+																		variant="rouge"
+																		size="sm"
+																		onclick={() => openDeleteModal(record)}
+																	>
+																		<Trash2 class="size-3.5" />
+																	</Button>
+																</div>
+															</Table.Cell>
+														{/if}
+													{/if}
+												</Table.Row>
+											{/each}
+										</Table.Body>
+									</Table.Root>
+								</div>
+							</Card.Content>
+						</Card.Root>
+
+						<!-- Pagination -->
+						{#if totalPages > 1}
+							<div class="mt-4 flex items-center justify-between">
+								<p class="text-muted-foreground text-sm">
+									Page {currentPage} sur {totalPages} ({totalRows} enregistrements)
+								</p>
+								<div class="flex gap-2">
+									<Button
+										variant="blanc"
+										size="sm"
+										disabled={currentPage === 1}
+										onclick={() => goToPage(currentPage - 1)}
+									>
+										Précédent
+									</Button>
+									<Button
+										variant="blanc"
+										size="sm"
+										disabled={currentPage === totalPages}
+										onclick={() => goToPage(currentPage + 1)}
+									>
+										Suivant
+									</Button>
+								</div>
+							</div>
+						{/if}
+					{/if}
 				{/if}
-			{/if}
-		{/if}
-	</div>
-</div>
+			</div>
+		</Sidebar.SidebarInset>
+</Sidebar.Provider>
 
 <!-- Modal Create/Edit -->
 <Modal bind:open={isCreateEditModalOpen} size="lg">
@@ -327,11 +333,9 @@
 							name={field.name}
 							type={field.type === 'DateTime' ? 'datetime-local' : 'text'}
 							required={field.isRequired}
-							value={modalState.record
-								? formatValue(modalState.record[field.name])
-								: ''}
+							value={modalState.record ? formatValue(modalState.record[field.name]) : ''}
 						/>
-						<p class="text-xs text-muted-foreground">
+						<p class="text-muted-foreground text-xs">
 							Type: {field.type}
 							{field.isRequired ? ' (requis)' : ' (optionnel)'}
 						</p>
@@ -340,9 +344,7 @@
 			</div>
 
 			<div class="flex justify-end space-x-2 pt-4">
-				<Button type="button" variant="blanc" onclick={closeModal}>
-					Annuler
-				</Button>
+				<Button type="button" variant="blanc" onclick={closeModal}>Annuler</Button>
 				<Button type="submit" variant="bleu">
 					{modalState.mode === 'create' ? 'Créer' : 'Modifier'}
 				</Button>
@@ -405,9 +407,7 @@
 			</div>
 
 			<div class="flex justify-end space-x-2 pt-4">
-				<Button type="button" variant="blanc" onclick={closeModal}>
-					Annuler
-				</Button>
+				<Button type="button" variant="blanc" onclick={closeModal}>Annuler</Button>
 				<Button type="submit" variant="rouge" disabled={deleteConfirmation !== 'SUPPRIMER'}>
 					Supprimer définitivement
 				</Button>
