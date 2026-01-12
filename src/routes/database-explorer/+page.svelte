@@ -420,7 +420,7 @@
 				<div class="px-6">
 					<!-- En-tête de la table -->
 					<div
-						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 py-3"
+						class="fixed top-34.5 z-40 flex items-center justify-between bg-transparent py-3"
 						style="left: calc(var(--sidebar-width) + 3rem); right: 3rem;"
 					>
 						<p class="text-sm font-semibold text-gray-700">
@@ -444,17 +444,19 @@
 					</div>
 
 					<!-- Espacement pour la barre fixe -->
-					<div class="mb-16"></div>
+					<div class="mb-4"></div>
 
-					<!-- Table de données -->
-					{#if isLoading}
+					<!-- Conteneur avec scroll interne -->
+					<div class="overflow-auto" style="height: calc(100vh - 250px);">
+						<!-- Table de données -->
+						{#if isLoading}
 						<div class="flex items-center justify-center py-12">
 							<Loader2 class="text-primary size-8 animate-spin" />
 						</div>
 					{:else if tableData.length === 0}
-						<div class="relative overflow-x-auto">
+						<div class="relative">
 							<table class="w-full border-x border-black text-left text-sm">
-								<thead class="bg-blue-700 text-xs text-white uppercase">
+								<thead class="sticky top-0 z-10 bg-blue-700 text-xs text-white uppercase">
 									<tr>
 										{#if !isReadOnly}
 											<th scope="col" class="w-14 border-x border-black px-4 py-3">
@@ -494,9 +496,9 @@
 							</table>
 						</div>
 					{:else}
-						<div class="relative overflow-x-auto">
+						<div class="relative">
 							<table class="w-full border-x border-black text-left text-sm">
-								<thead class="bg-blue-700 text-xs text-white uppercase">
+								<thead class="sticky top-0 z-10 bg-blue-700 text-xs text-white uppercase">
 									<tr>
 										{#if !isReadOnly}
 											<th scope="col" class="w-14 border-x border-black px-4 py-3">
@@ -632,6 +634,8 @@
 							</div>
 						{/if}
 					{/if}
+					</div>
+					<!-- Fin conteneur scroll -->
 				</div>
 			{/if}
 		</div>
