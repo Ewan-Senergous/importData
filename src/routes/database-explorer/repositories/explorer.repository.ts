@@ -59,16 +59,22 @@ export async function getTableData(
 	try {
 		// ✅ SÉCURISÉ - Utiliser méthode Prisma native
 		const table = client[tableName] as {
-			findMany?: (args: { skip: number; take: number }) => Promise<Record<string, unknown>[]>;
+			findMany?: (args: {
+				skip: number;
+				take: number;
+				orderBy?: Record<string, string>;
+			}) => Promise<Record<string, unknown>[]>;
 		};
 
 		if (!table?.findMany) {
 			throw new Error(`Table ${tableName} n'a pas de méthode findMany`);
 		}
 
+		// ✅ Prisma exige orderBy pour les vues quand take est utilisé
 		const rawData = await table.findMany({
 			skip,
-			take: limit
+			take: limit,
+			orderBy: { [metadata.primaryKey]: 'asc' }
 		});
 
 		// Post-traitement timestamps : convertir Date en ISO string
@@ -115,10 +121,11 @@ export async function updateTableRecord(
 	database: DatabaseName,
 	tableName: string,
 	primaryKeyValue: unknown,
-	data: Record<string, unknown>
+	data: Record<string, unknown>,
+	schema = 'public'
 ): Promise<Record<string, unknown>> {
 	const client = await getClient(database);
-	const metadata = await getTableMetadataFromPostgres(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName, schema);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
@@ -141,10 +148,11 @@ export async function updateTableRecord(
 export async function deleteTableRecord(
 	database: DatabaseName,
 	tableName: string,
-	primaryKeyValue: unknown
+	primaryKeyValue: unknown,
+	schema = 'public'
 ): Promise<void> {
 	const client = await getClient(database);
-	const metadata = await getTableMetadataFromPostgres(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName, schema);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
@@ -164,10 +172,11 @@ export async function deleteTableRecord(
 export async function getTableRecord(
 	database: DatabaseName,
 	tableName: string,
-	primaryKeyValue: unknown
+	primaryKeyValue: unknown,
+	schema = 'public'
 ): Promise<Record<string, unknown> | null> {
 	const client = await getClient(database);
-	const metadata = await getTableMetadataFromPostgres(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName, schema);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);

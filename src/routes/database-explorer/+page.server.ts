@@ -101,8 +101,9 @@ export const actions: Actions = {
 		const tableName = formData.get('tableName') as string;
 
 		try {
-			// Récupérer les métadonnées de la table
-			const metadata = await getTableMetadataFromPostgres(database, tableName);
+			// Récupérer les métadonnées de la table (essayer les deux schémas)
+			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
+			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
 
 			if (!metadata) {
 				return fail(404, {
@@ -172,8 +173,9 @@ export const actions: Actions = {
 		const primaryKeyValue = formData.get('primaryKeyValue');
 
 		try {
-			// Récupérer les métadonnées de la table
-			const metadata = await getTableMetadataFromPostgres(database, tableName);
+			// Récupérer les métadonnées de la table (essayer les deux schémas)
+			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
+			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
 
 			if (!metadata) {
 				return fail(404, {
@@ -211,8 +213,14 @@ export const actions: Actions = {
 				});
 			}
 
-			// Modifier l'enregistrement
-			await updateTableRecord(database, tableName, primaryKeyValue, validation.data);
+			// Modifier l'enregistrement avec le bon schéma
+			await updateTableRecord(
+				database,
+				tableName,
+				primaryKeyValue,
+				validation.data,
+				metadata.schema || 'public'
+			);
 
 			return {
 				success: true,
@@ -252,8 +260,17 @@ export const actions: Actions = {
 		}
 
 		try {
+			// Récupérer les métadonnées pour le schéma
+			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
+			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
+
 			// Supprimer l'enregistrement
-			await deleteTableRecord(database, tableName, primaryKeyValue);
+			await deleteTableRecord(
+				database,
+				tableName,
+				primaryKeyValue,
+				metadata?.schema || 'public'
+			);
 
 			return {
 				success: true,

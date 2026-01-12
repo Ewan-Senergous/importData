@@ -181,6 +181,9 @@ export async function getTableMetadataFromPostgres(
 			ORDER BY c.column_name, c.ordinal_position
 		`;
 
+		// ✅ Trier par ordre de définition dans la BDD (ordinal_position)
+		columns.sort((a, b) => a.ordinal_position - b.ordinal_position);
+
 		if (columns.length === 0) {
 			logger.warn({ database, tableName, schema }, 'No columns found for table');
 			return null;

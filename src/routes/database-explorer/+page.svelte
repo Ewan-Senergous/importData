@@ -51,6 +51,17 @@
 	let isCreateEditModalOpen = $state(false);
 	let isDeleteModalOpen = $state(false);
 
+	// États pour l'édition inline
+	let editingCell = $state<{
+		rowIndex: number;
+		fieldName: string;
+		originalValue: unknown;
+		newValue: string;
+		record: Record<string, unknown>;
+	} | null>(null);
+	let isSaving = $state(false);
+	let editInputElement = $state<HTMLInputElement | null>(null);
+
 	// États pour la sélection multiple
 	let selectedItems = $state<Record<string, unknown>[]>([]);
 	let selectAll = $state(false);
@@ -81,6 +92,13 @@
 			if (container) {
 				container.scrollTop = 0;
 			}
+		}
+	});
+
+	// Focus l'input d'édition quand il apparaît
+	$effect(() => {
+		if (editingCell && editInputElement) {
+			editInputElement.focus();
 		}
 	});
 
@@ -236,6 +254,89 @@
 		// Les timestamps sont maintenant retournés comme strings brutes depuis la BDD
 		return String(value);
 	}
+
+	// ===== HANDLERS ÉDITION INLINE =====
+	function handleCellDoubleClick(
+		rowIndex: number,
+		fieldName: string,
+		value: unknown,
+		record: Record<string, unknown>
+	) {
+		// Vérifier si le champ est éditable
+		const field = tableMetadata?.fields.find((f) => f.name === fieldName);
+		if (field?.isPrimaryKey || field?.isUpdatedAt) {
+			toast.error('Ce champ ne peut pas être modifié');
+			return;
+		}
+
+		editingCell = {
+			rowIndex,
+			fieldName,
+			originalValue: value,
+			newValue: formatValue(value),
+			record
+		};
+	}
+
+	function handleInputKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			saveEdit();
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
+			cancelEdit();
+		}
+	}
+
+	function cancelEdit() {
+		editingCell = null;
+		isSaving = false;
+	}
+
+	async function saveEdit() {
+		if (!editingCell || !selectedTable || !tableMetadata) return;
+
+		// Si pas de changement, annuler
+		if (editingCell.newValue === formatValue(editingCell.originalValue)) {
+			cancelEdit();
+			return;
+		}
+
+		const primaryKeyValue = editingCell.record[tableMetadata.primaryKey];
+
+		isSaving = true;
+
+		try {
+			const response = await fetch('/database-explorer/api/update-cell', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					database: selectedTable.database,
+					schema: selectedTable.schema,
+					tableName: selectedTable.tableName,
+					primaryKeyValue,
+					fieldName: editingCell.fieldName,
+					newValue: editingCell.newValue
+				})
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				toast.success('Cellule mise à jour avec succès');
+				// Mettre à jour la valeur localement
+				tableData[editingCell.rowIndex][editingCell.fieldName] = editingCell.newValue;
+				editingCell = null;
+			} else {
+				toast.error(result.error || 'Erreur lors de la mise à jour');
+			}
+		} catch (error) {
+			console.error('❌ Erreur update inline:', error);
+			toast.error('Erreur lors de la mise à jour');
+		} finally {
+			isSaving = false;
+		}
+	}
 </script>
 
 <Sidebar.Provider>
@@ -386,12 +487,53 @@
 										{/if}
 										{#if tableMetadata}
 											{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
+												{@const isEditable = !isReadOnly && !field.isPrimaryKey && !field.isUpdatedAt}
+												{@const isCurrentlyEditing = editingCell?.rowIndex === i && editingCell?.fieldName === field.name}
 												<td
 													class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
 														? 'bg-white'
-														: 'bg-gray-100'}"
+														: 'bg-gray-100'} {isEditable ? 'cursor-text hover:bg-blue-50' : ''}"
+													ondblclick={() => isEditable && handleCellDoubleClick(i, field.name, record[field.name], record)}
+													title={isEditable ? 'Double-cliquez pour éditer' : ''}
 												>
-													{formatValue(record[field.name])}
+													{#if isCurrentlyEditing && editingCell}
+														<div class="space-y-2">
+															<input
+																bind:this={editInputElement}
+																type="text"
+																class="w-full border-2 border-blue-500 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
+																bind:value={editingCell.newValue}
+																onkeydown={(e) => handleInputKeydown(e)}
+															/>
+															<div class="flex flex-col gap-1">
+																<button
+																	type="button"
+																	class="flex items-center gap-1 text-sm text-green-700 hover:text-green-900"
+																	onclick={saveEdit}
+																	disabled={isSaving}
+																>
+																	<CircleCheck class="h-3 w-3" />
+																	{#if isSaving}
+																		<Loader2 class="h-3 w-3 animate-spin" />
+																		Enregistrement...
+																	{:else}
+																		Save changes
+																	{/if}
+																</button>
+																<button
+																	type="button"
+																	class="flex items-center gap-1 text-sm text-red-700 hover:text-red-900"
+																	onclick={cancelEdit}
+																	disabled={isSaving}
+																>
+																	<CircleX class="h-3 w-3" />
+																	Cancel changes
+																</button>
+															</div>
+														</div>
+													{:else}
+														{formatValue(record[field.name])}
+													{/if}
 												</td>
 											{/each}
 										{/if}
