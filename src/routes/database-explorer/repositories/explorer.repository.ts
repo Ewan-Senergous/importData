@@ -77,13 +77,18 @@ export async function getTableData(
 			orderBy: { [metadata.primaryKey]: 'asc' }
 		});
 
-		// Post-traitement timestamps : convertir Date en ISO string
+		// Post-traitement timestamps : convertir Date au format PostgreSQL
 		const data = rawData.map((row) => {
 			const processedRow = { ...row };
 			for (const col of timestampColumns) {
 				const value = processedRow[col.name];
 				if (value instanceof Date) {
-					processedRow[col.name] = value.toISOString();
+					// Format PostgreSQL : YYYY-MM-DD HH:MM:SS.mmm
+					processedRow[col.name] = value
+						.toISOString()
+						.replace('T', ' ')
+						.replace('Z', '')
+						.slice(0, 23); // Garder millisecondes (3 chiffres)
 				}
 			}
 			return processedRow;

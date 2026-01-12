@@ -349,14 +349,14 @@
 		<div class="h-full overflow-auto p-6">
 			{#if !selectedTable}
 				<!-- Message de sélection -->
-				<div class="flex h-full items-center justify-center">
-					<Card.Root class="max-w-lg">
+				<div class="flex h-full items-center justify-center p-4">
+					<Card.Root class="w-full max-w-2xl shadow-lg">
 						<Card.Header>
 							<Card.Title class="flex items-center gap-2 text-xl">
-								<Database class="size-6" />
-								Database Explorer
+								<Database class="size-6 shrink-0" />
+								<span>Database Explorer</span>
 							</Card.Title>
-							<Card.Description class="text-base">
+							<Card.Description class="text-base leading-relaxed">
 								Sélectionnez une table ou une vue dans la barre latérale pour visualiser ses données
 							</Card.Description>
 						</Card.Header>
