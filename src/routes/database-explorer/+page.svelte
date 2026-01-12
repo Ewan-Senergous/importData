@@ -70,6 +70,9 @@
 	// AbortController pour annuler les requêtes en cours
 	let abortController: AbortController | null = null;
 
+	// État pour détecter le scroll
+	let isScrolled = $state(false);
+
 	// ===== DERIVED STATES =====
 	let isReadOnly = $derived(tableMetadata?.category === 'view');
 	let totalPages = $derived(Math.ceil(totalRows / pageSize));
@@ -134,6 +137,24 @@
 		if (editingCell && editInputElement) {
 			editInputElement.focus();
 		}
+	});
+
+	// Détecter le scroll pour afficher le fond du header sticky
+	$effect(() => {
+		function handleScroll() {
+			const scrollY = window.scrollY || document.documentElement.scrollTop;
+			const newValue = scrollY > 0;
+
+			if (isScrolled !== newValue) {
+				isScrolled = newValue;
+			}
+		}
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+		};
 	});
 
 	// ===== HANDLERS =====
@@ -396,17 +417,14 @@
 					</Card.Root>
 				</div>
 			{:else}
-				<div class="p-6">
+				<div class="px-6">
 					<!-- En-tête de la table -->
-					<div class="mb-4">
-					<div class="mb-2 flex items-center justify-between">
-						<h1 class="text-2xl font-bold">
-							{selectedTable.tableName}
-						</h1>
-					</div>
-					<div class="flex items-center justify-between">
-						<p class="text-muted-foreground text-sm">
-							{selectedTable.database} • {selectedTable.schema}
+					<div
+						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 py-3"
+						style="left: calc(var(--sidebar-width) + 3rem); right: 3rem;"
+					>
+						<p class="text-sm font-semibold text-gray-700">
+							{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
 							{#if isReadOnly}
 								<Badge variant="vert" class="ml-2">Lecture seule</Badge>
 							{/if}
@@ -424,188 +442,196 @@
 							</div>
 						{/if}
 					</div>
-				</div>
 
-				<!-- Table de données -->
-				{#if isLoading}
-					<div class="flex items-center justify-center py-12">
-						<Loader2 class="text-primary size-8 animate-spin" />
-					</div>
-				{:else if tableData.length === 0}
-					<div class="relative overflow-x-auto">
-						<table class="w-full border-x border-black text-left text-sm">
-							<thead class="bg-blue-700 text-xs text-white uppercase">
-								<tr>
-									{#if !isReadOnly}
-										<th scope="col" class="w-14 border-x border-black px-4 py-3">
-											<span class="sr-only">Select</span>
-										</th>
-									{/if}
-									{#if tableMetadata}
-										{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
-											<th
-												scope="col"
-												class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
-											>
-												{field.name}
-											</th>
-										{/each}
-									{/if}
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td
-										colspan={tableMetadata ? tableMetadata.fields.length + (isReadOnly ? 0 : 1) : 1}
-										class="text-muted-foreground border-x border-black bg-white px-4 py-12 text-center"
-									>
-										<div class="flex flex-col items-center gap-2">
-											<Database class="size-12 text-gray-300" />
-											<p class="text-base font-medium">Aucune donnée disponible</p>
-											<p class="text-sm">
-												Cette table ne contient aucun enregistrement pour le moment
-											</p>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				{:else}
-					<div class="relative overflow-x-auto">
-						<table class="w-full border-x border-black text-left text-sm">
-							<thead class="bg-blue-700 text-xs text-white uppercase">
-								<tr>
-									{#if !isReadOnly}
-										<th scope="col" class="w-14 border-x border-black px-4 py-3">
-											<button
-												class="flex items-center"
-												onclick={handleSelectAll}
-												title={selectAll ? 'Désélectionner tout' : 'Sélectionner tout'}
-											>
-												{#if selectAll}
-													<CheckSquare class="h-4 w-4" />
-												{:else}
-													<Square class="h-4 w-4" />
-												{/if}
-											</button>
-										</th>
-									{/if}
-									{#if tableMetadata}
-										{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
-											<th
-												scope="col"
-												class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
-											>
-												{field.name}
-											</th>
-										{/each}
-									{/if}
-								</tr>
-							</thead>
-							<tbody>
-								{#each tableData as record, i (i)}
-									<tr class="group border-b" class:bg-blue-100={selectedItems.includes(record)}>
+					<!-- Espacement pour la barre fixe -->
+					<div class="mb-16"></div>
+
+					<!-- Table de données -->
+					{#if isLoading}
+						<div class="flex items-center justify-center py-12">
+							<Loader2 class="text-primary size-8 animate-spin" />
+						</div>
+					{:else if tableData.length === 0}
+						<div class="relative overflow-x-auto">
+							<table class="w-full border-x border-black text-left text-sm">
+								<thead class="bg-blue-700 text-xs text-white uppercase">
+									<tr>
 										{#if !isReadOnly}
-											<td
-												class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
-													? 'bg-white'
-													: 'bg-gray-100'}"
-											>
-												<input
-													type="checkbox"
-													class="h-4 w-4 rounded text-blue-600"
-													checked={selectedItems.includes(record)}
-													onchange={() => handleSelect(record)}
-													aria-label="Sélectionner cet élément"
-												/>
-											</td>
+											<th scope="col" class="w-14 border-x border-black px-4 py-3">
+												<span class="sr-only">Select</span>
+											</th>
 										{/if}
 										{#if tableMetadata}
 											{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
-												{@const isEditable = !isReadOnly && !field.isPrimaryKey && !field.isUpdatedAt}
-												{@const isCurrentlyEditing = editingCell?.rowIndex === i && editingCell?.fieldName === field.name}
-												<td
-													class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
-														? 'bg-white'
-														: 'bg-gray-100'} {isEditable ? 'cursor-text hover:bg-blue-50' : ''}"
-													ondblclick={() => isEditable && handleCellDoubleClick(i, field.name, record[field.name], record)}
-													title={isEditable ? 'Double-cliquez pour éditer' : ''}
+												<th
+													scope="col"
+													class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
 												>
-													{#if isCurrentlyEditing && editingCell}
-														<div class="space-y-2">
-															<Textarea
-																bind:ref={editInputElement}
-																bind:value={editingCell.newValue}
-																onkeydown={(e) => handleInputKeydown(e)}
-																size="md"
-																class="border-2 border-blue-500 focus:border-blue-500"
-															/>
-															<div class="flex flex-col gap-1">
-																<button
-																	type="button"
-																	class="flex items-center gap-1 text-sm text-green-700 hover:text-green-900"
-																	onclick={saveEdit}
-																	disabled={isSaving}
-																>
-																	<CircleCheck class="h-3 w-3" />
-																	{#if isSaving}
-																		<Loader2 class="h-3 w-3 animate-spin" />
-																		Enregistrement...
-																	{:else}
-																		Save changes
-																	{/if}
-																</button>
-																<button
-																	type="button"
-																	class="flex items-center gap-1 text-sm text-red-700 hover:text-red-900"
-																	onclick={cancelEdit}
-																	disabled={isSaving}
-																>
-																	<CircleX class="h-3 w-3" />
-																	Cancel changes
-																</button>
-															</div>
-														</div>
-													{:else}
-														{formatValue(record[field.name])}
-													{/if}
-												</td>
+													{field.name}
+												</th>
 											{/each}
 										{/if}
 									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-
-					<!-- Pagination -->
-					{#if totalPages > 1}
-						<div class="mt-4 flex items-center justify-between">
-							<p class="text-muted-foreground text-sm">
-								Page {currentPage} sur {totalPages} ({totalRows} enregistrements)
-							</p>
-							<div class="flex gap-2">
-								<Button
-									variant="blanc"
-									size="sm"
-									disabled={currentPage === 1}
-									onclick={() => goToPage(currentPage - 1)}
-								>
-									Précédent
-								</Button>
-								<Button
-									variant="blanc"
-									size="sm"
-									disabled={currentPage === totalPages}
-									onclick={() => goToPage(currentPage + 1)}
-								>
-									Suivant
-								</Button>
-							</div>
+								</thead>
+								<tbody>
+									<tr>
+										<td
+											colspan={tableMetadata
+												? tableMetadata.fields.length + (isReadOnly ? 0 : 1)
+												: 1}
+											class="text-muted-foreground border-x border-black bg-white px-4 py-12 text-center"
+										>
+											<div class="flex flex-col items-center gap-2">
+												<Database class="size-12 text-gray-300" />
+												<p class="text-base font-medium">Aucune donnée disponible</p>
+												<p class="text-sm">
+													Cette table ne contient aucun enregistrement pour le moment
+												</p>
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
+					{:else}
+						<div class="relative overflow-x-auto">
+							<table class="w-full border-x border-black text-left text-sm">
+								<thead class="bg-blue-700 text-xs text-white uppercase">
+									<tr>
+										{#if !isReadOnly}
+											<th scope="col" class="w-14 border-x border-black px-4 py-3">
+												<button
+													class="flex items-center"
+													onclick={handleSelectAll}
+													title={selectAll ? 'Désélectionner tout' : 'Sélectionner tout'}
+												>
+													{#if selectAll}
+														<CheckSquare class="h-4 w-4" />
+													{:else}
+														<Square class="h-4 w-4" />
+													{/if}
+												</button>
+											</th>
+										{/if}
+										{#if tableMetadata}
+											{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
+												<th
+													scope="col"
+													class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
+												>
+													{field.name}
+												</th>
+											{/each}
+										{/if}
+									</tr>
+								</thead>
+								<tbody>
+									{#each tableData as record, i (i)}
+										<tr class="group border-b" class:bg-blue-100={selectedItems.includes(record)}>
+											{#if !isReadOnly}
+												<td
+													class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
+														? 'bg-white'
+														: 'bg-gray-100'}"
+												>
+													<input
+														type="checkbox"
+														class="h-4 w-4 rounded text-blue-600"
+														checked={selectedItems.includes(record)}
+														onchange={() => handleSelect(record)}
+														aria-label="Sélectionner cet élément"
+													/>
+												</td>
+											{/if}
+											{#if tableMetadata}
+												{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
+													{@const isEditable =
+														!isReadOnly && !field.isPrimaryKey && !field.isUpdatedAt}
+													{@const isCurrentlyEditing =
+														editingCell?.rowIndex === i && editingCell?.fieldName === field.name}
+													<td
+														class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
+															? 'bg-white'
+															: 'bg-gray-100'} {isEditable ? 'cursor-text hover:bg-blue-50' : ''}"
+														ondblclick={() =>
+															isEditable &&
+															handleCellDoubleClick(i, field.name, record[field.name], record)}
+														title={isEditable ? 'Double-cliquez pour éditer' : ''}
+													>
+														{#if isCurrentlyEditing && editingCell}
+															<div class="space-y-2">
+																<Textarea
+																	bind:ref={editInputElement}
+																	bind:value={editingCell.newValue}
+																	onkeydown={(e) => handleInputKeydown(e)}
+																	size="md"
+																	class="border-2 border-blue-500 focus:border-blue-500"
+																/>
+																<div class="flex flex-col gap-1">
+																	<button
+																		type="button"
+																		class="flex items-center gap-1 text-sm text-green-700 hover:text-green-900"
+																		onclick={saveEdit}
+																		disabled={isSaving}
+																	>
+																		<CircleCheck class="h-3 w-3" />
+																		{#if isSaving}
+																			<Loader2 class="h-3 w-3 animate-spin" />
+																			Enregistrement...
+																		{:else}
+																			Save changes
+																		{/if}
+																	</button>
+																	<button
+																		type="button"
+																		class="flex items-center gap-1 text-sm text-red-700 hover:text-red-900"
+																		onclick={cancelEdit}
+																		disabled={isSaving}
+																	>
+																		<CircleX class="h-3 w-3" />
+																		Cancel changes
+																	</button>
+																</div>
+															</div>
+														{:else}
+															{formatValue(record[field.name])}
+														{/if}
+													</td>
+												{/each}
+											{/if}
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+
+						<!-- Pagination -->
+						{#if totalPages > 1}
+							<div class="mt-4 flex items-center justify-between">
+								<p class="text-muted-foreground text-sm">
+									Page {currentPage} sur {totalPages} ({totalRows} enregistrements)
+								</p>
+								<div class="flex gap-2">
+									<Button
+										variant="blanc"
+										size="sm"
+										disabled={currentPage === 1}
+										onclick={() => goToPage(currentPage - 1)}
+									>
+										Précédent
+									</Button>
+									<Button
+										variant="blanc"
+										size="sm"
+										disabled={currentPage === totalPages}
+										onclick={() => goToPage(currentPage + 1)}
+									>
+										Suivant
+									</Button>
+								</div>
+							</div>
+						{/if}
 					{/if}
-				{/if}
 				</div>
 			{/if}
 		</div>
