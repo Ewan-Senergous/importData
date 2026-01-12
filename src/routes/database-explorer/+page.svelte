@@ -88,12 +88,45 @@
 			selectAll = false;
 
 			loadTableData();
-			// Reset scroll à 0 quand on change de table
-			const container = document.querySelector('.h-full.overflow-auto.p-6');
-			if (container) {
-				container.scrollTop = 0;
-			}
+
+			// Scroll vers le haut - attendre que le DOM soit mis à jour
+			setTimeout(() => {
+				const container = document.querySelector('.h-full.overflow-auto');
+				if (container) {
+					container.scrollTop = 0;
+				}
+				// Aussi scroller window au cas où
+				window.scrollTo(0, 0);
+			}, 0);
 		}
+	});
+
+	// Gérer le scroll du body selon si une table est sélectionnée
+	$effect(() => {
+		const html = document.documentElement;
+		const body = document.body;
+
+		if (!selectedTable) {
+			// Pas de table sélectionnée : bloquer le scroll
+			html.style.overflow = 'hidden';
+			html.style.height = '100vh';
+			body.style.overflow = 'hidden';
+			body.style.height = '100vh';
+		} else {
+			// Table sélectionnée : permettre le scroll
+			html.style.overflow = '';
+			html.style.height = '';
+			body.style.overflow = '';
+			body.style.height = '';
+		}
+
+		// Cleanup
+		return () => {
+			html.style.overflow = '';
+			html.style.height = '';
+			body.style.overflow = '';
+			body.style.height = '';
+		};
 	});
 
 	// Focus l'input d'édition quand il apparaît
@@ -346,10 +379,10 @@
 		<ExplorerSidebar allTables={data.allTables} on:tableSelect={handleTableSelect} />
 	</Sidebar.Sidebar>
 	<Sidebar.SidebarInset>
-		<div class="h-full overflow-auto p-6">
+		<div class="h-full overflow-auto">
 			{#if !selectedTable}
 				<!-- Message de sélection -->
-				<div class="flex h-full items-center justify-center p-4">
+				<div class="flex items-start justify-center p-6">
 					<Card.Root class="w-full max-w-2xl shadow-lg">
 						<Card.Header>
 							<Card.Title class="flex items-center gap-2 text-xl">
@@ -363,8 +396,9 @@
 					</Card.Root>
 				</div>
 			{:else}
-				<!-- En-tête de la table -->
-				<div class="mb-4">
+				<div class="p-6">
+					<!-- En-tête de la table -->
+					<div class="mb-4">
 					<div class="mb-2 flex items-center justify-between">
 						<h1 class="text-2xl font-bold">
 							{selectedTable.tableName}
@@ -572,6 +606,7 @@
 						</div>
 					{/if}
 				{/if}
+				</div>
 			{/if}
 		</div>
 	</Sidebar.SidebarInset>
