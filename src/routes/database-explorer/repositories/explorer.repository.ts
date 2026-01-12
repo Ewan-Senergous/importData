@@ -1,4 +1,4 @@
-import { getClient, countTableRows, getDatabases } from '$lib/prisma-meta';
+import { getClient, countTableRows } from '$lib/prisma-meta';
 import type { DatabaseName } from '$lib/prisma-meta';
 import { getTableMetadataFromPostgres, type TableMetadata } from '$lib/postgres-metadata';
 
@@ -11,6 +11,7 @@ export type { TableMetadata } from '$lib/postgres-metadata';
 export interface GetTableDataOptions {
 	page?: number;
 	limit?: number;
+	schema?: string; // Schéma de la table (public, produit, etc.)
 	orderBy?: { field: string; order: 'asc' | 'desc' };
 	filters?: Record<string, unknown>;
 }
@@ -24,75 +25,59 @@ export interface TableDataResult {
 	metadata: TableMetadata;
 }
 
-/**
- * Récupérer données paginées d'une table
- * Utilise requête SQL brute pour récupérer les timestamps au format PostgreSQL brut
- */
 export async function getTableData(
 	database: DatabaseName,
 	tableName: string,
 	options: GetTableDataOptions = {}
 ): Promise<TableDataResult> {
-	const { page = 1, limit = 500 } = options;
+	const { page = 1, limit = 500, schema = 'public' } = options;
+
+	// ✅ Validation stricte anti-injection
+	if (!Number.isInteger(page) || page < 1 || page > 10000) {
+		throw new Error(`Page invalide: ${page}`);
+	}
+	if (!Number.isInteger(limit) || limit < 1 || limit > 10000) {
+		throw new Error(`Limit invalide: ${limit}`);
+	}
+	if (!/^[a-z_][a-z0-9_]*$/i.test(schema)) {
+		throw new Error(`Schema invalide: ${schema}`);
+	}
+	if (!/^[a-z_][a-z0-9_]*$/i.test(tableName)) {
+		throw new Error(`Table invalide: ${tableName}`);
+	}
 
 	const client = await getClient(database);
-	const metadata = await getTableMetadataFromPostgres(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName, schema);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
 	}
 
 	const skip = (page - 1) * limit;
-	const schema = metadata.schema || 'public';
-
-	// Identifier les colonnes DateTime pour conversion en string (comme export ligne 206-207)
 	const timestampColumns = metadata.fields.filter((f) => f.type === 'DateTime' || f.isTimestamp);
 
-	// Récupérer le vrai nom de table (@@map si défini)
-	let realTableName = tableName;
-	const databases = await getDatabases();
-	const model = databases[database].dmmf.datamodel.models.find((m) => m.name === tableName);
-	if (model) {
-		const modelWithMeta = model as { dbName?: string };
-		if (modelWithMeta.dbName) {
-			realTableName = modelWithMeta.dbName;
-		}
-	}
-
-	// Construire sélections avec ::text pour timestamps (comme export lignes 224-233)
-	const selectColumns = '*';
-	let timestampSelects = '';
-
-	if (timestampColumns.length > 0) {
-		timestampSelects =
-			', ' +
-			timestampColumns
-				.map(
-					(col) =>
-						`"${col.name.replaceAll('"', '""')}"::text as "${col.name.replaceAll('"', '""')}_str"`
-				)
-				.join(', ');
-	}
-
-	// Requête SQL brute avec pagination
-	const qualifiedTableName = `"${schema.replaceAll('"', '""')}"."${realTableName.replaceAll('"', '""')}"`;
-	const query = `SELECT ${selectColumns}${timestampSelects} FROM ${qualifiedTableName} LIMIT ${limit} OFFSET ${skip}`;
-
 	try {
-		const rawData = (await (
-			client as { $queryRawUnsafe: (query: string) => Promise<unknown[]> }
-		).$queryRawUnsafe(query)) as Record<string, unknown>[];
+		// ✅ SÉCURISÉ - Utiliser méthode Prisma native
+		const table = client[tableName] as {
+			findMany?: (args: { skip: number; take: number }) => Promise<Record<string, unknown>[]>;
+		};
 
-		// Post-traitement : remplacer colonnes Date par versions string (comme export lignes 267-277)
+		if (!table?.findMany) {
+			throw new Error(`Table ${tableName} n'a pas de méthode findMany`);
+		}
+
+		const rawData = await table.findMany({
+			skip,
+			take: limit
+		});
+
+		// Post-traitement timestamps : convertir Date en ISO string
 		const data = rawData.map((row) => {
 			const processedRow = { ...row };
 			for (const col of timestampColumns) {
-				const stringKey = `${col.name}_str`;
-				if (processedRow[stringKey]) {
-					// Remplacer la version Date par la version string avec microsecondes
-					processedRow[col.name] = processedRow[stringKey];
-					// Supprimer la colonne temporaire _str
-					delete processedRow[stringKey];
+				const value = processedRow[col.name];
+				if (value instanceof Date) {
+					processedRow[col.name] = value.toISOString();
 				}
 			}
 			return processedRow;

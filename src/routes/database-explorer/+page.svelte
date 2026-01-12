@@ -55,6 +55,9 @@
 	let selectedItems = $state<Record<string, unknown>[]>([]);
 	let selectAll = $state(false);
 
+	// AbortController pour annuler les requêtes en cours
+	let abortController: AbortController | null = null;
+
 	// ===== DERIVED STATES =====
 	let isReadOnly = $derived(tableMetadata?.category === 'view');
 	let totalPages = $derived(Math.ceil(totalRows / pageSize));
@@ -87,6 +90,15 @@
 			return;
 		}
 
+		// Annuler la requête précédente si elle existe
+		if (abortController) {
+			abortController.abort();
+		}
+
+		// Créer un nouveau AbortController pour cette requête
+		abortController = new AbortController();
+		const currentAbortController = abortController;
+
 		isLoading = true;
 
 		try {
@@ -97,25 +109,40 @@
 				},
 				body: JSON.stringify({
 					database: selectedTable.database,
+					schema: selectedTable.schema,
 					tableName: selectedTable.tableName,
 					page: currentPage
-				})
+				}),
+				signal: currentAbortController.signal // ✅ Annulation possible
 			});
 
 			const result = await response.json();
+
+			// Vérifier que cette requête n'a pas été annulée
+			if (currentAbortController.signal.aborted) {
+				return;
+			}
 
 			if (result.success) {
 				tableData = result.data || [];
 				tableMetadata = result.metadata;
 				totalRows = result.total || 0;
 			} else {
-				toast.error('Erreur lors du chargement de la table');
+				toast.error(result.error || 'Erreur lors du chargement de la table');
 			}
 		} catch (error) {
+			// Ignorer les erreurs d'annulation
+			if (error instanceof Error && error.name === 'AbortError') {
+				return;
+			}
+
 			console.error('❌ Erreur lors du chargement:', error);
 			toast.error('Erreur lors du chargement de la table');
 		} finally {
-			isLoading = false;
+			// Ne réinitialiser isLoading que si cette requête n'a pas été annulée
+			if (!currentAbortController.signal.aborted) {
+				isLoading = false;
+			}
 		}
 	}
 
@@ -171,38 +198,30 @@
 		if (!confirm(confirmText)) return;
 
 		try {
-			let successCount = 0;
-			let errorCount = 0;
+			const formData = new FormData();
+			formData.append('database', selectedTable!.database);
+			formData.append('tableName', selectedTable!.tableName);
+			formData.append(
+				'primaryKeyValues',
+				JSON.stringify(selectedItems.map((r) => r[tableMetadata!.primaryKey]))
+			);
 
-			for (const record of selectedItems) {
-				const formData = new FormData();
-				formData.append('database', selectedTable!.database);
-				formData.append('tableName', selectedTable!.tableName);
-				formData.append('primaryKeyValue', String(record[tableMetadata.primaryKey]));
+			// ✅ Une seule requête avec transaction atomique
+			const response = await fetch('?/deleteMultiple', {
+				method: 'POST',
+				body: formData
+			});
 
-				const response = await fetch('?/delete', {
-					method: 'POST',
-					body: formData
-				});
+			const result = await response.json();
 
-				if (response.ok) {
-					successCount++;
-				} else {
-					errorCount++;
-				}
-			}
-
-			if (errorCount === 0) {
-				toast.success(`${successCount} enregistrement(s) supprimé(s) avec succès`);
-			} else if (successCount === 0) {
-				toast.error(`Erreur lors de la suppression des ${errorCount} enregistrement(s)`);
+			if (response.ok && result.type === 'success') {
+				toast.success(`${selectedCount} enregistrement(s) supprimé(s) avec succès`);
+				selectedItems = [];
+				selectAll = false;
+				await loadTableData();
 			} else {
-				toast.error(`${successCount} supprimé(s), ${errorCount} erreur(s)`);
+				toast.error(result.data?.error || 'Erreur lors de la suppression');
 			}
-
-			selectedItems = [];
-			selectAll = false;
-			await loadTableData();
 		} catch (error) {
 			console.error('❌ Erreur lors de la suppression multiple:', error);
 			toast.error('Erreur lors de la suppression multiple');
@@ -286,7 +305,7 @@
 										</th>
 									{/if}
 									{#if tableMetadata}
-										{#each tableMetadata.fields as field (field.name)}
+										{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
 											<th
 												scope="col"
 												class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
@@ -336,7 +355,7 @@
 										</th>
 									{/if}
 									{#if tableMetadata}
-										{#each tableMetadata.fields as field (field.name)}
+										{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
 											<th
 												scope="col"
 												class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
@@ -366,7 +385,7 @@
 											</td>
 										{/if}
 										{#if tableMetadata}
-											{#each tableMetadata.fields as field (field.name)}
+											{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
 												<td
 													class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
 														? 'bg-white'

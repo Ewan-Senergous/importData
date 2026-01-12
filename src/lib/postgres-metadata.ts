@@ -9,6 +9,9 @@
 
 import { getClient } from './prisma-meta';
 import type { DatabaseName } from './prisma-meta';
+import { createChildLogger } from './server/logger';
+
+const logger = createChildLogger('postgres-metadata');
 
 /**
  * Interface pour les métadonnées PostgreSQL depuis INFORMATION_SCHEMA
@@ -148,13 +151,16 @@ export async function getTableMetadataFromPostgres(
 	const client = await getClient(database);
 
 	try {
+		logger.debug({ database, tableName, schema }, 'Fetching table metadata from PostgreSQL');
+
 		// Requête INFORMATION_SCHEMA avec détection clé primaire
+		// ✅ DISTINCT pour éviter les doublons si un champ est dans plusieurs contraintes
 		const columns = await (
 			client as {
 				$queryRaw: <T>(query: TemplateStringsArray, ...values: unknown[]) => Promise<T>;
 			}
 		).$queryRaw<PostgresColumnMetadata[]>`
-			SELECT
+			SELECT DISTINCT ON (c.column_name)
 				c.column_name,
 				c.is_nullable,
 				c.column_default,
@@ -172,12 +178,23 @@ export async function getTableMetadataFromPostgres(
 				AND tc.constraint_type = 'PRIMARY KEY'
 			WHERE c.table_name = ${tableName}
 				AND c.table_schema = ${schema}
-			ORDER BY c.ordinal_position
+			ORDER BY c.column_name, c.ordinal_position
 		`;
 
 		if (columns.length === 0) {
+			logger.warn({ database, tableName, schema }, 'No columns found for table');
 			return null;
 		}
+
+		logger.debug(
+			{
+				database,
+				tableName,
+				schema,
+				columnCount: columns.length
+			},
+			'Table columns fetched'
+		);
 
 		// Mapper vers FieldInfo
 		const fields: FieldInfo[] = columns.map((col) => ({
@@ -210,6 +227,18 @@ export async function getTableMetadataFromPostgres(
 
 		const category = tableType[0]?.table_type === 'VIEW' ? 'view' : 'table';
 
+		logger.info(
+			{
+				database,
+				tableName,
+				schema,
+				primaryKey,
+				category,
+				fieldCount: fields.length
+			},
+			'Table metadata loaded successfully'
+		);
+
 		return {
 			name: tableName,
 			primaryKey,
@@ -218,7 +247,16 @@ export async function getTableMetadataFromPostgres(
 			category
 		};
 	} catch (error) {
-		console.error(`Erreur lors de la récupération des métadonnées pour ${tableName}:`, error);
+		logger.error(
+			{
+				database,
+				tableName,
+				schema,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined
+			},
+			'Failed to fetch table metadata'
+		);
 		return null;
 	}
 }

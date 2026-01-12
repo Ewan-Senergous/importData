@@ -1,6 +1,6 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { type DatabaseName } from '$lib/prisma-meta';
+import { getClient, type DatabaseName } from '$lib/prisma-meta';
 import {
 	getAllDatabaseTablesFromPostgres,
 	getTableMetadataFromPostgres
@@ -264,6 +264,72 @@ export const actions: Actions = {
 			return fail(500, {
 				success: false,
 				error: "Erreur lors de la suppression de l'enregistrement"
+			});
+		}
+	},
+
+	/**
+	 * Supprimer plusieurs enregistrements en une seule transaction
+	 */
+	deleteMultiple: async ({ request }) => {
+		const formData = await request.formData();
+		const database = formData.get('database') as DatabaseName;
+		const tableName = formData.get('tableName') as string;
+		const primaryKeyValuesJson = formData.get('primaryKeyValues') as string;
+
+		try {
+			const primaryKeyValues = JSON.parse(primaryKeyValuesJson) as unknown[];
+
+			if (!Array.isArray(primaryKeyValues) || primaryKeyValues.length === 0) {
+				return fail(400, {
+					success: false,
+					error: 'Aucun enregistrement sélectionné'
+				});
+			}
+
+			const client = await getClient(database);
+			const metadata = await getTableMetadataFromPostgres(database, tableName);
+
+			if (!metadata) {
+				return fail(404, {
+					success: false,
+					error: `Table ${tableName} introuvable`
+				});
+			}
+
+			// ✅ Transaction Prisma pour garantir atomicité
+			const clientWithTransaction = client as {
+				$transaction: <T>(fn: (tx: typeof client) => Promise<T>) => Promise<T>;
+			};
+
+			await clientWithTransaction.$transaction(async (tx) => {
+				const table = tx[tableName] as {
+					deleteMany: (args: { where: Record<string, unknown> }) => Promise<{ count: number }>;
+				};
+
+				if (!table?.deleteMany) {
+					throw new Error(`Table ${tableName} n'a pas de méthode deleteMany`);
+				}
+
+				await table.deleteMany({
+					where: {
+						[metadata.primaryKey]: {
+							in: primaryKeyValues
+						}
+					}
+				});
+			});
+
+			return {
+				success: true,
+				count: primaryKeyValues.length,
+				message: `${primaryKeyValues.length} enregistrement(s) supprimé(s) avec succès`
+			};
+		} catch (error) {
+			console.error('Erreur lors de la suppression multiple:', error);
+			return fail(500, {
+				success: false,
+				error: 'Erreur lors de la suppression multiple'
 			});
 		}
 	}

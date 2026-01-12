@@ -4,9 +4,12 @@ globalThis.__dirname ??= '/app';
 globalThis.__filename ??= '/app/index.js';
 
 import { env } from '$lib/server/env';
+import { createChildLogger } from '$lib/server/logger';
 
 import { handleLogto, UserScope } from '@logto/sveltekit';
 import type { Handle } from '@sveltejs/kit';
+
+const httpLogger = createChildLogger('http');
 
 const logtoHandle = handleLogto(
 	{
@@ -19,12 +22,40 @@ const logtoHandle = handleLogto(
 );
 
 export const handle: Handle = async ({ event, resolve }) => {
+	// Générer Request ID pour traçabilité (ou récupérer depuis headers)
+	const requestId = event.request.headers.get('x-request-id') || crypto.randomUUID();
+
+	// Stocker dans locals pour accès dans routes
+	event.locals.requestId = requestId;
+
+	// Log requête entrante (sans userAgent pour réduire le bruit)
+	httpLogger.info(
+		{
+			requestId,
+			method: event.request.method,
+			path: event.url.pathname
+		},
+		'Incoming request'
+	);
+
 	try {
 		// Appliquer le handle Logto
 		const response = await logtoHandle({ event, resolve });
+
+		// Log succès requête
+		httpLogger.info({ requestId, status: response.status }, 'Request completed');
+
 		return response;
 	} catch (error) {
-		console.error('❌ [HOOKS] Erreur dans le handle:', error);
+		// Log erreur avec httpLogger
+		httpLogger.error(
+			{
+				requestId,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined
+			},
+			'Handle error'
+		);
 		throw error;
 	}
 };

@@ -49,7 +49,14 @@ export const env = createEnv({
 		USE_DEV_VIEWS: z
 			.enum(['true', 'false'], { message: 'USE_DEV_VIEWS doit être "true" ou "false"' })
 			.default('false')
-			.transform((val) => val === 'true')
+			.transform((val) => val === 'true'),
+
+		// Logging
+		LOG_LEVEL: z
+			.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'], {
+				message: 'LOG_LEVEL doit être: trace, debug, info, warn, error ou fatal'
+			})
+			.default('info')
 	},
 
 	/**

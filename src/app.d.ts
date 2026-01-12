@@ -5,6 +5,7 @@ declare global {
 		interface Locals {
 			logtoClient: LogtoClient;
 			user?: UserInfoResponse;
+			requestId: string; // Request ID pour traçabilité logs
 		}
 	}
 }

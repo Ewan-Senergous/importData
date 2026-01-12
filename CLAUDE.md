@@ -392,6 +392,101 @@ const schema = metadata.schema || 'public'; // Standard SQL
 
 **Règle :** Données DB → Prisma DMMF | UI/Config → Fichier centralisé
 
+## 🔒 Sécurité Prisma - Éviter les Injections SQL
+
+**RÈGLE CRITIQUE :** NE JAMAIS utiliser `$queryRawUnsafe` ou construire des requêtes SQL manuellement.
+
+### ❌ Méthodes dangereuses à éviter
+
+```typescript
+// ❌ DANGEREUX - Injection SQL possible
+const query = `SELECT * FROM ${tableName} WHERE id = ${userId}`;
+await prisma.$queryRawUnsafe(query);
+
+// ❌ DANGEREUX - Concaténation de strings
+const query = `SELECT * FROM users LIMIT ${limit} OFFSET ${skip}`;
+await prisma.$queryRawUnsafe(query);
+
+// ❌ DANGEREUX - Même avec échappement manuel
+const query = `SELECT * FROM "${schema}"."${table}" LIMIT ${limit}`;
+await prisma.$queryRawUnsafe(query);
+```
+
+### ✅ Alternatives sécurisées
+
+**1. Utiliser les méthodes Prisma ORM (RECOMMANDÉ)**
+
+```typescript
+// ✅ SÉCURISÉ - Paramètres échappés automatiquement
+const data = await prisma.user.findMany({
+	where: { id: userId },
+	skip: skip,
+	take: limit
+});
+
+// ✅ Accès dynamique aux tables
+const table = prisma[tableName] as {
+	findMany?: (args: { skip: number; take: number }) => Promise<Record<string, unknown>[]>;
+};
+
+if (!table?.findMany) {
+	throw new Error(`Table ${tableName} invalide`);
+}
+
+const data = await table.findMany({ skip, take: limit });
+```
+
+**2. Si SQL brut nécessaire : $queryRaw avec tagged template**
+
+```typescript
+// ✅ SÉCURISÉ - Utiliser Prisma.sql pour identifiants
+import { Prisma } from '@prisma/client';
+
+const schema = 'public';
+const tableName = 'users';
+const limit = 100;
+const skip = 0;
+
+const data = await prisma.$queryRaw`
+	SELECT *
+	FROM ${Prisma.raw(`"${schema}"."${tableName}"`)}
+	LIMIT ${limit}
+	OFFSET ${skip}
+`;
+```
+
+**3. Validation stricte obligatoire**
+
+```typescript
+// ✅ Toujours valider les entrées utilisateur
+function validateIdentifier(value: string, context: string): void {
+	if (!/^[a-z_][a-z0-9_]*$/i.test(value)) {
+		throw new Error(`${context} invalide: ${value}`);
+	}
+}
+
+function validateNumber(value: number, name: string, min: number, max: number): number {
+	if (!Number.isInteger(value) || value < min || value > max) {
+		throw new Error(`${name} invalide: ${value}`);
+	}
+	return value;
+}
+
+// Utilisation
+validateIdentifier(schema, 'Schema');
+validateIdentifier(tableName, 'Table');
+const safeLimit = validateNumber(limit, 'Limit', 1, 10000);
+const safePage = validateNumber(page, 'Page', 1, 10000);
+```
+
+**Checklist sécurité Prisma :**
+
+- [ ] Jamais `$queryRawUnsafe` dans le code
+- [ ] Toujours utiliser méthodes Prisma ORM quand possible
+- [ ] Si SQL brut : utiliser `$queryRaw` avec tagged template
+- [ ] Valider TOUS les paramètres utilisateur (regex + limites)
+- [ ] Vérifier les types avec type guards avant accès dynamique
+
 ### Utilisation Client Prisma
 
 **Importer le bon client :**
