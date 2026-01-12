@@ -134,6 +134,8 @@ export interface FieldInfo {
 	isPrimaryKey: boolean;
 	isTimestamp?: boolean;
 	dbType?: string;
+	hasDefaultValue?: boolean;
+	isUpdatedAt?: boolean;
 }
 
 // Interface pour les bases de données
@@ -440,17 +442,32 @@ export async function getTableMetadata(database: DatabaseName, tableName: string
 		schema, // Nouveau champ pour le schéma
 		fields: model.fields
 			.filter((f) => f.kind === 'scalar')
-			.map((f) => ({
-				name: f.name,
-				type: f.type,
-				isRequired: f.isRequired,
-				isPrimaryKey: f.isId || false,
-				// Détecter les timestamps (DateTime + noms courants)
-				isTimestamp:
-					f.type === 'DateTime' &&
-					/^(created_at|updated_at|deleted_at|timestamp|date_|.*_at)$/i.test(f.name),
-				dbType: f.type
-			}))
+			.map((f) => {
+				const fieldWithDefaults = f as {
+					hasDefaultValue?: boolean;
+					isUpdatedAt?: boolean;
+					name: string;
+					type: string;
+					isRequired: boolean;
+					isId: boolean;
+					kind: string;
+				};
+
+				return {
+					name: f.name,
+					type: f.type,
+					isRequired: f.isRequired,
+					isPrimaryKey: f.isId || false,
+					// Détecter les timestamps (DateTime + noms courants)
+					isTimestamp:
+						f.type === 'DateTime' &&
+						/^(created_at|updated_at|deleted_at|timestamp|date_|.*_at)$/i.test(f.name),
+					dbType: f.type,
+					// Extraire depuis DMMF
+					hasDefaultValue: fieldWithDefaults.hasDefaultValue || false,
+					isUpdatedAt: fieldWithDefaults.isUpdatedAt || false
+				};
+			})
 	};
 }
 

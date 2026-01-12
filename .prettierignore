@@ -9,3 +9,6 @@ bun.lockb
 prisma/generated/
 prisma/cenov_dev/generated/
 prisma/cenov_preprod/generated/
+
+# Documentation files with code snippets
+spicy-forging-meteor.md

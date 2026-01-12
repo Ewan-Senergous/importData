@@ -30,11 +30,11 @@ export function generateZodSchema(metadata: TableMetadata): z.ZodObject<z.ZodRaw
  */
 function getZodTypeForField(field: FieldInfo): z.ZodTypeAny {
 	switch (field.type) {
+		// Pour les champs texte
 		case 'String':
 			return z.string({ error: `${field.name} doit être une chaîne` }).min(1, {
 				message: `${field.name} ne peut pas être vide`
 			});
-
 		case 'Int':
 		case 'BigInt':
 			return z.string().refine((val) => !Number.isNaN(Number.parseInt(val, 10)), {

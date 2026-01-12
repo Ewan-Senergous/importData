@@ -9,7 +9,16 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Loader2, CirclePlus, CircleCheck, CircleX, Pencil, Trash2, Database } from 'lucide-svelte';
+	import {
+		Loader2,
+		CirclePlus,
+		CircleCheck,
+		CircleX,
+		Trash2,
+		Database,
+		CheckSquare,
+		Square
+	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import type { TableSelection } from './services/explorer.service';
 	import type { TableMetadata } from './repositories/explorer.repository';
@@ -42,16 +51,27 @@
 	let isCreateEditModalOpen = $state(false);
 	let isDeleteModalOpen = $state(false);
 
+	// États pour la sélection multiple
+	let selectedItems = $state<Record<string, unknown>[]>([]);
+	let selectAll = $state(false);
+
 	// ===== DERIVED STATES =====
 	let isReadOnly = $derived(tableMetadata?.category === 'view');
 	let totalPages = $derived(Math.ceil(totalRows / pageSize));
-	let displayedFields = $derived(tableMetadata?.fields.filter((f) => !f.isPrimaryKey) || []);
+	// Afficher TOUS les champs dans le modal (comme dans le tableau)
+	// Mais on désactivera l'édition pour les champs auto-générés
+	let displayedFields = $derived(tableMetadata?.fields || []);
+	let selectedCount = $derived(selectedItems.length);
+	let hasSelection = $derived(selectedCount > 0);
 
 	// ===== EFFETS =====
 	// Charger les données quand la table sélectionnée change
 	$effect(() => {
-		console.log('🔄 $effect triggered - selectedTable:', selectedTable);
 		if (selectedTable) {
+			// Réinitialiser la sélection
+			selectedItems = [];
+			selectAll = false;
+
 			loadTableData();
 			// Reset scroll à 0 quand on change de table
 			const container = document.querySelector('.h-full.overflow-auto.p-6');
@@ -109,17 +129,6 @@
 		isCreateEditModalOpen = true;
 	}
 
-	function openEditModal(record: Record<string, unknown>) {
-		modalState = { mode: 'edit', record };
-		isCreateEditModalOpen = true;
-	}
-
-	function openDeleteModal(record: Record<string, unknown>) {
-		modalState = { mode: 'delete', record };
-		deleteConfirmation = '';
-		isDeleteModalOpen = true;
-	}
-
 	function closeModal() {
 		isCreateEditModalOpen = false;
 		isDeleteModalOpen = false;
@@ -130,7 +139,73 @@
 	function goToPage(page: number) {
 		if (page >= 1 && page <= totalPages) {
 			currentPage = page;
+			// Réinitialiser la sélection lors du changement de page
+			selectedItems = [];
+			selectAll = false;
 			loadTableData();
+		}
+	}
+
+	function handleSelectAll() {
+		selectAll = !selectAll;
+		if (selectAll) {
+			selectedItems = [...tableData];
+		} else {
+			selectedItems = [];
+		}
+	}
+
+	function handleSelect(item: Record<string, unknown>) {
+		if (selectedItems.includes(item)) {
+			selectedItems = selectedItems.filter((i) => i !== item);
+		} else {
+			selectedItems = [...selectedItems, item];
+		}
+		selectAll = selectedItems.length === tableData.length;
+	}
+
+	async function handleDeleteSelected() {
+		if (!selectedItems.length || !tableMetadata) return;
+
+		const confirmText = `Supprimer ${selectedCount} enregistrement(s) ? Cette action est irréversible.`;
+		if (!confirm(confirmText)) return;
+
+		try {
+			let successCount = 0;
+			let errorCount = 0;
+
+			for (const record of selectedItems) {
+				const formData = new FormData();
+				formData.append('database', selectedTable!.database);
+				formData.append('tableName', selectedTable!.tableName);
+				formData.append('primaryKeyValue', String(record[tableMetadata.primaryKey]));
+
+				const response = await fetch('?/delete', {
+					method: 'POST',
+					body: formData
+				});
+
+				if (response.ok) {
+					successCount++;
+				} else {
+					errorCount++;
+				}
+			}
+
+			if (errorCount === 0) {
+				toast.success(`${successCount} enregistrement(s) supprimé(s) avec succès`);
+			} else if (successCount === 0) {
+				toast.error(`Erreur lors de la suppression des ${errorCount} enregistrement(s)`);
+			} else {
+				toast.error(`${successCount} supprimé(s), ${errorCount} erreur(s)`);
+			}
+
+			selectedItems = [];
+			selectAll = false;
+			await loadTableData();
+		} catch (error) {
+			console.error('❌ Erreur lors de la suppression multiple:', error);
+			toast.error('Erreur lors de la suppression multiple');
 		}
 	}
 
@@ -144,191 +219,199 @@
 	}
 </script>
 
-<style>
-	/* Surcharge de la sidebar Shadcn pour qu'elle commence sous la navbar sticky */
-	:global([data-slot="sidebar-container"]) {
-		top: 138px !important;
-		height: calc(100vh - 138px) !important;
-	}
-
-	/* Hover bleu sur les lignes du tableau */
-	.group:hover :global(td) {
-		background-color: #bfdbfe !important;
-	}
-</style>
-
 <Sidebar.Provider>
-		<Sidebar.Sidebar>
-			<ExplorerSidebar allTables={data.allTables} on:tableSelect={handleTableSelect} />
-		</Sidebar.Sidebar>
-		<Sidebar.SidebarInset>
-			<div class="h-full overflow-auto p-6">
-				{#if !selectedTable}
-					<!-- Message de sélection -->
-					<div class="flex h-full items-center justify-center">
-						<Card.Root class="max-w-lg">
-							<Card.Header>
-								<Card.Title class="flex items-center gap-2 text-xl">
-									<Database class="size-6" />
-									Database Explorer
-								</Card.Title>
-								<Card.Description class="text-base">
-									Sélectionnez une table ou une vue dans la barre latérale pour visualiser ses
-									données
-								</Card.Description>
-							</Card.Header>
-						</Card.Root>
+	<Sidebar.Sidebar>
+		<ExplorerSidebar allTables={data.allTables} on:tableSelect={handleTableSelect} />
+	</Sidebar.Sidebar>
+	<Sidebar.SidebarInset>
+		<div class="h-full overflow-auto p-6">
+			{#if !selectedTable}
+				<!-- Message de sélection -->
+				<div class="flex h-full items-center justify-center">
+					<Card.Root class="max-w-lg">
+						<Card.Header>
+							<Card.Title class="flex items-center gap-2 text-xl">
+								<Database class="size-6" />
+								Database Explorer
+							</Card.Title>
+							<Card.Description class="text-base">
+								Sélectionnez une table ou une vue dans la barre latérale pour visualiser ses données
+							</Card.Description>
+						</Card.Header>
+					</Card.Root>
+				</div>
+			{:else}
+				<!-- En-tête de la table -->
+				<div class="mb-4">
+					<div class="mb-2 flex items-center justify-between">
+						<h1 class="text-2xl font-bold">
+							{selectedTable.tableName}
+						</h1>
 					</div>
-				{:else}
-					<!-- En-tête de la table -->
-					<div class="mb-4 flex items-center justify-between">
-						<div>
-							<h1 class="text-2xl font-bold">
-								{selectedTable.tableName}
-							</h1>
-							<p class="text-muted-foreground text-sm">
-								{selectedTable.database} • {selectedTable.schema}
-								{#if isReadOnly}
-									<Badge variant="vert" class="ml-2">Lecture seule</Badge>
-								{/if}
-							</p>
-						</div>
-
+					<div class="flex items-center justify-between">
+						<p class="text-muted-foreground text-sm">
+							{selectedTable.database} • {selectedTable.schema}
+							{#if isReadOnly}
+								<Badge variant="vert" class="ml-2">Lecture seule</Badge>
+							{/if}
+						</p>
 						{#if !isReadOnly}
-							<Button variant="vert" onclick={openCreateModal}>
-								<CirclePlus class="mr-2 h-4 w-4" />
-								Ajouter
-							</Button>
-						{/if}
-					</div>
-
-					<!-- Table de données -->
-					{#if isLoading}
-						<div class="flex items-center justify-center py-12">
-							<Loader2 class="text-primary size-8 animate-spin" />
-						</div>
-					{:else if tableData.length === 0}
-						<div class="relative overflow-x-auto">
-							<table class="w-full border-x border-black text-left text-sm">
-								<thead class="bg-blue-700 text-xs uppercase text-white">
-									<tr>
-										{#if tableMetadata}
-											{#each tableMetadata.fields as field (field.name)}
-												<th scope="col" class="w-14 whitespace-nowrap border-x border-black px-4 py-3">
-													{field.name}
-												</th>
-											{/each}
-											{#if !isReadOnly}
-												<th scope="col" class="w-14 border-x border-black px-4 py-3 text-right">
-													<span class="sr-only">Actions</span>
-												</th>
-											{/if}
-										{/if}
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td
-											colspan={tableMetadata ? tableMetadata.fields.length + (isReadOnly ? 0 : 1) : 1}
-											class="border-x border-black bg-white px-4 py-12 text-center text-muted-foreground"
-										>
-											<div class="flex flex-col items-center gap-2">
-												<Database class="size-12 text-gray-300" />
-												<p class="text-base font-medium">Aucune donnée disponible</p>
-												<p class="text-sm">Cette table ne contient aucun enregistrement pour le moment</p>
-											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					{:else}
-						<div class="relative overflow-x-auto">
-							<table class="w-full border-x border-black text-left text-sm">
-								<thead class="bg-blue-700 text-xs uppercase text-white">
-									<tr>
-										{#if tableMetadata}
-											{#each tableMetadata.fields as field (field.name)}
-												<th scope="col" class="w-14 whitespace-nowrap border-x border-black px-4 py-3">
-													{field.name}
-												</th>
-											{/each}
-											{#if !isReadOnly}
-												<th scope="col" class="w-14 border-x border-black px-4 py-3 text-right">
-													<span class="sr-only">Actions</span>
-												</th>
-											{/if}
-										{/if}
-									</tr>
-								</thead>
-								<tbody>
-									{#each tableData as record, i (i)}
-										<tr class="group border-b">
-											{#if tableMetadata}
-												{#each tableMetadata.fields as field (field.name)}
-													<td
-														class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
-															? 'bg-white'
-															: 'bg-gray-100'}"
-													>
-														{formatValue(record[field.name])}
-													</td>
-												{/each}
-												{#if !isReadOnly}
-													<td
-														class="w-14 border-x border-black px-4 py-3 text-right {i % 2 === 0
-															? 'bg-white'
-															: 'bg-gray-100'}"
-													>
-														<div class="flex justify-end gap-2">
-															<Button variant="bleu" size="sm" onclick={() => openEditModal(record)}>
-																<Pencil class="mr-2 size-4" />
-																Modifier
-															</Button>
-															<Button variant="rouge" size="sm" onclick={() => openDeleteModal(record)}>
-																<Trash2 class="mr-2 size-4" />
-																Supprimer
-															</Button>
-														</div>
-													</td>
-												{/if}
-											{/if}
-										</tr>
-									{/each}
-								</tbody>
-							</table>
-						</div>
-
-						<!-- Pagination -->
-						{#if totalPages > 1}
-							<div class="mt-4 flex items-center justify-between">
-								<p class="text-muted-foreground text-sm">
-									Page {currentPage} sur {totalPages} ({totalRows} enregistrements)
-								</p>
-								<div class="flex gap-2">
-									<Button
-										variant="blanc"
-										size="sm"
-										disabled={currentPage === 1}
-										onclick={() => goToPage(currentPage - 1)}
-									>
-										Précédent
-									</Button>
-									<Button
-										variant="blanc"
-										size="sm"
-										disabled={currentPage === totalPages}
-										onclick={() => goToPage(currentPage + 1)}
-									>
-										Suivant
-									</Button>
-								</div>
+							<div class="flex gap-2">
+								<Button variant="vert" onclick={openCreateModal}>
+									<CirclePlus class="mr-2 h-4 w-4" />
+									Ajouter
+								</Button>
+								<Button variant="rouge" disabled={!hasSelection} onclick={handleDeleteSelected}>
+									<Trash2 class="mr-2 h-4 w-4" />
+									Supprimer ({selectedCount})
+								</Button>
 							</div>
 						{/if}
+					</div>
+				</div>
+
+				<!-- Table de données -->
+				{#if isLoading}
+					<div class="flex items-center justify-center py-12">
+						<Loader2 class="text-primary size-8 animate-spin" />
+					</div>
+				{:else if tableData.length === 0}
+					<div class="relative overflow-x-auto">
+						<table class="w-full border-x border-black text-left text-sm">
+							<thead class="bg-blue-700 text-xs text-white uppercase">
+								<tr>
+									{#if !isReadOnly}
+										<th scope="col" class="w-14 border-x border-black px-4 py-3">
+											<span class="sr-only">Select</span>
+										</th>
+									{/if}
+									{#if tableMetadata}
+										{#each tableMetadata.fields as field (field.name)}
+											<th
+												scope="col"
+												class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
+											>
+												{field.name}
+											</th>
+										{/each}
+									{/if}
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td
+										colspan={tableMetadata ? tableMetadata.fields.length + (isReadOnly ? 0 : 1) : 1}
+										class="text-muted-foreground border-x border-black bg-white px-4 py-12 text-center"
+									>
+										<div class="flex flex-col items-center gap-2">
+											<Database class="size-12 text-gray-300" />
+											<p class="text-base font-medium">Aucune donnée disponible</p>
+											<p class="text-sm">
+												Cette table ne contient aucun enregistrement pour le moment
+											</p>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				{:else}
+					<div class="relative overflow-x-auto">
+						<table class="w-full border-x border-black text-left text-sm">
+							<thead class="bg-blue-700 text-xs text-white uppercase">
+								<tr>
+									{#if !isReadOnly}
+										<th scope="col" class="w-14 border-x border-black px-4 py-3">
+											<button
+												class="flex items-center"
+												onclick={handleSelectAll}
+												title={selectAll ? 'Désélectionner tout' : 'Sélectionner tout'}
+											>
+												{#if selectAll}
+													<CheckSquare class="h-4 w-4" />
+												{:else}
+													<Square class="h-4 w-4" />
+												{/if}
+											</button>
+										</th>
+									{/if}
+									{#if tableMetadata}
+										{#each tableMetadata.fields as field (field.name)}
+											<th
+												scope="col"
+												class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
+											>
+												{field.name}
+											</th>
+										{/each}
+									{/if}
+								</tr>
+							</thead>
+							<tbody>
+								{#each tableData as record, i (i)}
+									<tr class="group border-b" class:bg-blue-100={selectedItems.includes(record)}>
+										{#if !isReadOnly}
+											<td
+												class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
+													? 'bg-white'
+													: 'bg-gray-100'}"
+											>
+												<input
+													type="checkbox"
+													class="h-4 w-4 rounded text-blue-600"
+													checked={selectedItems.includes(record)}
+													onchange={() => handleSelect(record)}
+													aria-label="Sélectionner cet élément"
+												/>
+											</td>
+										{/if}
+										{#if tableMetadata}
+											{#each tableMetadata.fields as field (field.name)}
+												<td
+													class="w-14 border-x border-black px-4 py-3 {i % 2 === 0
+														? 'bg-white'
+														: 'bg-gray-100'}"
+												>
+													{formatValue(record[field.name])}
+												</td>
+											{/each}
+										{/if}
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Pagination -->
+					{#if totalPages > 1}
+						<div class="mt-4 flex items-center justify-between">
+							<p class="text-muted-foreground text-sm">
+								Page {currentPage} sur {totalPages} ({totalRows} enregistrements)
+							</p>
+							<div class="flex gap-2">
+								<Button
+									variant="blanc"
+									size="sm"
+									disabled={currentPage === 1}
+									onclick={() => goToPage(currentPage - 1)}
+								>
+									Précédent
+								</Button>
+								<Button
+									variant="blanc"
+									size="sm"
+									disabled={currentPage === totalPages}
+									onclick={() => goToPage(currentPage + 1)}
+								>
+									Suivant
+								</Button>
+							</div>
+						</div>
 					{/if}
 				{/if}
-			</div>
-		</Sidebar.SidebarInset>
+			{/if}
+		</div>
+	</Sidebar.SidebarInset>
 </Sidebar.Provider>
 
 <!-- Modal Create/Edit -->
@@ -369,27 +452,43 @@
 
 			<div class="grid grid-cols-2 gap-4">
 				{#each displayedFields as field (field.name)}
+					{@const isAutoGenerated =
+						field.isPrimaryKey ||
+						(field.hasDefaultValue && modalState.mode === 'create') ||
+						field.isUpdatedAt}
+					{@const isDisabled = isAutoGenerated}
+					{@const isRequiredForUser =
+						field.isRequired && !field.hasDefaultValue && !field.isPrimaryKey && !field.isUpdatedAt}
 					<div class="w-full">
 						<Label for={field.name}>
 							{field.name}
-							{#if field.isRequired}
-								<span class="text-destructive">*</span>
+							{#if isRequiredForUser}
+								<span class="text-red-600">*</span>
+							{/if}
+							{#if isAutoGenerated}
+								<Badge variant="noir" class="ml-2 text-xs">Auto</Badge>
 							{/if}
 						</Label>
 						<Input
 							id={field.name}
 							name={field.name}
 							type={field.type === 'DateTime' ? 'datetime-local' : 'text'}
-							required={field.isRequired}
+							required={isRequiredForUser}
+							disabled={isDisabled}
 							value={field.type === 'DateTime' && modalState.record?.[field.name]
 								? new Date(modalState.record[field.name] as string).toISOString().slice(0, 16)
 								: modalState.record
 									? formatValue(modalState.record[field.name])
 									: ''}
+							class={isDisabled ? 'bg-muted cursor-not-allowed' : ''}
 						/>
 						<p class="text-muted-foreground text-xs">
 							Type: {field.type}
-							{field.isRequired ? ' (requis)' : ' (optionnel)'}
+							{#if isAutoGenerated}
+								(généré automatiquement)
+							{:else}
+								{isRequiredForUser ? ' (requis)' : ' (optionnel)'}
+							{/if}
 						</p>
 					</div>
 				{/each}
@@ -421,7 +520,7 @@
 		</div>
 
 		<p class="mb-4 text-sm text-gray-600">
-			Cette action est irréversible. Pour confirmer, veuillez taper{' '}
+			Cette action est irréversible. Pour confirmer, veuillez taper
 			<span class="font-mono font-bold">SUPPRIMER</span> ci-dessous.
 		</p>
 
@@ -475,3 +574,16 @@
 		</form>
 	{/if}
 </Modal>
+
+<style>
+	/* Surcharge de la sidebar Shadcn pour qu'elle commence sous la navbar sticky */
+	:global([data-slot='sidebar-container']) {
+		top: 138px !important;
+		height: calc(100vh - 138px) !important;
+	}
+
+	/* Hover bleu sur les lignes du tableau */
+	.group:hover :global(td) {
+		background-color: #bfdbfe !important;
+	}
+</style>

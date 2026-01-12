@@ -1,7 +1,5 @@
 {
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:shadcn-svelte.com)"
-    ]
-  }
+	"permissions": {
+		"allow": ["WebFetch(domain:shadcn-svelte.com)"]
+	}
 }

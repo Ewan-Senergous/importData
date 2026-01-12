@@ -33,6 +33,7 @@ export async function loadAttributeReference(
 	database: 'cenov_dev' | 'cenov_preprod' = 'cenov_dev'
 ): Promise<Map<string, { atr_id: number; atr_value: string }>> {
 	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
+	// ✅ SÉCURISÉ - Paramètres échappés automatiquement
 	const attributes = await prisma.attribute.findMany({
 		select: { atr_id: true, atr_value: true },
 		where: { atr_value: { not: null } }

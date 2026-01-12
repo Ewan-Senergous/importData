@@ -5,7 +5,8 @@
 **Objectif :** Remplacer les 150+ `console.log/error/warn` par un système de logging structuré et performant avec Pino + Pino-Pretty.
 
 **Analyse Codebase :**
-- **150 console.* à remplacer** (console.log, error, warn)
+
+- **150 console.\* à remplacer** (console.log, error, warn)
 - **19 fichiers** avec logging ad-hoc
 - **Patterns actuels :** Emojis + préfixes (`[EXPORT]`, `[FETCH]`) - inconsistants
 - **Fichiers prioritaires :** CRUD/+page.svelte (54 logs), Form.svelte (17 logs), routes API (30+ logs)
@@ -16,29 +17,29 @@
 
 ### ✅ Avantages de Pino
 
-| Aspect | console.log Actuel | Pino | Gain |
-|--------|-------------------|------|------|
-| **Performance** | Bloquant (sync) | Async non-bloquant | **5x plus rapide** |
-| **Structure** | Texte non structuré | JSON structuré | Parsable par IA/outils |
-| **Niveaux** | Tous niveaux mélangés | debug/info/warn/error/fatal | Filtrage précis |
-| **Environnement** | Mêmes logs dev/prod | Pretty dev, JSON prod | Adapté à chaque env |
-| **Contexte** | Préfixes manuels `[EXPORT]` | Child loggers automatiques | Moins d'erreurs |
-| **Traçabilité** | Aucune (sauf debug-fetch) | Request ID automatique | Suivi end-to-end |
-| **Parsing IA** | ❌ Difficile | ✅ Facile (JSON) | **Critique pour Claude** |
-| **Recherche** | grep texte brut | Recherche structurée | Requêtes complexes |
-| **Production** | Logs verbeux partout | Filtrage par niveau | Moins de bruit |
-| **Timestamp** | ❌ Absent | ✅ ISO 8601 précis | Debugging temporel |
+| Aspect            | console.log Actuel          | Pino                        | Gain                     |
+| ----------------- | --------------------------- | --------------------------- | ------------------------ |
+| **Performance**   | Bloquant (sync)             | Async non-bloquant          | **5x plus rapide**       |
+| **Structure**     | Texte non structuré         | JSON structuré              | Parsable par IA/outils   |
+| **Niveaux**       | Tous niveaux mélangés       | debug/info/warn/error/fatal | Filtrage précis          |
+| **Environnement** | Mêmes logs dev/prod         | Pretty dev, JSON prod       | Adapté à chaque env      |
+| **Contexte**      | Préfixes manuels `[EXPORT]` | Child loggers automatiques  | Moins d'erreurs          |
+| **Traçabilité**   | Aucune (sauf debug-fetch)   | Request ID automatique      | Suivi end-to-end         |
+| **Parsing IA**    | ❌ Difficile                | ✅ Facile (JSON)            | **Critique pour Claude** |
+| **Recherche**     | grep texte brut             | Recherche structurée        | Requêtes complexes       |
+| **Production**    | Logs verbeux partout        | Filtrage par niveau         | Moins de bruit           |
+| **Timestamp**     | ❌ Absent                   | ✅ ISO 8601 précis          | Debugging temporel       |
 
 ### ❌ Inconvénients de Pino
 
-| Inconvénient | Impact | Mitigation |
-|--------------|--------|------------|
-| **Dépendance externe** | +2 packages (pino, pino-pretty) | Pino = 15M téléchargements/semaine (très stable) |
-| **Courbe apprentissage** | Nouvelle syntaxe à apprendre | Syntaxe simple: `logger.info({ ctx }, 'msg')` |
-| **Refactoring** | 150 logs à modifier | Refacto progressive par priorité (API → utils → composants) |
-| **Temps implémentation** | ~50 minutes | Gain long-terme >> coût initial |
-| **Output dev** | JSON moins lisible | **pino-pretty résout ça** (colorisé) |
-| **Import côté client** | Erreur si importé dans Svelte | Convention claire: `$lib/server/logger.ts` |
+| Inconvénient             | Impact                          | Mitigation                                                  |
+| ------------------------ | ------------------------------- | ----------------------------------------------------------- |
+| **Dépendance externe**   | +2 packages (pino, pino-pretty) | Pino = 15M téléchargements/semaine (très stable)            |
+| **Courbe apprentissage** | Nouvelle syntaxe à apprendre    | Syntaxe simple: `logger.info({ ctx }, 'msg')`               |
+| **Refactoring**          | 150 logs à modifier             | Refacto progressive par priorité (API → utils → composants) |
+| **Temps implémentation** | ~50 minutes                     | Gain long-terme >> coût initial                             |
+| **Output dev**           | JSON moins lisible              | **pino-pretty résout ça** (colorisé)                        |
+| **Import côté client**   | Erreur si importé dans Svelte   | Convention claire: `$lib/server/logger.ts`                  |
 
 ### 🎯 Avantages Spécifiques pour Votre Projet
 
@@ -69,6 +70,7 @@
 ### 📊 Comparaison Logs Réels
 
 **Avant (console.log) :**
+
 ```typescript
 console.log(`🔍 Génération template pour catégorie: ${cat_code} (base: ${database})`);
 console.log(`✅ Trouvé ${hierarchies.length} hiérarchies`);
@@ -76,6 +78,7 @@ console.error('❌ Erreur:', error);
 ```
 
 **Output dev :**
+
 ```
 🔍 Génération template pour catégorie: CAT001 (base: cenov_dev)
 ✅ Trouvé 12 hiérarchies
@@ -83,6 +86,7 @@ console.error('❌ Erreur:', error);
 ```
 
 **Problèmes :**
+
 - ❌ Pas de timestamp
 - ❌ Pas de request ID (impossible de tracer)
 - ❌ Impossible de filtrer par niveau
@@ -90,6 +94,7 @@ console.error('❌ Erreur:', error);
 - ❌ Même output en prod (verbeux)
 
 **Après (Pino) :**
+
 ```typescript
 logger.info({ requestId, cat_code, database }, 'Template generation started');
 logger.debug({ requestId, count: hierarchies.length }, 'Hierarchies loaded');
@@ -97,6 +102,7 @@ logger.error({ requestId, error: error.message, stack: error.stack }, 'Template 
 ```
 
 **Output dev (pino-pretty) :**
+
 ```
 [12:34:56] INFO  [importV2] Template generation started
     requestId: "abc-123"
@@ -112,6 +118,7 @@ logger.error({ requestId, error: error.message, stack: error.stack }, 'Template 
 ```
 
 **Output prod (JSON) :**
+
 ```json
 {"level":"info","time":"2025-12-22T12:34:56.789Z","module":"importV2","requestId":"abc-123","cat_code":"CAT001","database":"cenov_dev","msg":"Template generation started"}
 {"level":"debug","time":"2025-12-22T12:34:57.012Z","module":"importV2","requestId":"abc-123","count":12,"msg":"Hierarchies loaded"}
@@ -119,6 +126,7 @@ logger.error({ requestId, error: error.message, stack: error.stack }, 'Template 
 ```
 
 **Avantages :**
+
 - ✅ Timestamp précis (ISO 8601)
 - ✅ Request ID pour traçage complet
 - ✅ Filtrage: `LOG_LEVEL=error` → voir uniquement erreurs
@@ -128,6 +136,7 @@ logger.error({ requestId, error: error.message, stack: error.stack }, 'Template 
 ### 🚀 ROI (Return on Investment)
 
 **Coût Initial :**
+
 - 2 minutes: Installation pino + pino-pretty
 - 10 minutes: Setup logger + config
 - 30 minutes: Refacto API routes (priorité haute)
@@ -135,6 +144,7 @@ logger.error({ requestId, error: error.message, stack: error.stack }, 'Template 
 - **Total: ~50 minutes**
 
 **Gains Long-Terme :**
+
 - ⏱️ **Debugging 3-5x plus rapide** (request ID tracking, filtrage)
 - 🤖 **IA-friendly** (Claude peut parser/analyser logs automatiquement)
 - 🐛 **Moins de bugs en prod** (logs structurés = meilleure observabilité)
@@ -155,6 +165,7 @@ pnpm add -D pino-pretty
 ```
 
 **Packages :**
+
 - `pino` - Logger principal (production + dev)
 - `pino-pretty` - Formatter pour dev (dev dependency uniquement)
 
@@ -175,6 +186,7 @@ pnpm list pino pino-pretty
 **Contenu :** Copie de ce plan d'implémentation pour référence future
 
 **Pourquoi :**
+
 - Documentation centralisée dans le projet
 - Référence pour toute l'équipe
 - Guide pour maintenir/étendre le système de logging
@@ -246,6 +258,7 @@ export type Logger = typeof logger;
 ```
 
 **Pourquoi ce fichier :**
+
 - Suit pattern singleton de `db.ts`
 - Dans `src/lib/server/` → jamais exposé au client
 - Configuration centralisée env-aware
@@ -256,6 +269,7 @@ export type Logger = typeof logger;
 **Chemin :** `src/lib/server/logger.types.ts`
 
 **Pourquoi créer des types :**
+
 - ✅ **Autocomplétion IDE** - Suggestions contextuelles
 - ✅ **Type safety** - Détection erreurs compilation
 - ✅ **Documentation inline** - Types = documentation
@@ -265,6 +279,7 @@ export type Logger = typeof logger;
 **Avantages spécifiques :**
 
 1. **Autocomplétion contextuelle :**
+
    ```typescript
    // Sans types
    logger.info({ requestId, userId }, 'User action'); // Pas de suggestion
@@ -279,28 +294,33 @@ export type Logger = typeof logger;
    ```
 
 2. **Détection erreurs :**
+
    ```typescript
    // Sans types
    logger.error({ databse: 'cenov' }, 'Error'); // ❌ Typo non détectée
 
    // Avec types
-   logger.error<ErrorLogContext>({
-     databse: 'cenov' // ❌ Erreur TypeScript: "databse" n'existe pas
-   }, 'Error');
+   logger.error<ErrorLogContext>(
+   	{
+   		databse: 'cenov' // ❌ Erreur TypeScript: "databse" n'existe pas
+   	},
+   	'Error'
+   );
    ```
 
 3. **Standardisation contexte :**
    ```typescript
    // Force l'utilisation de contexte cohérent
    const logCtx: LogContext = {
-     requestId,
-     database: 'cenov_dev', // ✅ Valeur validée (literal type)
-     module: 'export'
+   	requestId,
+   	database: 'cenov_dev', // ✅ Valeur validée (literal type)
+   	module: 'export'
    };
    logger.info(logCtx, 'Export started');
    ```
 
 **Inconvénients (mineurs) :**
+
 - ❌ +1 fichier à maintenir
 - ❌ Cast explicite parfois nécessaire: `logger.info<LogContext>(...)`
 - ❌ Overhead initial: définir les interfaces
@@ -550,10 +570,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const response = await logtoHandle({ event, resolve });
 
 		// Log succès requête
-		logger.info(
-			{ requestId, status: response.status },
-			'Request completed'
-		);
+		logger.info({ requestId, status: response.status }, 'Request completed');
 
 		return response;
 	} catch (error) {
@@ -635,6 +652,7 @@ export { prisma };
 #### A. `src/routes/importV2/+server.ts` (7 logs)
 
 **Pattern actuel :**
+
 ```typescript
 console.log(`🔍 Génération template pour catégorie: ${cat_code}`);
 console.log(`✅ Trouvé ${hierarchies.length} hiérarchies`);
@@ -642,6 +660,7 @@ console.error('❌ Erreur:', error);
 ```
 
 **Pattern Pino :**
+
 ```typescript
 import { createChildLogger } from '$lib/server/logger';
 
@@ -682,6 +701,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 #### B. `src/routes/wordpress/+server.ts` (13 logs)
 
 **Pattern actuel :**
+
 ```typescript
 console.log('🟢 1. Vérification authentification WordPress...');
 console.log('🔐 2. Authentification validée, récupération produits...');
@@ -689,6 +709,7 @@ console.error('❌ Erreur génération CSV:', error);
 ```
 
 **Pattern Pino :**
+
 ```typescript
 import { createChildLogger } from '$lib/server/logger';
 
@@ -727,11 +748,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 #### C. `src/routes/export/+page.server.ts` (6 logs)
 
 **Pattern actuel :**
+
 ```typescript
 console.error('❌ [EXPORT] Erreur lors de:', err);
 ```
 
 **Pattern Pino :**
+
 ```typescript
 import { createChildLogger } from '$lib/server/logger';
 
@@ -783,11 +806,13 @@ export const actions = {
 #### A. `src/lib/prisma-meta.ts` (4 logs)
 
 **Lignes à modifier :**
+
 - Ligne 85, 111 : `console.warn()` → `logger.warn()`
 - Ligne 232 : `console.log()` → `logger.info()`
 - Ligne 234 : `console.warn()` → `logger.warn()`
 
 **Pattern :**
+
 ```typescript
 import { logger } from '$lib/server/logger';
 
@@ -804,12 +829,14 @@ logger.warn({ projectRoot, error }, '[PRISMA-META] Schema read error');
 #### B. `src/routes/importV2/services/import.orchestrator.ts` (19 logs)
 
 **Pattern actuel :**
+
 ```typescript
 console.log('📦 Création fournisseur:', supplierData);
 console.log('💰 Création prix achat:', priceData);
 ```
 
 **Pattern Pino :**
+
 ```typescript
 import { createChildLogger } from '$lib/server/logger';
 
@@ -848,6 +875,7 @@ export async function orchestrateImport(data: ImportData, requestId: string) {
 **⚠️ Note :** Les composants Svelte sont côté client → **NE PAS utiliser logger serveur**.
 
 **Stratégie :**
+
 1. **Supprimer** les logs de debug excessifs (Form.svelte - 17 logs, CRUD - 54 logs)
 2. **Remplacer** par réactivité Svelte 5 (`$derived`, `$effect`)
 3. **Garder uniquement** les logs d'erreur critiques (console.error)
@@ -855,6 +883,7 @@ export async function orchestrateImport(data: ImportData, requestId: string) {
 **Exemple :** `src/routes/CRUD/+page.svelte` (54 logs → 5 logs)
 
 **Avant :**
+
 ```svelte
 <script lang="ts">
 	console.log('Changement isOpen:', isOpen);
@@ -866,6 +895,7 @@ export async function orchestrateImport(data: ImportData, requestId: string) {
 ```
 
 **Après :**
+
 ```svelte
 <script lang="ts">
 	// Supprimer tous les console.log de debug
@@ -879,6 +909,7 @@ export async function orchestrateImport(data: ImportData, requestId: string) {
 ```
 
 **Fichiers à nettoyer :**
+
 - `src/routes/CRUD/+page.svelte` - 54 logs → ~5 logs
 - `src/lib/components/Form.svelte` - 17 logs → ~2 logs
 - `src/routes/export/+page.svelte` - 10 logs → ~3 logs
@@ -924,17 +955,20 @@ export const clientLogger = {
 ### 6.1 Test Développement
 
 **Commandes :**
+
 ```bash
 pnpm dev
 ```
 
 **Vérifications :**
+
 1. ✅ Logs apparaissent en **couleur** (pino-pretty actif)
 2. ✅ Format : `INFO [module] message { context }`
 3. ✅ Request ID présent dans les logs de requêtes
 4. ✅ Niveaux de log respectés (debug visible en dev)
 
 **Exemple output attendu :**
+
 ```
 INFO [12:34:56] [export] Export started { requestId: "abc-123", tables: ["kit", "product"] }
 DEBUG [12:34:57] [export] Tables loaded { requestId: "abc-123", tableCount: 15 }
@@ -944,17 +978,20 @@ INFO [12:34:58] [export] Export completed { requestId: "abc-123", duration: 1234
 ### 6.2 Test Production (Simulation)
 
 **Commandes :**
+
 ```bash
 LOG_LEVEL=info pnpm build
 pnpm preview
 ```
 
 **Vérifications :**
+
 1. ✅ Logs en format **JSON** (pas de pretty print)
 2. ✅ Uniquement logs `info` et supérieurs (pas de `debug`)
 3. ✅ Logs parsables par outils externes (jq, Elasticsearch, etc.)
 
 **Exemple output attendu :**
+
 ```json
 {"level":"info","time":"2025-12-22T12:34:56.789Z","module":"export","requestId":"abc-123","msg":"Export started","tables":["kit","product"]}
 {"level":"info","time":"2025-12-22T12:34:58.012Z","module":"export","requestId":"abc-123","msg":"Export completed","duration":1234}
@@ -963,11 +1000,13 @@ pnpm preview
 ### 6.3 Test Parsing JSON (pour IA/Claude Code)
 
 **Commande :**
+
 ```bash
 node -e "const logs = require('fs').readFileSync('logs.json', 'utf8').split('\n').filter(Boolean).map(JSON.parse); console.log(logs.filter(l => l.level === 'error'));"
 ```
 
 **Vérifications :**
+
 1. ✅ Logs JSON valides (parsable)
 2. ✅ Filtrage par niveau possible
 3. ✅ Extraction contexte structuré (requestId, module, etc.)
@@ -975,6 +1014,7 @@ node -e "const logs = require('fs').readFileSync('logs.json', 'utf8').split('\n'
 ### 6.4 Test Niveaux de Log
 
 **Test changement niveau :**
+
 ```bash
 # Dev - Voir tous les logs
 LOG_LEVEL=debug pnpm dev
@@ -987,6 +1027,7 @@ LOG_LEVEL=error pnpm dev
 ```
 
 **Vérifications :**
+
 1. ✅ `debug` : Tous logs visibles
 2. ✅ `info` : Uniquement info/warn/error/fatal
 3. ✅ `error` : Uniquement error/fatal
@@ -1004,27 +1045,18 @@ LOG_LEVEL=error pnpm dev
 ### Fichiers à Modifier (10+)
 
 **Configuration :**
+
 1. **`.env`** - Ajouter `LOG_LEVEL=debug`
 2. **`src/lib/server/env.ts`** - Valider `LOG_LEVEL` avec Zod
 3. **`src/app.d.ts`** - Typer `locals.requestId`
 
-**Intégration Globale :**
-4. **`src/hooks.server.ts`** - Request logging + Request ID
-5. **`src/lib/server/db.ts`** - Prisma event logging
+**Intégration Globale :** 4. **`src/hooks.server.ts`** - Request logging + Request ID 5. **`src/lib/server/db.ts`** - Prisma event logging
 
-**Routes API (Priorité 1) :**
-6. **`src/routes/importV2/+server.ts`** - 7 logs
-7. **`src/routes/wordpress/+server.ts`** - 13 logs
-8. **`src/routes/export/+page.server.ts`** - 6 logs
+**Routes API (Priorité 1) :** 6. **`src/routes/importV2/+server.ts`** - 7 logs 7. **`src/routes/wordpress/+server.ts`** - 13 logs 8. **`src/routes/export/+page.server.ts`** - 6 logs
 
-**Utilitaires (Priorité 2) :**
-9. **`src/lib/prisma-meta.ts`** - 4 logs
-10. **`src/routes/importV2/services/import.orchestrator.ts`** - 19 logs
+**Utilitaires (Priorité 2) :** 9. **`src/lib/prisma-meta.ts`** - 4 logs 10. **`src/routes/importV2/services/import.orchestrator.ts`** - 19 logs
 
-**Composants Svelte (Priorité 3 - Cleanup) :**
-11. **`src/routes/CRUD/+page.svelte`** - Supprimer 50+ logs
-12. **`src/lib/components/Form.svelte`** - Supprimer 15+ logs
-13. **`src/routes/export/+page.svelte`** - Supprimer 7+ logs
+**Composants Svelte (Priorité 3 - Cleanup) :** 11. **`src/routes/CRUD/+page.svelte`** - Supprimer 50+ logs 12. **`src/lib/components/Form.svelte`** - Supprimer 15+ logs 13. **`src/routes/export/+page.svelte`** - Supprimer 7+ logs
 
 ### Dépendances à Installer (2)
 
@@ -1134,6 +1166,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 ```
 
 **Output Dev :**
+
 ```
 INFO [12:34:56] [my-api] API call started { requestId: "abc-123" }
 DEBUG [12:34:56] [my-api] Request body received { requestId: "abc-123", bodyKeys: ["name", "email"] }
@@ -1141,6 +1174,7 @@ INFO [12:34:57] [my-api] API call completed { requestId: "abc-123", resultCount:
 ```
 
 **Output Prod :**
+
 ```json
 {"level":"info","time":"2025-12-22T12:34:56.789Z","module":"my-api","requestId":"abc-123","msg":"API call started"}
 {"level":"info","time":"2025-12-22T12:34:57.012Z","module":"my-api","requestId":"abc-123","resultCount":5,"duration":1234,"msg":"API call completed"}

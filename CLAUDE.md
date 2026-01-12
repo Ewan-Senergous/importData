@@ -86,8 +86,8 @@ pnpm preview
 **Qualité du code :**
 
 ```bash
-pnpm format     # Vérification Prettier + ESLint
-pnpm lint   # Formatage avec Prettier
+pnpm format     # Formatage avec Prettier
+pnpm lint       # Vérification Prettier + ESLint
 pnpm check     # Type checking avec Svelte
 ```
 
@@ -254,9 +254,9 @@ Le projet utilise une validation type-safe des variables d'environnement avec Zo
 // ✅ Variables serveur (secrets, URLs DB, config auth)
 import { env } from '$lib/server/env';
 
-const dbUrl = env.DATABASE_URL;           // Type: string (garanti présent)
-const limit = env.BODY_SIZE_LIMIT;        // Type: number (auto-converti)
-const useDevViews = env.USE_DEV_VIEWS;    // Type: boolean (auto-converti)
+const dbUrl = env.DATABASE_URL; // Type: string (garanti présent)
+const limit = env.BODY_SIZE_LIMIT; // Type: number (auto-converti)
+const useDevViews = env.USE_DEV_VIEWS; // Type: boolean (auto-converti)
 
 // ✅ Variables publiques (futures, actuellement vide)
 import { env } from '$lib/env.client';
@@ -265,8 +265,8 @@ import { env } from '$lib/env.client';
 
 **Fichiers de configuration :**
 
-- `src/lib/server/env.ts` - Variables serveur uniquement (DATABASE_URL, SECRET_LOGTO_*, etc.)
-- `src/lib/env.client.ts` - Variables publiques (préfixe PUBLIC_*, actuellement vide)
+- `src/lib/server/env.ts` - Variables serveur uniquement (DATABASE*URL, SECRET_LOGTO*\*, etc.)
+- `src/lib/env.client.ts` - Variables publiques (préfixe PUBLIC\_\*, actuellement vide)
 - `.env` - Fichier contenant toutes les variables d'environnement
 
 **Variables validées :**

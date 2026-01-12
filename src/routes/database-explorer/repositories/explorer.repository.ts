@@ -1,16 +1,9 @@
-import { getClient, getTableMetadata, countTableRows, getDatabases } from '$lib/prisma-meta';
-import type { DatabaseName, FieldInfo } from '$lib/prisma-meta';
+import { getClient, countTableRows, getDatabases } from '$lib/prisma-meta';
+import type { DatabaseName } from '$lib/prisma-meta';
+import { getTableMetadataFromPostgres, type TableMetadata } from '$lib/postgres-metadata';
 
-/**
- * Interface pour les métadonnées d'une table
- */
-export interface TableMetadata {
-	name: string;
-	primaryKey: string;
-	schema: string;
-	fields: FieldInfo[];
-	category?: 'table' | 'view';
-}
+// Ré-exporter TableMetadata pour compatibilité avec le reste du code
+export type { TableMetadata } from '$lib/postgres-metadata';
 
 /**
  * Options pour la récupération des données
@@ -43,7 +36,7 @@ export async function getTableData(
 	const { page = 1, limit = 500 } = options;
 
 	const client = await getClient(database);
-	const metadata = await getTableMetadata(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
@@ -86,9 +79,9 @@ export async function getTableData(
 	const query = `SELECT ${selectColumns}${timestampSelects} FROM ${qualifiedTableName} LIMIT ${limit} OFFSET ${skip}`;
 
 	try {
-		const rawData = (await (client as { $queryRawUnsafe: (query: string) => Promise<unknown[]> }).$queryRawUnsafe(
-			query
-		)) as Record<string, unknown>[];
+		const rawData = (await (
+			client as { $queryRawUnsafe: (query: string) => Promise<unknown[]> }
+		).$queryRawUnsafe(query)) as Record<string, unknown>[];
 
 		// Post-traitement : remplacer colonnes Date par versions string (comme export lignes 267-277)
 		const data = rawData.map((row) => {
@@ -140,7 +133,7 @@ export async function updateTableRecord(
 	data: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
 	const client = await getClient(database);
-	const metadata = await getTableMetadata(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
@@ -148,7 +141,10 @@ export async function updateTableRecord(
 
 	const where = { [metadata.primaryKey]: primaryKeyValue };
 	const table = client[tableName] as {
-		update: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => Promise<Record<string, unknown>>;
+		update: (args: {
+			where: Record<string, unknown>;
+			data: Record<string, unknown>;
+		}) => Promise<Record<string, unknown>>;
 	};
 
 	return table.update({ where, data });
@@ -163,7 +159,7 @@ export async function deleteTableRecord(
 	primaryKeyValue: unknown
 ): Promise<void> {
 	const client = await getClient(database);
-	const metadata = await getTableMetadata(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
@@ -186,7 +182,7 @@ export async function getTableRecord(
 	primaryKeyValue: unknown
 ): Promise<Record<string, unknown> | null> {
 	const client = await getClient(database);
-	const metadata = await getTableMetadata(database, tableName);
+	const metadata = await getTableMetadataFromPostgres(database, tableName);
 
 	if (!metadata) {
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
@@ -194,7 +190,9 @@ export async function getTableRecord(
 
 	const where = { [metadata.primaryKey]: primaryKeyValue };
 	const table = client[tableName] as {
-		findUnique: (args: { where: Record<string, unknown> }) => Promise<Record<string, unknown> | null>;
+		findUnique: (args: {
+			where: Record<string, unknown>;
+		}) => Promise<Record<string, unknown> | null>;
 	};
 
 	return table.findUnique({ where });

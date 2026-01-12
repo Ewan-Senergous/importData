@@ -1,7 +1,5 @@
-# Dockerfile minimal pour test
 FROM node:22-alpine
 
-# Installer pnpm et dépendances système
 RUN corepack enable && corepack prepare pnpm@10.23.0 --activate && \
     apk add --no-cache openssl libc6-compat
 

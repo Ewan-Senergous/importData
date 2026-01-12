@@ -30,30 +30,30 @@
 	let openCategories = $state(new Set<string>());
 
 	function toggleDatabase(key: string) {
+		// Svelte 5 : créer un nouveau Set pour déclencher la réactivité
 		if (openDatabases.has(key)) {
-			openDatabases.delete(key);
+			openDatabases = new Set([...openDatabases].filter((k) => k !== key));
 		} else {
-			openDatabases.add(key);
+			openDatabases = new Set([...openDatabases, key]);
 		}
-		openDatabases = new Set(openDatabases);
 	}
 
 	function toggleSchema(key: string) {
+		// Svelte 5 : créer un nouveau Set pour déclencher la réactivité
 		if (openSchemas.has(key)) {
-			openSchemas.delete(key);
+			openSchemas = new Set([...openSchemas].filter((k) => k !== key));
 		} else {
-			openSchemas.add(key);
+			openSchemas = new Set([...openSchemas, key]);
 		}
-		openSchemas = new Set(openSchemas);
 	}
 
 	function toggleCategory(key: string) {
+		// Svelte 5 : créer un nouveau Set pour déclencher la réactivité
 		if (openCategories.has(key)) {
-			openCategories.delete(key);
+			openCategories = new Set([...openCategories].filter((k) => k !== key));
 		} else {
-			openCategories.add(key);
+			openCategories = new Set([...openCategories, key]);
 		}
-		openCategories = new Set(openCategories);
 	}
 
 	function selectTable(database: string, schema: string, tableName: string) {
@@ -72,7 +72,7 @@
 							<!-- Database Header -->
 							<button
 								onclick={() => toggleDatabase(database)}
-								class="flex w-full items-center justify-between rounded-md px-3 py-2.5 hover:bg-accent cursor-pointer"
+								class="hover:bg-accent flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2.5"
 							>
 								<div class="flex items-center gap-2">
 									{#if openDatabases.has(database)}
@@ -93,12 +93,12 @@
 
 							<!-- Database Content -->
 							{#if openDatabases.has(database)}
-								<div class="ml-4 mt-1 space-y-1">
+								<div class="mt-1 ml-4 space-y-1">
 									{#each Object.entries(schemas) as [schema, { tables, views }] (`${database}-${schema}`)}
 										<!-- Schema Header -->
 										<button
 											onclick={() => toggleSchema(`${database}-${schema}`)}
-											class="flex w-full items-center justify-between rounded-md px-3 py-2 hover:bg-accent cursor-pointer"
+											class="hover:bg-accent flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2"
 										>
 											<div class="flex items-center gap-2">
 												{#if openSchemas.has(`${database}-${schema}`)}
@@ -116,12 +116,12 @@
 
 										<!-- Schema Content -->
 										{#if openSchemas.has(`${database}-${schema}`)}
-											<div class="ml-4 mt-1 space-y-1">
+											<div class="mt-1 ml-4 space-y-1">
 												<!-- Tables Section -->
 												{#if tables.length > 0}
 													<button
 														onclick={() => toggleCategory(`${database}-${schema}-tables`)}
-														class="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs hover:bg-accent cursor-pointer"
+														class="hover:bg-accent flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-xs"
 													>
 														<div class="flex items-center gap-1.5">
 															{#if openCategories.has(`${database}-${schema}-tables`)}
@@ -138,11 +138,11 @@
 													</button>
 
 													{#if openCategories.has(`${database}-${schema}-tables`)}
-														<div class="ml-3 mt-1 space-y-0.5">
+														<div class="mt-1 ml-3 space-y-0.5">
 															{#each tables as table (table.name)}
 																<Sidebar.MenuButton
 																	onclick={() => selectTable(database, schema, table.name)}
-																	class="w-full justify-start text-xs hover:bg-accent cursor-pointer px-3 py-2"
+																	class="hover:bg-accent w-full cursor-pointer justify-start px-3 py-2 text-xs"
 																>
 																	<Table class="size-3" />
 																	{table.name}
@@ -156,7 +156,7 @@
 												{#if views.length > 0}
 													<button
 														onclick={() => toggleCategory(`${database}-${schema}-views`)}
-														class="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs hover:bg-accent cursor-pointer"
+														class="hover:bg-accent flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-xs"
 													>
 														<div class="flex items-center gap-1.5">
 															{#if openCategories.has(`${database}-${schema}-views`)}
@@ -173,11 +173,11 @@
 													</button>
 
 													{#if openCategories.has(`${database}-${schema}-views`)}
-														<div class="ml-3 mt-1 space-y-0.5">
+														<div class="mt-1 ml-3 space-y-0.5">
 															{#each views as view (view.name)}
 																<Sidebar.MenuButton
 																	onclick={() => selectTable(database, schema, view.name)}
-																	class="w-full justify-start text-xs hover:bg-accent cursor-pointer px-3 py-2"
+																	class="hover:bg-accent w-full cursor-pointer justify-start px-3 py-2 text-xs"
 																>
 																	<Eye class="size-3" />
 																	{view.name}

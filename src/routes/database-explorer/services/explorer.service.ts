@@ -55,8 +55,7 @@ export function generateRecordSummary(
 ): string {
 	const pkValue = record[metadata.primaryKey];
 	const nameField = metadata.fields.find(
-		(f) =>
-			f.name.includes('name') || f.name.includes('label') || f.name.includes('code')
+		(f) => f.name.includes('name') || f.name.includes('label') || f.name.includes('code')
 	);
 
 	if (nameField && record[nameField.name]) {
@@ -105,9 +104,7 @@ export function getDatabaseLabel(database: string): string {
 /**
  * Obtenir la variante de badge pour une base de données
  */
-export function getDatabaseBadgeVariant(
-	database: string
-): 'bleu' | 'vert' | 'orange' | 'default' {
+export function getDatabaseBadgeVariant(database: string): 'bleu' | 'vert' | 'orange' | 'default' {
 	const variants: Record<string, 'bleu' | 'vert' | 'orange' | 'default'> = {
 		cenov: 'bleu',
 		cenov_dev: 'vert',

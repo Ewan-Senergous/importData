@@ -1,6 +1,10 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getAllDatabaseTables, getTableMetadata, type DatabaseName } from '$lib/prisma-meta';
+import { type DatabaseName } from '$lib/prisma-meta';
+import {
+	getAllDatabaseTablesFromPostgres,
+	getTableMetadataFromPostgres
+} from '$lib/postgres-metadata';
 import {
 	getTableData,
 	createTableRecord,
@@ -11,10 +15,50 @@ import { parseValueForDatabase } from './services/explorer.service';
 import { generateZodSchema, generateUpdateSchema } from './services/schema-generator.service';
 
 /**
+ * Extraire un message d'erreur explicite depuis une erreur Prisma
+ */
+function extractPrismaErrorMessage(error: unknown, defaultMessage: string): string {
+	if (!(error instanceof Error)) return defaultMessage;
+
+	// Erreur de contrainte d'unicité
+	if (error.message.includes('Unique constraint')) {
+		return 'Un enregistrement avec cette valeur existe déjà';
+	}
+
+	// Erreur de clé étrangère
+	if (error.message.includes('Foreign key constraint')) {
+		return 'Référence invalide vers un autre enregistrement';
+	}
+
+	// Erreur de champ requis (NOT NULL constraint)
+	// Format Prisma: "Argument `field_name` must not be null."
+	if (error.message.includes('must not be null')) {
+		const regex = /Argument `(\w+)` must not be null/;
+		const match = regex.exec(error.message);
+		if (match) {
+			return `Le champ "${match[1]}" est requis`;
+		}
+		return 'Des champs requis sont manquants';
+	}
+
+	if (error.message.includes('null') || error.message.includes('required')) {
+		return 'Des champs requis sont manquants';
+	}
+
+	// Enregistrement non trouvé
+	if (error.message.includes('Record to update not found')) {
+		return 'Enregistrement non trouvé';
+	}
+
+	// Autres erreurs : afficher le message original
+	return `Erreur : ${error.message}`;
+}
+
+/**
  * Charger toutes les tables des trois bases de données
  */
 export const load: PageServerLoad = async () => {
-	const allTables = await getAllDatabaseTables();
+	const allTables = await getAllDatabaseTablesFromPostgres();
 	return { allTables };
 };
 
@@ -58,7 +102,7 @@ export const actions: Actions = {
 
 		try {
 			// Récupérer les métadonnées de la table
-			const metadata = await getTableMetadata(database, tableName);
+			const metadata = await getTableMetadataFromPostgres(database, tableName);
 
 			if (!metadata) {
 				return fail(404, {
@@ -84,9 +128,14 @@ export const actions: Actions = {
 			// Valider les données
 			const validation = schema.safeParse(data);
 			if (!validation.success) {
+				// Formater les erreurs de validation de manière lisible
+				const errorMessages = validation.error.issues.map((issue) => {
+					const fieldName = issue.path.join('.');
+					return `${fieldName}: ${issue.message}`;
+				});
 				return fail(400, {
 					success: false,
-					error: 'Erreur de validation',
+					error: `Erreur de validation : ${errorMessages.join(', ')}`,
 					errors: validation.error.issues
 				});
 			}
@@ -100,9 +149,15 @@ export const actions: Actions = {
 			};
 		} catch (error) {
 			console.error('Erreur lors de la création:', error);
+
+			const errorMessage = extractPrismaErrorMessage(
+				error,
+				"Erreur lors de la création de l'enregistrement"
+			);
+
 			return fail(500, {
 				success: false,
-				error: 'Erreur lors de la création de l\'enregistrement'
+				error: errorMessage
 			});
 		}
 	},
@@ -118,7 +173,7 @@ export const actions: Actions = {
 
 		try {
 			// Récupérer les métadonnées de la table
-			const metadata = await getTableMetadata(database, tableName);
+			const metadata = await getTableMetadataFromPostgres(database, tableName);
 
 			if (!metadata) {
 				return fail(404, {
@@ -144,9 +199,14 @@ export const actions: Actions = {
 			// Valider les données
 			const validation = schema.safeParse(data);
 			if (!validation.success) {
+				// Formater les erreurs de validation de manière lisible
+				const errorMessages = validation.error.issues.map((issue) => {
+					const fieldName = issue.path.join('.');
+					return `${fieldName}: ${issue.message}`;
+				});
 				return fail(400, {
 					success: false,
-					error: 'Erreur de validation',
+					error: `Erreur de validation : ${errorMessages.join(', ')}`,
 					errors: validation.error.issues
 				});
 			}
@@ -160,9 +220,15 @@ export const actions: Actions = {
 			};
 		} catch (error) {
 			console.error('Erreur lors de la modification:', error);
+
+			const errorMessage = extractPrismaErrorMessage(
+				error,
+				"Erreur lors de la modification de l'enregistrement"
+			);
+
 			return fail(500, {
 				success: false,
-				error: 'Erreur lors de la modification de l\'enregistrement'
+				error: errorMessage
 			});
 		}
 	},
@@ -197,7 +263,7 @@ export const actions: Actions = {
 			console.error('Erreur lors de la suppression:', error);
 			return fail(500, {
 				success: false,
-				error: 'Erreur lors de la suppression de l\'enregistrement'
+				error: "Erreur lors de la suppression de l'enregistrement"
 			});
 		}
 	}
