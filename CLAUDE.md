@@ -18,6 +18,42 @@ const projectRoot = process.cwd();
 
 **Pourquoi**: `import.meta.url` pointe vers le bundle après build, pas la racine projet. `process.cwd()` pointe toujours vers la racine.
 
+## 📌 Barre Sticky avec Scroll Window
+
+**Problème**: `position: sticky` ne fonctionne pas quand c'est `window` qui scroll (pas un container parent).
+
+**Solution**: Utiliser `position: fixed` + écouter le scroll de `window` :
+
+```svelte
+<script>
+	let isScrolled = $state(false);
+
+	$effect(() => {
+		function handleScroll() {
+			const scrollY = window.scrollY || document.documentElement.scrollTop;
+			isScrolled = scrollY > 0;
+		}
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		return () => window.removeEventListener('scroll', handleScroll);
+	});
+</script>
+
+<!-- Barre fixe alignée avec le contenu -->
+<div
+	class="fixed top-34.5 z-40 bg-gray-50 py-3"
+	style="left: calc(var(--sidebar-width) + 3rem); right: 3rem;"
+>
+	<!-- Contenu de la barre -->
+</div>
+```
+
+**Points clés :**
+- ✅ `position: fixed` au lieu de `sticky` (car window scroll)
+- ✅ Aligner avec `style="left: calc(...); right: ...;"` pour matcher le padding du contenu
+- ✅ Écouter `window.addEventListener('scroll')` avec `{ passive: true }`
+- ✅ Ajouter un espacement sous la barre fixe (`<div class="mb-16"></div>`)
+
 ## 🔍 Bonnes Pratiques de Résolution de Problèmes
 
 **IMPORTANT : Rechercher sur le web quand bloqué**
