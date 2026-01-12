@@ -9,6 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Badge } from '$lib/components/ui/badge';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import {
 		Loader2,
 		CirclePlus,
@@ -60,7 +61,7 @@
 		record: Record<string, unknown>;
 	} | null>(null);
 	let isSaving = $state(false);
-	let editInputElement = $state<HTMLInputElement | null>(null);
+	let editInputElement = $state<HTMLTextAreaElement | null>(null);
 
 	// États pour la sélection multiple
 	let selectedItems = $state<Record<string, unknown>[]>([]);
@@ -279,7 +280,8 @@
 	}
 
 	function handleInputKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') {
+		// Ctrl+Enter pour sauvegarder (Enter seul permet les retours à la ligne)
+		if (e.key === 'Enter' && e.ctrlKey) {
 			e.preventDefault();
 			saveEdit();
 		} else if (e.key === 'Escape') {
@@ -498,12 +500,12 @@
 												>
 													{#if isCurrentlyEditing && editingCell}
 														<div class="space-y-2">
-															<input
-																bind:this={editInputElement}
-																type="text"
-																class="w-full border-2 border-blue-500 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
+															<Textarea
+																bind:ref={editInputElement}
 																bind:value={editingCell.newValue}
 																onkeydown={(e) => handleInputKeydown(e)}
+																size="md"
+																class="border-2 border-blue-500 focus:border-blue-500"
 															/>
 															<div class="flex flex-col gap-1">
 																<button
