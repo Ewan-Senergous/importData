@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Modal } from 'flowbite-svelte';
 	import ExplorerSidebar from './services/ExplorerSidebar.svelte';
@@ -89,37 +91,54 @@
 	let hasSelection = $derived(selectedCount > 0);
 
 	// ===== EFFETS =====
-	// Charger les données quand la table sélectionnée change
+	// Restaurer la sélection depuis les query params (gère aussi les boutons précédent/suivant)
 	$effect(() => {
-		if (selectedTable) {
-			// Réinitialiser la sélection
+		const searchParams = $page.url.searchParams;
+		const database = searchParams.get('database');
+		const schema = searchParams.get('schema');
+		const tableName = searchParams.get('table');
+		const pageParam = searchParams.get('page');
+
+		// Si on a tous les paramètres nécessaires
+		if (database && schema && tableName) {
+			// Vérifier si la sélection est différente de l'état actuel
+			const isDifferentTable =
+				!selectedTable ||
+				selectedTable.database !== database ||
+				selectedTable.schema !== schema ||
+				selectedTable.tableName !== tableName;
+
+			const isDifferentPage = currentPage !== Number.parseInt(pageParam || '1', 10);
+
+			// Restaurer seulement si c'est différent (évite les boucles infinies)
+			if (isDifferentTable || isDifferentPage) {
+				selectedTable = { database, schema, tableName };
+				currentPage = pageParam ? Number.parseInt(pageParam, 10) : 1;
+			}
+		} else if (!database && !schema && !tableName && selectedTable) {
+			// Si l'URL est vide mais qu'une table est sélectionnée, réinitialiser
+			selectedTable = null;
+			currentPage = 1;
+		}
+	});
+
+	// Charger les données quand la table sélectionnée OU la page change
+	$effect(() => {
+		// Lire explicitement les dépendances pour la réactivité
+		const table = selectedTable;
+		const page = currentPage;
+
+		if (table) {
+			// Réinitialiser la sélection quand on change de table ou de page
 			selectedItems = [];
 			selectAll = false;
 
-			console.log('📊 Table sélectionnée:', selectedTable.tableName);
+			// Charger les données
 			loadTableData();
 
 			// Scroll vers le haut - attendre que le DOM soit mis à jour
 			setTimeout(() => {
 				const container = document.querySelector('.overflow-x-auto.overflow-y-auto');
-				const sidebarInset = document.querySelector('[data-slot="sidebar-inset"]');
-				const table = document.querySelector('table');
-
-				console.log('📐 Dimensions conteneur:', {
-					width: container?.clientWidth,
-					scrollWidth: container?.scrollWidth,
-					hasHorizontalScroll: (container?.scrollWidth || 0) > (container?.clientWidth || 0)
-				});
-
-				console.log('📐 Dimensions SidebarInset:', {
-					width: sidebarInset?.clientWidth,
-					scrollWidth: sidebarInset?.scrollWidth
-				});
-
-				console.log('📐 Dimensions tableau:', {
-					width: table?.clientWidth,
-					scrollWidth: table?.scrollWidth
-				});
 
 				if (container) {
 					container.scrollTop = 0;
@@ -185,6 +204,19 @@
 	});
 
 	// ===== HANDLERS =====
+	// Mettre à jour l'URL avec les query params
+	function updateUrl() {
+		if (!selectedTable) return;
+
+		const params = new URLSearchParams();
+		params.set('database', selectedTable.database);
+		params.set('schema', selectedTable.schema);
+		params.set('table', selectedTable.tableName);
+		params.set('page', String(currentPage));
+
+		goto(`?${params.toString()}`, { replaceState: true, noScroll: true, keepFocus: true });
+	}
+
 	async function loadTableData() {
 		if (!selectedTable) {
 			return;
@@ -249,6 +281,8 @@
 	function handleTableSelect(event: CustomEvent<TableSelection>) {
 		selectedTable = event.detail;
 		currentPage = 1;
+		// Mettre à jour l'URL immédiatement (synchrone) pour que l'effet URL ne réinitialise pas
+		updateUrl();
 	}
 
 	function openCreateModal() {
@@ -266,10 +300,8 @@
 	function goToPage(page: number) {
 		if (page >= 1 && page <= totalPages) {
 			currentPage = page;
-			// Réinitialiser la sélection lors du changement de page
-			selectedItems = [];
-			selectAll = false;
-			loadTableData();
+			// Mettre à jour l'URL immédiatement (synchrone)
+			updateUrl();
 		}
 	}
 
@@ -496,7 +528,7 @@
 							</div>
 						{:else if tableData.length === 0}
 							<div class="relative">
-								<table class="min-w-max w-full border-x border-black text-left text-sm">
+								<table class="w-full min-w-max border-x border-black text-left text-sm">
 									<thead class="sticky top-0 z-10 bg-blue-700 text-xs text-white uppercase">
 										<tr>
 											{#if !isReadOnly}
@@ -538,7 +570,7 @@
 							</div>
 						{:else}
 							<div class="relative">
-								<table class="min-w-max w-full border-x border-black text-left text-sm">
+								<table class="w-full min-w-max border-x border-black text-left text-sm">
 									<thead class="sticky top-0 z-10 bg-blue-700 text-xs text-white uppercase">
 										<tr>
 											{#if !isReadOnly}
@@ -729,7 +761,10 @@
 							field.isUpdatedAt}
 						{@const isDisabled = isAutoGenerated}
 						{@const isRequiredForUser =
-							field.isRequired && !field.hasDefaultValue && !field.isPrimaryKey && !field.isUpdatedAt}
+							field.isRequired &&
+							!field.hasDefaultValue &&
+							!field.isPrimaryKey &&
+							!field.isUpdatedAt}
 						<div class="w-full">
 							<Label for={field.name}>
 								{field.name}
@@ -767,7 +802,7 @@
 			</div>
 
 			<!-- Boutons toujours visibles en bas -->
-			<div class="sticky bottom-0 flex justify-end space-x-2 border-t bg-white pt-4 mt-4">
+			<div class="sticky bottom-0 mt-4 flex justify-end space-x-2 border-t bg-white pt-4">
 				<Button type="button" variant="noir" onclick={closeModal}>
 					<CircleX class="mr-2 h-4 w-4" />
 					Annuler
