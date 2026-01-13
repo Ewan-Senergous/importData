@@ -265,12 +265,7 @@ export const actions: Actions = {
 			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
 
 			// Supprimer l'enregistrement
-			await deleteTableRecord(
-				database,
-				tableName,
-				primaryKeyValue,
-				metadata?.schema || 'public'
-			);
+			await deleteTableRecord(database, tableName, primaryKeyValue, metadata?.schema || 'public');
 
 			return {
 				success: true,

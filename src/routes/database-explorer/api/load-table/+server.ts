@@ -9,8 +9,16 @@ const logger = createChildLogger('database-explorer-api');
 
 const LoadTableSchema = z.object({
 	database: z.enum(['cenov', 'cenov_dev', 'cenov_preprod']),
-	schema: z.string().min(1).max(100).regex(/^[a-z_][a-z0-9_]*$/i),
-	tableName: z.string().min(1).max(100).regex(/^[a-z_][a-z0-9_]*$/i),
+	schema: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(/^[a-z_][a-z0-9_]*$/i),
+	tableName: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(/^[a-z_][a-z0-9_]*$/i),
 	page: z.number().int().min(1).max(10000).default(1)
 });
 
