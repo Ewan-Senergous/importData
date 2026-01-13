@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
-	import PanelLeftIcon from '@lucide/svelte/icons/panel-left';
+	import SquareChevronLeft from '@lucide/svelte/icons/square-chevron-left';
+	import SquareChevronRight from '@lucide/svelte/icons/square-chevron-right';
 	import type { ComponentProps } from 'svelte';
 	import { useSidebar } from './context.svelte.js';
 
@@ -30,6 +31,10 @@
 	}}
 	{...restProps}
 >
-	<PanelLeftIcon />
+	{#if sidebar.open}
+		<SquareChevronLeft />
+	{:else}
+		<SquareChevronRight />
+	{/if}
 	<span class="sr-only">Toggle Sidebar</span>
 </Button>

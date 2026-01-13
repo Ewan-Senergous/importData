@@ -18,18 +18,24 @@
 		Trash2,
 		Database,
 		CheckSquare,
-		Square
+		Square,
+		SquareChevronLeft,
+		SquareChevronRight
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import type { TableSelection } from './services/explorer.service';
 	import type { TableMetadata } from './repositories/explorer.repository';
 	import { generateRecordSummary } from './services/explorer.service';
+	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
+
+	// Récupérer l'instance sidebar pour accéder à son état
+	const sidebar = useSidebar();
 
 	// ===== ÉTATS PRINCIPAUX =====
 	let selectedTable = $state<TableSelection | null>(null);
@@ -444,12 +450,26 @@
 						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 px-6 py-3"
 						style="left: var(--sidebar-width); right: 0;"
 					>
-						<p class="text-sm font-semibold text-gray-700">
-							{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
-							{#if isReadOnly}
-								<Badge variant="vert" class="ml-2">Lecture seule</Badge>
-							{/if}
-						</p>
+						<div class="flex items-center gap-3">
+							<Sidebar.Trigger>
+								<Button variant="blanc" size="sm" class="gap-2">
+									{#if sidebar.open}
+										<SquareChevronLeft class="h-4 w-4" />
+									{:else}
+										<SquareChevronRight class="h-4 w-4" />
+									{/if}
+									<span class="hidden sm:inline">
+										{sidebar.open ? 'Masquer' : 'Afficher'} la sidebar
+									</span>
+								</Button>
+							</Sidebar.Trigger>
+							<p class="text-sm font-semibold text-gray-700">
+								{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
+								{#if isReadOnly}
+									<Badge variant="vert" class="ml-2">Lecture seule</Badge>
+								{/if}
+							</p>
+						</div>
 						{#if !isReadOnly}
 							<div class="flex gap-2">
 								<Button variant="vert" onclick={openCreateModal}>
