@@ -24,10 +24,56 @@
 	// Grouper les tables par hiérarchie
 	let hierarchy = $derived(groupTablesByHierarchy(allTables));
 
-	// États d'expansion SIMPLES - juste des Sets
-	let openDatabases = $state(new Set<string>());
-	let openSchemas = $state(new Set<string>());
-	let openCategories = $state(new Set<string>());
+	// Clé localStorage pour la persistance
+	const STORAGE_KEY = 'db-explorer-sidebar-state';
+
+	// Charger l'état depuis localStorage
+	function loadFromStorage() {
+		if (typeof window === 'undefined') return { databases: [], schemas: [], categories: [] };
+
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored) {
+				return JSON.parse(stored);
+			}
+		} catch (error) {
+			console.error('Erreur lors du chargement de l\'état sidebar:', error);
+		}
+
+		return { databases: [], schemas: [], categories: [] };
+	}
+
+	// Sauvegarder l'état dans localStorage
+	function saveToStorage(databases: string[], schemas: string[], categories: string[]) {
+		if (typeof window === 'undefined') return;
+
+		try {
+			localStorage.setItem(
+				STORAGE_KEY,
+				JSON.stringify({
+					databases,
+					schemas,
+					categories
+				})
+			);
+		} catch (error) {
+			console.error('Erreur lors de la sauvegarde de l\'état sidebar:', error);
+		}
+	}
+
+	// États d'expansion - initialisés depuis localStorage
+	const initialState = loadFromStorage();
+	let openDatabases = $state(new Set<string>(initialState.databases));
+	let openSchemas = $state(new Set<string>(initialState.schemas));
+	let openCategories = $state(new Set<string>(initialState.categories));
+
+	// Sauvegarder dans localStorage à chaque changement
+	$effect(() => {
+		const databases = Array.from(openDatabases);
+		const schemas = Array.from(openSchemas);
+		const categories = Array.from(openCategories);
+		saveToStorage(databases, schemas, categories);
+	});
 
 	function toggleDatabase(key: string) {
 		// Svelte 5 : créer un nouveau Set pour déclencher la réactivité
