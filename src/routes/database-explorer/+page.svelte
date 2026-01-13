@@ -90,17 +90,38 @@
 			selectedItems = [];
 			selectAll = false;
 
+			console.log('📊 Table sélectionnée:', selectedTable.tableName);
 			loadTableData();
 
 			// Scroll vers le haut - attendre que le DOM soit mis à jour
 			setTimeout(() => {
-				const container = document.querySelector('.h-full.overflow-auto');
+				const container = document.querySelector('.overflow-x-auto.overflow-y-auto');
+				const sidebarInset = document.querySelector('[data-slot="sidebar-inset"]');
+				const table = document.querySelector('table');
+
+				console.log('📐 Dimensions conteneur:', {
+					width: container?.clientWidth,
+					scrollWidth: container?.scrollWidth,
+					hasHorizontalScroll: (container?.scrollWidth || 0) > (container?.clientWidth || 0)
+				});
+
+				console.log('📐 Dimensions SidebarInset:', {
+					width: sidebarInset?.clientWidth,
+					scrollWidth: sidebarInset?.scrollWidth
+				});
+
+				console.log('📐 Dimensions tableau:', {
+					width: table?.clientWidth,
+					scrollWidth: table?.scrollWidth
+				});
+
 				if (container) {
 					container.scrollTop = 0;
+					container.scrollLeft = 0;
 				}
 				// Aussi scroller window au cas où
 				window.scrollTo(0, 0);
-			}, 0);
+			}, 100);
 		}
 	});
 
@@ -400,7 +421,7 @@
 		<ExplorerSidebar allTables={data.allTables} on:tableSelect={handleTableSelect} />
 	</Sidebar.Sidebar>
 	<Sidebar.SidebarInset>
-		<div class="h-full overflow-x-hidden overflow-y-auto">
+		<div class="h-full overflow-y-auto">
 			{#if !selectedTable}
 				<!-- Message de sélection -->
 				<div class="flex items-start justify-center p-6">
@@ -417,11 +438,11 @@
 					</Card.Root>
 				</div>
 			{:else}
-				<div class="px-6">
+				<div>
 					<!-- En-tête de la table -->
 					<div
-						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 py-3"
-						style="left: calc(var(--sidebar-width) + 3rem); right: 3rem;"
+						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 px-6 py-3"
+						style="left: var(--sidebar-width); right: 0;"
 					>
 						<p class="text-sm font-semibold text-gray-700">
 							{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
@@ -447,7 +468,7 @@
 					<div class="mb-16"></div>
 
 					<!-- Conteneur avec scroll interne -->
-					<div class="overflow-x-auto overflow-y-auto" style="height: calc(100vh - 310px);">
+					<div class="overflow-x-auto overflow-y-auto px-6" style="height: calc(100vh - 310px);">
 						<!-- Table de données -->
 						{#if isLoading}
 							<div class="flex items-center justify-center py-12">
@@ -808,6 +829,12 @@
 	:global([data-slot='sidebar-container']) {
 		top: 138px !important;
 		height: calc(100vh - 138px) !important;
+	}
+
+	/* Empêcher le débordement horizontal du SidebarInset */
+	:global([data-slot='sidebar-inset']) {
+		max-width: 100%;
+		overflow-x: hidden;
 	}
 
 	/* Hover bleu sur les lignes du tableau */
