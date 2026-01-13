@@ -420,7 +420,7 @@
 				<div class="px-6">
 					<!-- En-tête de la table -->
 					<div
-						class="fixed top-34.5 z-40 flex items-center justify-between bg-transparent py-3"
+						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 py-3"
 						style="left: calc(var(--sidebar-width) + 3rem); right: 3rem;"
 					>
 						<p class="text-sm font-semibold text-gray-700">
@@ -444,10 +444,10 @@
 					</div>
 
 					<!-- Espacement pour la barre fixe -->
-					<div class="mb-4"></div>
+					<div class="mb-16"></div>
 
 					<!-- Conteneur avec scroll interne -->
-					<div class="overflow-auto" style="height: calc(100vh - 250px);">
+					<div class="overflow-auto" style="height: calc(100vh - 310px);">
 						<!-- Table de données -->
 						{#if isLoading}
 						<div class="flex items-center justify-center py-12">
