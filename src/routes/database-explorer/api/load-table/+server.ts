@@ -48,7 +48,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const { database, schema, tableName, page, sortField, sortOrder } = validation.data;
 
-	logger.info({ requestId, database, schema, tableName, page, sortField, sortOrder }, 'Loading table data');
+	logger.info(
+		{ requestId, database, schema, tableName, page, sortField, sortOrder },
+		'Loading table data'
+	);
 
 	try {
 		const startTime = Date.now();

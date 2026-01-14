@@ -219,9 +219,8 @@ export async function getTableMetadataFromPostgres(
 
 		// Détecter TOUTES les colonnes de clé primaire (pour clés composées)
 		const primaryKeyFields = fields.filter((f) => f.isPrimaryKey);
-		const primaryKeys = primaryKeyFields.length > 0
-			? primaryKeyFields.map((f) => f.name)
-			: [fields[0]?.name || 'id'];
+		const primaryKeys =
+			primaryKeyFields.length > 0 ? primaryKeyFields.map((f) => f.name) : [fields[0]?.name || 'id'];
 
 		// Garder primaryKey pour rétrocompatibilité (première clé primaire)
 		const primaryKey = primaryKeys[0];

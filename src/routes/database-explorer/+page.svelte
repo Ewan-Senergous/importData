@@ -394,6 +394,7 @@
 			const formData = new FormData();
 			formData.append('database', selectedTable!.database);
 			formData.append('tableName', selectedTable!.tableName);
+			formData.append('schema', selectedTable!.schema);
 
 			// Construire primaryKeyValues pour clés composées
 			const primaryKeyValues = selectedItems.map((r) => {
@@ -579,25 +580,23 @@
 									</span>
 								</Button>
 							</Sidebar.Trigger>
-							<p class="text-sm font-semibold text-gray-700">
-								{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
-								{#if isReadOnly}
-									<Badge variant="vert" class="ml-2">Lecture seule</Badge>
-								{/if}
-							</p>
-						</div>
-						{#if !isReadOnly}
-							<div class="flex gap-2">
-								<Button variant="vert" onclick={openCreateModal}>
-									<CirclePlus class="mr-2 h-4 w-4" />
-									Ajouter
-								</Button>
+							{#if !isReadOnly}
 								<Button variant="rouge" disabled={!hasSelection} onclick={handleDeleteSelected}>
 									<Trash2 class="mr-2 h-4 w-4" />
-									Supprimer ({selectedCount})
+									<span class="font-bold">Supprimer ({selectedCount})</span>
 								</Button>
-							</div>
-						{/if}
+								<Button variant="vert" onclick={openCreateModal}>
+									<CirclePlus class="mr-2 h-4 w-4" />
+									<span class="font-bold">Ajouter</span>
+								</Button>
+							{/if}
+						</div>
+						<p class="text-sm font-semibold text-gray-700">
+							{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
+							{#if isReadOnly}
+								<Badge variant="vert" class="ml-2">Lecture seule</Badge>
+							{/if}
+						</p>
 					</div>
 
 					<!-- Espacement pour la barre fixe -->
@@ -849,6 +848,7 @@
 		{#if selectedTable && tableMetadata}
 			<input type="hidden" name="database" value={selectedTable.database} />
 			<input type="hidden" name="tableName" value={selectedTable.tableName} />
+			<input type="hidden" name="schema" value={selectedTable.schema} />
 			{#if modalState.mode === 'edit' && modalState.record}
 				{@const primaryKeyValue =
 					tableMetadata.primaryKeys.length > 1
@@ -915,11 +915,11 @@
 			<div class="sticky bottom-0 mt-4 flex justify-end space-x-2 border-t bg-white pt-4">
 				<Button type="button" variant="noir" onclick={closeModal}>
 					<CircleX class="mr-2 h-4 w-4" />
-					Annuler
+					<span class="font-bold">Annuler</span>
 				</Button>
 				<Button type="submit" variant="vert">
 					<CircleCheck class="mr-2 h-4 w-4" />
-					{modalState.mode === 'create' ? 'Créer' : 'Modifier'}
+					<span class="font-bold">{modalState.mode === 'create' ? 'Créer' : 'Modifier'}</span>
 				</Button>
 			</div>
 		{/if}
@@ -961,6 +961,7 @@
 			{#if selectedTable && tableMetadata}
 				<input type="hidden" name="database" value={selectedTable.database} />
 				<input type="hidden" name="tableName" value={selectedTable.tableName} />
+				<input type="hidden" name="schema" value={selectedTable.schema} />
 				{@const primaryKeyValue =
 					tableMetadata.primaryKeys.length > 1
 						? JSON.stringify(
@@ -986,11 +987,11 @@
 			<div class="flex justify-end space-x-2 pt-4">
 				<Button type="button" variant="noir" onclick={closeModal}>
 					<CircleX class="mr-2 h-4 w-4" />
-					Annuler
+					<span class="font-bold">Annuler</span>
 				</Button>
 				<Button type="submit" variant="rouge" disabled={deleteConfirmation !== 'SUPPRIMER'}>
 					<Trash2 class="mr-2 h-4 w-4" />
-					Supprimer définitivement
+					<span class="font-bold">Supprimer définitivement</span>
 				</Button>
 			</div>
 		</form>

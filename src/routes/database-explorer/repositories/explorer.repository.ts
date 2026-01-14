@@ -165,7 +165,9 @@ export async function updateTableRecord(
 		console.log('🔍 Update avec clé composée:', { compositeKeyName, where });
 	} else if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
 		// Clé simple - extraire la valeur de l'objet
-		where[metadata.primaryKeys[0]] = (primaryKeyValue as Record<string, unknown>)[metadata.primaryKeys[0]];
+		where[metadata.primaryKeys[0]] = (primaryKeyValue as Record<string, unknown>)[
+			metadata.primaryKeys[0]
+		];
 	} else {
 		// Clé simple - utiliser la valeur directement
 		where[metadata.primaryKeys[0]] = primaryKeyValue;

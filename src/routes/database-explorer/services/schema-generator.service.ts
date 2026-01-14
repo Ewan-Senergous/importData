@@ -37,15 +37,21 @@ function getZodTypeForField(field: FieldInfo): z.ZodTypeAny {
 			});
 		case 'Int':
 		case 'BigInt':
-			return z.string().refine((val) => !Number.isNaN(Number.parseInt(val, 10)), {
-				message: `${field.name} doit être un nombre entier`
-			});
+			// Accepter string ou number, coercer en number
+			return z.union([z.string(), z.number()]).pipe(
+				z.coerce.number({
+					error: `${field.name} doit être un nombre entier`
+				})
+			);
 
 		case 'Float':
 		case 'Decimal':
-			return z.string().refine((val) => !Number.isNaN(Number.parseFloat(val)), {
-				message: `${field.name} doit être un nombre`
-			});
+			// Accepter string ou number, coercer en number
+			return z.union([z.string(), z.number()]).pipe(
+				z.coerce.number({
+					error: `${field.name} doit être un nombre`
+				})
+			);
 
 		case 'Boolean':
 			return z.string().refine((val) => ['true', 'false', '1', '0'].includes(val.toLowerCase()), {

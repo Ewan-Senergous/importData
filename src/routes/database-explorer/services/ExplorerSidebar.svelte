@@ -37,7 +37,7 @@
 				return JSON.parse(stored);
 			}
 		} catch (error) {
-			console.error('Erreur lors du chargement de l\'état sidebar:', error);
+			console.error("Erreur lors du chargement de l'état sidebar:", error);
 		}
 
 		return { databases: [], schemas: [], categories: [] };
@@ -57,7 +57,7 @@
 				})
 			);
 		} catch (error) {
-			console.error('Erreur lors de la sauvegarde de l\'état sidebar:', error);
+			console.error("Erreur lors de la sauvegarde de l'état sidebar:", error);
 		}
 	}
 

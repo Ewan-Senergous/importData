@@ -99,16 +99,16 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const database = formData.get('database') as DatabaseName;
 		const tableName = formData.get('tableName') as string;
+		const schemaName = (formData.get('schema') as string) || 'public';
 
 		try {
-			// Récupérer les métadonnées de la table (essayer les deux schémas)
-			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
-			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
+			// Récupérer les métadonnées de la table avec le schéma spécifié
+			const metadata = await getTableMetadataFromPostgres(database, tableName, schemaName);
 
 			if (!metadata) {
 				return fail(404, {
 					success: false,
-					error: `Table ${tableName} introuvable dans la base ${database}`
+					error: `Table ${tableName} introuvable dans le schéma ${schemaName} de la base ${database}`
 				});
 			}
 
@@ -122,12 +122,25 @@ export const actions: Actions = {
 
 				const value = formData.get(field.name) as string;
 				if (value !== null) {
-					data[field.name] = parseValueForDatabase(value, field);
+					const parsedValue = parseValueForDatabase(value, field);
+					console.log(
+						`[create] Parsing field ${field.name}: "${value}" (${typeof value}) -> ${parsedValue} (${typeof parsedValue})`
+					);
+					data[field.name] = parsedValue;
 				}
 			}
 
+			console.log('[create] Data before validation:', JSON.stringify(data, null, 2));
+
 			// Valider les données
 			const validation = schema.safeParse(data);
+
+			if (!validation.success) {
+				console.log(
+					'[create] Validation errors:',
+					JSON.stringify(validation.error.issues, null, 2)
+				);
+			}
 			if (!validation.success) {
 				// Formater les erreurs de validation de manière lisible
 				const errorMessages = validation.error.issues.map((issue) => {
@@ -171,17 +184,17 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const database = formData.get('database') as DatabaseName;
 		const tableName = formData.get('tableName') as string;
+		const schemaName = (formData.get('schema') as string) || 'public';
 		const primaryKeyValueRaw = formData.get('primaryKeyValue');
 
 		try {
-			// Récupérer les métadonnées de la table (essayer les deux schémas)
-			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
-			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
+			// Récupérer les métadonnées de la table avec le schéma spécifié
+			const metadata = await getTableMetadataFromPostgres(database, tableName, schemaName);
 
 			if (!metadata) {
 				return fail(404, {
 					success: false,
-					error: `Table ${tableName} introuvable dans la base ${database}`
+					error: `Table ${tableName} introuvable dans le schéma ${schemaName} de la base ${database}`
 				});
 			}
 
@@ -229,13 +242,7 @@ export const actions: Actions = {
 			}
 
 			// Modifier l'enregistrement avec le bon schéma
-			await updateTableRecord(
-				database,
-				tableName,
-				primaryKeyValue,
-				validation.data,
-				metadata.schema || 'public'
-			);
+			await updateTableRecord(database, tableName, primaryKeyValue, validation.data, schemaName);
 
 			return {
 				success: true,
@@ -264,6 +271,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const database = formData.get('database') as DatabaseName;
 		const tableName = formData.get('tableName') as string;
+		const schemaName = (formData.get('schema') as string) || 'public';
 		const primaryKeyValueRaw = formData.get('primaryKeyValue');
 		const confirmation = formData.get('confirmation') as string;
 
@@ -276,9 +284,8 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Récupérer les métadonnées pour le schéma
-			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
-			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
+			// Récupérer les métadonnées pour le schéma (pas utilisé mais garde cohérence)
+			await getTableMetadataFromPostgres(database, tableName, schemaName);
 
 			// Parser primaryKeyValue (peut être JSON pour clés composées)
 			let primaryKeyValue: unknown;
@@ -295,7 +302,7 @@ export const actions: Actions = {
 			}
 
 			// Supprimer l'enregistrement
-			await deleteTableRecord(database, tableName, primaryKeyValue, metadata?.schema || 'public');
+			await deleteTableRecord(database, tableName, primaryKeyValue, schemaName);
 
 			return {
 				success: true,
@@ -318,6 +325,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const database = formData.get('database') as DatabaseName;
 		const tableName = formData.get('tableName') as string;
+		const schemaName = (formData.get('schema') as string) || 'public';
 		const primaryKeyValuesJson = formData.get('primaryKeyValues') as string;
 
 		try {
@@ -331,7 +339,7 @@ export const actions: Actions = {
 			}
 
 			const client = await getClient(database);
-			const metadata = await getTableMetadataFromPostgres(database, tableName);
+			const metadata = await getTableMetadataFromPostgres(database, tableName, schemaName);
 
 			if (!metadata) {
 				return fail(404, {
