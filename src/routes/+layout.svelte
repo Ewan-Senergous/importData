@@ -46,7 +46,7 @@
 
 <div class="page-transition-container min-h-screen bg-gray-50 {loaded ? 'loaded' : ''}">
 	<header class="sticky top-0 z-50 bg-white shadow">
-		<div class="container mx-auto px-4">
+		<div class="w-full px-6">
 			<!-- Mobile: Wrapper pour layout vertical -->
 			<div class="md:hidden">
 				<!-- Ligne 1: Titre + Menu burger -->
@@ -132,7 +132,7 @@
 		</div>
 	</header>
 
-	<main class="container mx-auto">
+	<main class="w-full">
 		<slot />
 	</main>
 
