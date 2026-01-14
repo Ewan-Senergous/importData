@@ -19,7 +19,14 @@ const LoadTableSchema = z.object({
 		.min(1)
 		.max(100)
 		.regex(/^[a-z_][a-z0-9_]*$/i),
-	page: z.number().int().min(1).max(10000).default(1)
+	page: z.number().int().min(1).max(10000).default(1),
+	sortField: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(/^[a-z_][a-z0-9_]*$/i)
+		.optional(),
+	sortOrder: z.enum(['asc', 'desc']).optional()
 });
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -39,16 +46,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		);
 	}
 
-	const { database, schema, tableName, page } = validation.data;
+	const { database, schema, tableName, page, sortField, sortOrder } = validation.data;
 
-	logger.info({ requestId, database, schema, tableName, page }, 'Loading table data');
+	logger.info({ requestId, database, schema, tableName, page, sortField, sortOrder }, 'Loading table data');
 
 	try {
 		const startTime = Date.now();
 		const result = await getTableData(database as DatabaseName, tableName, {
 			page: page || 1,
 			limit: 500,
-			schema: schema || 'public' // ✅ Passer le schéma dans les options
+			schema: schema || 'public',
+			orderBy: sortField && sortOrder ? { field: sortField, order: sortOrder } : undefined
 		});
 
 		const duration = Date.now() - startTime;

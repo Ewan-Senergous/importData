@@ -22,7 +22,9 @@
 		CheckSquare,
 		Square,
 		SquareChevronLeft,
-		SquareChevronRight
+		SquareChevronRight,
+		CircleArrowUp,
+		CircleArrowDown
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import type { TableSelection } from './services/explorer.service';
@@ -81,6 +83,12 @@
 	// État pour détecter le scroll
 	let isScrolled = $state(false);
 
+	// État pour le tri des colonnes
+	let sortConfig = $state<{ field: string; order: 'asc' | 'desc' }>({
+		field: '',
+		order: 'asc'
+	});
+
 	// ===== DERIVED STATES =====
 	let isReadOnly = $derived(tableMetadata?.category === 'view');
 	let totalPages = $derived(Math.ceil(totalRows / pageSize));
@@ -98,6 +106,8 @@
 		const schema = searchParams.get('schema');
 		const tableName = searchParams.get('table');
 		const pageParam = searchParams.get('page');
+		const sortField = searchParams.get('sortField');
+		const sortOrder = searchParams.get('sortOrder') as 'asc' | 'desc' | null;
 
 		// Si on a tous les paramètres nécessaires
 		if (database && schema && tableName) {
@@ -109,24 +119,42 @@
 				selectedTable.tableName !== tableName;
 
 			const isDifferentPage = currentPage !== Number.parseInt(pageParam || '1', 10);
+			const isDifferentSort =
+				sortConfig.field !== (sortField || '') ||
+				sortConfig.order !== (sortOrder || 'asc');
 
-			// Restaurer seulement si c'est différent (évite les boucles infinies)
-			if (isDifferentTable || isDifferentPage) {
+			// Restaurer seulement ce qui est différent (évite les boucles infinies)
+			if (isDifferentTable) {
 				selectedTable = { database, schema, tableName };
+			}
+
+			if (isDifferentPage) {
 				currentPage = pageParam ? Number.parseInt(pageParam, 10) : 1;
+			}
+
+			if (isDifferentSort) {
+				// Restaurer le tri ou utiliser la clé primaire par défaut
+				if (sortField && sortOrder) {
+					sortConfig = { field: sortField, order: sortOrder };
+				} else {
+					// Si pas de tri dans l'URL, reset
+					sortConfig = { field: '', order: 'asc' };
+				}
 			}
 		} else if (!database && !schema && !tableName && selectedTable) {
 			// Si l'URL est vide mais qu'une table est sélectionnée, réinitialiser
 			selectedTable = null;
 			currentPage = 1;
+			sortConfig = { field: '', order: 'asc' };
 		}
 	});
 
-	// Charger les données quand la table sélectionnée OU la page change
+	// Charger les données quand la table sélectionnée OU la page OU le tri change
 	$effect(() => {
 		// Lire explicitement les dépendances pour la réactivité
 		const table = selectedTable;
 		const page = currentPage;
+		const sort = sortConfig; // Ajouter le tri comme dépendance
 
 		if (table) {
 			// Réinitialiser la sélection quand on change de table ou de page
@@ -214,6 +242,12 @@
 		params.set('table', selectedTable.tableName);
 		params.set('page', String(currentPage));
 
+		// Ajouter les paramètres de tri si définis
+		if (sortConfig.field) {
+			params.set('sortField', sortConfig.field);
+			params.set('sortOrder', sortConfig.order);
+		}
+
 		goto(`?${params.toString()}`, { replaceState: true, noScroll: true, keepFocus: true });
 	}
 
@@ -243,7 +277,11 @@
 					database: selectedTable.database,
 					schema: selectedTable.schema,
 					tableName: selectedTable.tableName,
-					page: currentPage
+					page: currentPage,
+					...(sortConfig.field && {
+						sortField: sortConfig.field,
+						sortOrder: sortConfig.order
+					})
 				}),
 				signal: currentAbortController.signal // ✅ Annulation possible
 			});
@@ -259,6 +297,13 @@
 				tableData = result.data || [];
 				tableMetadata = result.metadata;
 				totalRows = result.total || 0;
+
+				// Initialiser le tri avec la clé primaire si aucun tri n'est défini
+				if (!sortConfig.field && tableMetadata) {
+					sortConfig = { field: tableMetadata.primaryKey, order: 'asc' };
+					// Mettre à jour l'URL pour refléter le tri par défaut
+					updateUrl();
+				}
 			} else {
 				toast.error(result.error || 'Erreur lors du chargement de la table');
 			}
@@ -281,8 +326,25 @@
 	function handleTableSelect(event: CustomEvent<TableSelection>) {
 		selectedTable = event.detail;
 		currentPage = 1;
+		// Reset le tri seulement si nécessaire (évite de créer un nouvel objet inutilement)
+		if (sortConfig.field !== '' || sortConfig.order !== 'asc') {
+			sortConfig = { field: '', order: 'asc' };
+		}
 		// Mettre à jour l'URL immédiatement (synchrone) pour que l'effet URL ne réinitialise pas
 		updateUrl();
+	}
+
+	function handleSort(fieldName: string) {
+		if (sortConfig.field === fieldName) {
+			// Même colonne → inverser l'ordre
+			sortConfig = { field: fieldName, order: sortConfig.order === 'asc' ? 'desc' : 'asc' };
+		} else {
+			// Nouvelle colonne → ASC par défaut
+			sortConfig = { field: fieldName, order: 'asc' };
+		}
+
+		currentPage = 1; // Reset à la page 1 lors du tri
+		updateUrl(); // Mettre à jour l'URL
 	}
 
 	function openCreateModal() {
@@ -540,9 +602,20 @@
 												{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
 													<th
 														scope="col"
-														class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
+														class="w-14 cursor-pointer border-x border-black px-4 py-3 hover:bg-blue-800 whitespace-nowrap"
+														onclick={() => handleSort(field.name)}
+														title="Cliquer pour trier par {field.name}"
 													>
-														{field.name}
+														<div class="flex items-center justify-between gap-2">
+															<span>{field.name}</span>
+															{#if sortConfig.field === field.name}
+																{#if sortConfig.order === 'asc'}
+																	<CircleArrowUp class="h-3.5 w-3.5 shrink-0" />
+																{:else}
+																	<CircleArrowDown class="h-3.5 w-3.5 shrink-0" />
+																{/if}
+															{/if}
+														</div>
 													</th>
 												{/each}
 											{/if}
@@ -592,9 +665,20 @@
 												{#each tableMetadata.fields as field, fieldIndex (fieldIndex)}
 													<th
 														scope="col"
-														class="w-14 border-x border-black px-4 py-3 whitespace-nowrap"
+														class="w-14 cursor-pointer border-x border-black px-4 py-3 hover:bg-blue-800 whitespace-nowrap"
+														onclick={() => handleSort(field.name)}
+														title="Cliquer pour trier par {field.name}"
 													>
-														{field.name}
+														<div class="flex items-center justify-between gap-2">
+															<span>{field.name}</span>
+															{#if sortConfig.field === field.name}
+																{#if sortConfig.order === 'asc'}
+																	<CircleArrowUp class="h-3.5 w-3.5 shrink-0" />
+																{:else}
+																	<CircleArrowDown class="h-3.5 w-3.5 shrink-0" />
+																{/if}
+															{/if}
+														</div>
 													</th>
 												{/each}
 											{/if}

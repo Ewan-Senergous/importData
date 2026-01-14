@@ -30,7 +30,7 @@ export async function getTableData(
 	tableName: string,
 	options: GetTableDataOptions = {}
 ): Promise<TableDataResult> {
-	const { page = 1, limit = 500, schema = 'public' } = options;
+	const { page = 1, limit = 500, schema = 'public', orderBy } = options;
 
 	// ✅ Validation stricte anti-injection
 	if (!Number.isInteger(page) || page < 1 || page > 10000) {
@@ -70,11 +70,12 @@ export async function getTableData(
 			throw new Error(`Table ${tableName} n'a pas de méthode findMany`);
 		}
 
-		// ✅ Prisma exige orderBy pour les vues quand take est utilisé
+		// ✅ Tri dynamique selon le paramètre orderBy
+		const sortConfig = orderBy || { field: metadata.primaryKey, order: 'asc' };
 		const rawData = await table.findMany({
 			skip,
 			take: limit,
-			orderBy: { [metadata.primaryKey]: 'asc' }
+			orderBy: { [sortConfig.field]: sortConfig.order }
 		});
 
 		// Post-traitement timestamps : convertir Date au format PostgreSQL
