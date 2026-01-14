@@ -569,7 +569,7 @@
 						style="left: var(--sidebar-width); right: 0;"
 					>
 						<!-- Bouton sidebar à gauche (sans padding) -->
-						<div class="pr-6 pl-5">
+						<div class="pr-1 pl-4">
 							<Sidebar.Trigger>
 								<Button variant="blanc" size="sm" class="gap-2">
 									{#if sidebar.open}
@@ -617,7 +617,7 @@
 					<div class="mb-16"></div>
 
 					<!-- Conteneur avec scroll interne -->
-					<div class="overflow-x-auto overflow-y-auto px-6" style="height: calc(100vh - 310px);">
+					<div class="overflow-x-auto overflow-y-auto" style="height: calc(100vh - 310px);">
 						<!-- Table de données -->
 						{#if isLoading}
 							<div class="flex items-center justify-center py-12">
