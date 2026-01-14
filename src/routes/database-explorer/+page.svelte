@@ -24,7 +24,8 @@
 		SquareChevronLeft,
 		SquareChevronRight,
 		CircleArrowUp,
-		CircleArrowDown
+		CircleArrowDown,
+		Eye
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import type { TableSelection } from './services/explorer.service';
@@ -564,10 +565,11 @@
 				<div>
 					<!-- En-tête de la table -->
 					<div
-						class="fixed top-34.5 z-40 flex items-center justify-between bg-gray-50 px-6 py-3"
+						class="fixed top-34.5 z-40 flex items-center bg-gray-50 py-3"
 						style="left: var(--sidebar-width); right: 0;"
 					>
-						<div class="flex items-center gap-3">
+						<!-- Bouton sidebar à gauche (sans padding) -->
+						<div class="pr-6 pl-5">
 							<Sidebar.Trigger>
 								<Button variant="blanc" size="sm" class="gap-2">
 									{#if sidebar.open}
@@ -580,23 +582,35 @@
 									</span>
 								</Button>
 							</Sidebar.Trigger>
-							{#if !isReadOnly}
-								<Button variant="rouge" disabled={!hasSelection} onclick={handleDeleteSelected}>
-									<Trash2 class="mr-2 h-4 w-4" />
-									<span class="font-bold">Supprimer ({selectedCount})</span>
-								</Button>
-								<Button variant="vert" onclick={openCreateModal}>
-									<CirclePlus class="mr-2 h-4 w-4" />
-									<span class="font-bold">Ajouter</span>
-								</Button>
-							{/if}
 						</div>
-						<p class="text-sm font-semibold text-gray-700">
-							{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
-							{#if isReadOnly}
-								<Badge variant="vert" class="ml-2">Lecture seule</Badge>
-							{/if}
-						</p>
+
+						<!-- Zone centrale avec boutons d'action et texte (avec px-6 pour alignement tableau) -->
+						<div class="flex flex-1 items-center justify-between px-6">
+							<!-- Boutons d'action alignés avec début du tableau -->
+							<div class="flex gap-2">
+								{#if !isReadOnly}
+									<Button variant="rouge" disabled={!hasSelection} onclick={handleDeleteSelected}>
+										<Trash2 class="mr-2 h-4 w-4" />
+										<span class="font-bold">Supprimer ({selectedCount})</span>
+									</Button>
+									<Button variant="vert" onclick={openCreateModal}>
+										<CirclePlus class="mr-2 h-4 w-4" />
+										<span class="font-bold">Ajouter</span>
+									</Button>
+								{/if}
+							</div>
+
+							<!-- Texte navigation à droite -->
+							<p class="text-sm font-semibold text-gray-700">
+								{selectedTable.database} ➡️ {selectedTable.schema} ➡️ {selectedTable.tableName}
+								{#if isReadOnly}
+									<Badge variant="vert" class="ml-2">
+										<Eye />
+										Lecture seule
+									</Badge>
+								{/if}
+							</p>
+						</div>
 					</div>
 
 					<!-- Espacement pour la barre fixe -->
