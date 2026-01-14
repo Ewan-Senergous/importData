@@ -45,12 +45,12 @@
 </svelte:head>
 
 <div class="page-transition-container min-h-screen bg-gray-50 {loaded ? 'loaded' : ''}">
-	<header class="sticky top-0 z-50 bg-white shadow">
+	<header class="sticky top-0 z-50 border-b border-gray-500 bg-white">
 		<div class="w-full px-6">
 			<!-- Mobile: Wrapper pour layout vertical -->
 			<div class="md:hidden">
 				<!-- Ligne 1: Titre + Menu burger -->
-				<div class="flex items-center justify-between py-4">
+				<div class="flex items-center justify-between py-3">
 					<a href={resolve('/')} class="text-xl font-bold text-[#e31206]">CenovDistribution</a>
 					<button
 						class="rounded-md p-2 hover:bg-gray-200"
@@ -67,7 +67,7 @@
 			</div>
 
 			<!-- Desktop Top bar -->
-			<div class="hidden items-center justify-between py-4 md:flex">
+			<div class="hidden items-center justify-between py-3 md:flex">
 				<a href={resolve('/')} class="text-xl font-bold text-[#e31206]">CenovDistribution</a>
 
 				<!-- Desktop user info & auth -->
@@ -80,8 +80,8 @@
 			</div>
 
 			<!-- Desktop Navigation - Toujours visible -->
-			<nav class="hidden border-t border-gray-200 md:block">
-				<div class="flex space-x-8 py-3">
+			<nav class="hidden md:block">
+				<div class="flex space-x-8 pb-3">
 					{#each navItems as item (item.href)}
 						<a
 							href={resolve(item.href)}
@@ -98,10 +98,10 @@
 
 			<!-- Mobile Navigation - Toujours visible si menu ouvert -->
 			{#if mobileMenuOpen}
-				<nav class="border-t border-gray-200 bg-gray-50 md:hidden">
+				<nav class="border-t border-gray-500 bg-gray-50 md:hidden">
 					<!-- User info in mobile (seulement si connecté) -->
 					{#if isAuthenticated(user)}
-						<div class="border-b border-gray-200 px-4 py-3">
+						<div class="border-b border-gray-500 px-4 py-3">
 							<p class="text-sm font-medium text-gray-900">Bonjour,</p>
 							<p class="truncate text-sm text-gray-600">{user?.name || 'Client'}</p>
 						</div>
@@ -124,7 +124,7 @@
 					</div>
 
 					<!-- Auth button in mobile -->
-					<div class="border-t border-gray-200 p-4">
+					<div class="border-t border-gray-500 p-4">
 						<AuthButton {user} />
 					</div>
 				</nav>

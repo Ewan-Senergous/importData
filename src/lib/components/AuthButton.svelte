@@ -5,7 +5,7 @@
 </script>
 
 <form method="POST" action="/auth?/{user ? 'signOut' : 'signIn'}">
-	<Button type="submit" variant="bleu" class="me-2 mb-2">
+	<Button type="submit" variant="bleu" class="mb-2 me-2 font-bold">
 		{#if user}
 			<LogOut size={16} />
 			Se déconnecter
