@@ -565,8 +565,8 @@
 				<div class="px-6">
 					<!-- En-tête de la table -->
 					<div
-						class="fixed top-34.5 z-40 flex items-center bg-gray-50 py-3"
-						style="left: var(--sidebar-width); right: 0;"
+						class="fixed z-40 flex items-center bg-gray-50 py-3"
+						style="left: var(--sidebar-width); right: 0; top: 118px;"
 					>
 						<!-- Bouton sidebar à gauche (sans padding) -->
 						<div class="pr-1 pl-4">
@@ -614,7 +614,7 @@
 					</div>
 
 					<!-- Espacement pour la barre fixe -->
-					<div class="mb-24"></div>
+					<div class="mb-16"></div>
 
 					<!-- Conteneur avec scroll interne -->
 					<div class="overflow-x-auto overflow-y-auto" style="height: calc(100vh - 310px);">
@@ -1015,8 +1015,8 @@
 <style>
 	/* Surcharge de la sidebar Shadcn pour qu'elle commence sous la navbar sticky */
 	:global([data-slot='sidebar-container']) {
-		top: 138px !important;
-		height: calc(100vh - 138px) !important;
+		top: 118px !important;
+		height: calc(100vh - 118px) !important;
 	}
 
 	/* Empêcher le débordement horizontal du SidebarInset */
