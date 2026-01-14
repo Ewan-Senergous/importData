@@ -562,7 +562,7 @@
 					</Card.Root>
 				</div>
 			{:else}
-				<div>
+				<div class="px-6">
 					<!-- En-tête de la table -->
 					<div
 						class="fixed top-34.5 z-40 flex items-center bg-gray-50 py-3"
@@ -614,7 +614,7 @@
 					</div>
 
 					<!-- Espacement pour la barre fixe -->
-					<div class="mb-16"></div>
+					<div class="mb-24"></div>
 
 					<!-- Conteneur avec scroll interne -->
 					<div class="overflow-x-auto overflow-y-auto" style="height: calc(100vh - 310px);">
