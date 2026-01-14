@@ -395,10 +395,22 @@
 			const formData = new FormData();
 			formData.append('database', selectedTable!.database);
 			formData.append('tableName', selectedTable!.tableName);
-			formData.append(
-				'primaryKeyValues',
-				JSON.stringify(selectedItems.map((r) => r[tableMetadata!.primaryKey]))
-			);
+
+			// Construire primaryKeyValues pour clés composées
+			const primaryKeyValues = selectedItems.map((r) => {
+				if (tableMetadata!.primaryKeys && tableMetadata!.primaryKeys.length > 1) {
+					// Clé composée : créer un objet avec toutes les valeurs
+					const pkValue: Record<string, unknown> = {};
+					for (const key of tableMetadata!.primaryKeys) {
+						pkValue[key] = r[key];
+					}
+					return pkValue;
+				}
+				// Clé simple : une seule valeur
+				return r[tableMetadata!.primaryKey];
+			});
+
+			formData.append('primaryKeyValues', JSON.stringify(primaryKeyValues));
 
 			// ✅ Une seule requête avec transaction atomique
 			const response = await fetch('?/deleteMultiple', {
@@ -479,7 +491,18 @@
 			return;
 		}
 
-		const primaryKeyValue = editingCell.record[tableMetadata.primaryKey];
+		// Construire primaryKeyValue pour clés composées
+		let primaryKeyValue: unknown;
+		if (tableMetadata.primaryKeys && tableMetadata.primaryKeys.length > 1) {
+			// Clé composée : créer un objet avec toutes les valeurs
+			primaryKeyValue = {};
+			for (const key of tableMetadata.primaryKeys) {
+				(primaryKeyValue as Record<string, unknown>)[key] = editingCell.record[key];
+			}
+		} else {
+			// Clé simple : une seule valeur
+			primaryKeyValue = editingCell.record[tableMetadata.primaryKey];
+		}
 
 		isSaving = true;
 
@@ -828,11 +851,15 @@
 			<input type="hidden" name="database" value={selectedTable.database} />
 			<input type="hidden" name="tableName" value={selectedTable.tableName} />
 			{#if modalState.mode === 'edit' && modalState.record}
-				<input
-					type="hidden"
-					name="primaryKeyValue"
-					value={String(modalState.record[tableMetadata.primaryKey])}
-				/>
+				{@const primaryKeyValue =
+					tableMetadata.primaryKeys.length > 1
+						? JSON.stringify(
+								Object.fromEntries(
+									tableMetadata.primaryKeys.map((key) => [key, modalState.record![key]])
+								)
+							)
+						: String(modalState.record[tableMetadata.primaryKey])}
+				<input type="hidden" name="primaryKeyValue" value={primaryKeyValue} />
 			{/if}
 
 			<!-- Zone scrollable pour les champs -->
@@ -932,14 +959,18 @@
 				};
 			}}
 		>
-			{#if selectedTable}
+			{#if selectedTable && tableMetadata}
 				<input type="hidden" name="database" value={selectedTable.database} />
 				<input type="hidden" name="tableName" value={selectedTable.tableName} />
-				<input
-					type="hidden"
-					name="primaryKeyValue"
-					value={String(modalState.record[tableMetadata.primaryKey])}
-				/>
+				{@const primaryKeyValue =
+					tableMetadata.primaryKeys.length > 1
+						? JSON.stringify(
+								Object.fromEntries(
+									tableMetadata.primaryKeys.map((key) => [key, modalState.record![key]])
+								)
+							)
+						: String(modalState.record![tableMetadata.primaryKey])}
+				<input type="hidden" name="primaryKeyValue" value={primaryKeyValue} />
 			{/if}
 
 			<div class="mb-4 space-y-2">

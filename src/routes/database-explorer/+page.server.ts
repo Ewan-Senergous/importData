@@ -165,12 +165,13 @@ export const actions: Actions = {
 
 	/**
 	 * Modifier un enregistrement existant
+	 * Supporte les clés primaires composées
 	 */
 	update: async ({ request }) => {
 		const formData = await request.formData();
 		const database = formData.get('database') as DatabaseName;
 		const tableName = formData.get('tableName') as string;
-		const primaryKeyValue = formData.get('primaryKeyValue');
+		const primaryKeyValueRaw = formData.get('primaryKeyValue');
 
 		try {
 			// Récupérer les métadonnées de la table (essayer les deux schémas)
@@ -182,6 +183,20 @@ export const actions: Actions = {
 					success: false,
 					error: `Table ${tableName} introuvable dans la base ${database}`
 				});
+			}
+
+			// Parser primaryKeyValue (peut être JSON pour clés composées)
+			let primaryKeyValue: unknown;
+			if (typeof primaryKeyValueRaw === 'string') {
+				try {
+					// Essayer de parser en JSON (pour clés composées)
+					primaryKeyValue = JSON.parse(primaryKeyValueRaw);
+				} catch {
+					// Si parsing JSON échoue, c'est une valeur simple
+					primaryKeyValue = primaryKeyValueRaw;
+				}
+			} else {
+				primaryKeyValue = primaryKeyValueRaw;
 			}
 
 			// Générer le schéma Zod pour update (tous champs optionnels)
@@ -243,12 +258,13 @@ export const actions: Actions = {
 
 	/**
 	 * Supprimer un enregistrement
+	 * Supporte les clés primaires composées
 	 */
 	delete: async ({ request }) => {
 		const formData = await request.formData();
 		const database = formData.get('database') as DatabaseName;
 		const tableName = formData.get('tableName') as string;
-		const primaryKeyValue = formData.get('primaryKeyValue');
+		const primaryKeyValueRaw = formData.get('primaryKeyValue');
 		const confirmation = formData.get('confirmation') as string;
 
 		// Vérifier la confirmation
@@ -263,6 +279,20 @@ export const actions: Actions = {
 			// Récupérer les métadonnées pour le schéma
 			let metadata = await getTableMetadataFromPostgres(database, tableName, 'public');
 			metadata ??= await getTableMetadataFromPostgres(database, tableName, 'produit');
+
+			// Parser primaryKeyValue (peut être JSON pour clés composées)
+			let primaryKeyValue: unknown;
+			if (typeof primaryKeyValueRaw === 'string') {
+				try {
+					// Essayer de parser en JSON (pour clés composées)
+					primaryKeyValue = JSON.parse(primaryKeyValueRaw);
+				} catch {
+					// Si parsing JSON échoue, c'est une valeur simple
+					primaryKeyValue = primaryKeyValueRaw;
+				}
+			} else {
+				primaryKeyValue = primaryKeyValueRaw;
+			}
 
 			// Supprimer l'enregistrement
 			await deleteTableRecord(database, tableName, primaryKeyValue, metadata?.schema || 'public');
@@ -282,6 +312,7 @@ export const actions: Actions = {
 
 	/**
 	 * Supprimer plusieurs enregistrements en une seule transaction
+	 * Supporte les clés primaires composées
 	 */
 	deleteMultiple: async ({ request }) => {
 		const formData = await request.formData();
@@ -323,13 +354,30 @@ export const actions: Actions = {
 					throw new Error(`Table ${tableName} n'a pas de méthode deleteMany`);
 				}
 
-				await table.deleteMany({
-					where: {
+				// Construire le where selon le type de clé primaire
+				let where: Record<string, unknown>;
+
+				if (metadata.primaryKeys.length > 1) {
+					// Clé composée : utiliser OR avec toutes les combinaisons
+					where = {
+						OR: primaryKeyValues.map((pkValue) => {
+							if (typeof pkValue === 'object' && pkValue !== null) {
+								return pkValue as Record<string, unknown>;
+							}
+							// Fallback : utiliser la première clé primaire
+							return { [metadata.primaryKeys[0]]: pkValue };
+						})
+					};
+				} else {
+					// Clé simple : utiliser IN
+					where = {
 						[metadata.primaryKey]: {
 							in: primaryKeyValues
 						}
-					}
-				});
+					};
+				}
+
+				await table.deleteMany({ where });
 			});
 
 			return {

@@ -122,6 +122,7 @@ export async function createTableRecord(
 
 /**
  * Modifier un enregistrement existant
+ * Supporte les clés primaires composées
  */
 export async function updateTableRecord(
 	database: DatabaseName,
@@ -137,7 +138,40 @@ export async function updateTableRecord(
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
 	}
 
-	const where = { [metadata.primaryKey]: primaryKeyValue };
+	// Construire le where pour les clés primaires composées
+	const where: Record<string, unknown> = {};
+
+	if (metadata.primaryKeys.length > 1) {
+		// Clé composée : Prisma utilise une syntaxe spéciale
+		// Nom de la clé composée = noms des champs joints par underscore
+		const compositeKeyName = metadata.primaryKeys.join('_');
+
+		// Construire l'objet avec les valeurs
+		const compositeKeyValue: Record<string, unknown> = {};
+
+		if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
+			for (const key of metadata.primaryKeys) {
+				const value = (primaryKeyValue as Record<string, unknown>)[key];
+				if (value === undefined) {
+					throw new Error(`Valeur manquante pour la clé primaire ${key}`);
+				}
+				compositeKeyValue[key] = value;
+			}
+		} else {
+			throw new Error('primaryKeyValue doit être un objet pour une clé composée');
+		}
+
+		where[compositeKeyName] = compositeKeyValue;
+		console.log('🔍 Update avec clé composée:', { compositeKeyName, where });
+	} else {
+		// Clé simple
+		if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
+			where[metadata.primaryKeys[0]] = (primaryKeyValue as Record<string, unknown>)[metadata.primaryKeys[0]];
+		} else {
+			where[metadata.primaryKeys[0]] = primaryKeyValue;
+		}
+	}
+
 	const table = client[tableName] as {
 		update: (args: {
 			where: Record<string, unknown>;
@@ -150,6 +184,7 @@ export async function updateTableRecord(
 
 /**
  * Supprimer un enregistrement
+ * Supporte les clés primaires composées
  */
 export async function deleteTableRecord(
 	database: DatabaseName,
@@ -164,7 +199,38 @@ export async function deleteTableRecord(
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
 	}
 
-	const where = { [metadata.primaryKey]: primaryKeyValue };
+	// Construire le where pour les clés primaires composées
+	const where: Record<string, unknown> = {};
+
+	if (metadata.primaryKeys.length > 1) {
+		// Clé composée : Prisma utilise une syntaxe spéciale
+		const compositeKeyName = metadata.primaryKeys.join('_');
+		const compositeKeyValue: Record<string, unknown> = {};
+
+		if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
+			for (const key of metadata.primaryKeys) {
+				const value = (primaryKeyValue as Record<string, unknown>)[key];
+				if (value === undefined) {
+					throw new Error(`Valeur manquante pour la clé primaire ${key}`);
+				}
+				compositeKeyValue[key] = value;
+			}
+		} else {
+			throw new Error('primaryKeyValue doit être un objet pour une clé composée');
+		}
+
+		where[compositeKeyName] = compositeKeyValue;
+	} else {
+		// Clé simple
+		if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
+			where[metadata.primaryKeys[0]] = (primaryKeyValue as Record<string, unknown>)[
+				metadata.primaryKeys[0]
+			];
+		} else {
+			where[metadata.primaryKeys[0]] = primaryKeyValue;
+		}
+	}
+
 	const table = client[tableName] as {
 		delete: (args: { where: Record<string, unknown> }) => Promise<Record<string, unknown>>;
 	};
@@ -174,6 +240,7 @@ export async function deleteTableRecord(
 
 /**
  * Récupérer un seul enregistrement par sa clé primaire
+ * Supporte les clés primaires composées
  */
 export async function getTableRecord(
 	database: DatabaseName,
@@ -188,7 +255,38 @@ export async function getTableRecord(
 		throw new Error(`Table ${tableName} introuvable dans la base ${database}`);
 	}
 
-	const where = { [metadata.primaryKey]: primaryKeyValue };
+	// Construire le where pour les clés primaires composées
+	const where: Record<string, unknown> = {};
+
+	if (metadata.primaryKeys.length > 1) {
+		// Clé composée : Prisma utilise une syntaxe spéciale
+		const compositeKeyName = metadata.primaryKeys.join('_');
+		const compositeKeyValue: Record<string, unknown> = {};
+
+		if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
+			for (const key of metadata.primaryKeys) {
+				const value = (primaryKeyValue as Record<string, unknown>)[key];
+				if (value === undefined) {
+					throw new Error(`Valeur manquante pour la clé primaire ${key}`);
+				}
+				compositeKeyValue[key] = value;
+			}
+		} else {
+			throw new Error('primaryKeyValue doit être un objet pour une clé composée');
+		}
+
+		where[compositeKeyName] = compositeKeyValue;
+	} else {
+		// Clé simple
+		if (typeof primaryKeyValue === 'object' && primaryKeyValue !== null) {
+			where[metadata.primaryKeys[0]] = (primaryKeyValue as Record<string, unknown>)[
+				metadata.primaryKeys[0]
+			];
+		} else {
+			where[metadata.primaryKeys[0]] = primaryKeyValue;
+		}
+	}
+
 	const table = client[tableName] as {
 		findUnique: (args: {
 			where: Record<string, unknown>;

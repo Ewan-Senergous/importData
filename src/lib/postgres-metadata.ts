@@ -56,7 +56,8 @@ export interface TableInfo {
  */
 export interface TableMetadata {
 	name: string;
-	primaryKey: string;
+	primaryKey: string; // @deprecated - Utiliser primaryKeys pour clés composées
+	primaryKeys: string[]; // Toutes les colonnes de clé primaire (supporte clés composées)
 	schema: string;
 	fields: FieldInfo[];
 	category?: 'table' | 'view';
@@ -154,20 +155,23 @@ export async function getTableMetadataFromPostgres(
 		logger.debug({ database, tableName, schema }, 'Fetching table metadata from PostgreSQL');
 
 		// Requête INFORMATION_SCHEMA avec détection clé primaire
-		// ✅ DISTINCT pour éviter les doublons si un champ est dans plusieurs contraintes
+		// ✅ Utiliser BOOL_OR() pour détecter correctement les clés primaires composées
 		const columns = await (
 			client as {
 				$queryRaw: <T>(query: TemplateStringsArray, ...values: unknown[]) => Promise<T>;
 			}
 		).$queryRaw<PostgresColumnMetadata[]>`
-			SELECT DISTINCT ON (c.column_name)
+			SELECT
 				c.column_name,
 				c.is_nullable,
 				c.column_default,
 				c.data_type,
 				c.udt_name,
 				c.ordinal_position,
-				CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN true ELSE false END AS is_primary_key
+				COALESCE(
+					BOOL_OR(tc.constraint_type = 'PRIMARY KEY'),
+					false
+				) AS is_primary_key
 			FROM information_schema.columns c
 			LEFT JOIN information_schema.key_column_usage kcu
 				ON c.table_schema = kcu.table_schema
@@ -175,14 +179,14 @@ export async function getTableMetadataFromPostgres(
 				AND c.column_name = kcu.column_name
 			LEFT JOIN information_schema.table_constraints tc
 				ON kcu.constraint_name = tc.constraint_name
+				AND kcu.table_schema = tc.table_schema
+				AND kcu.table_name = tc.table_name
 				AND tc.constraint_type = 'PRIMARY KEY'
 			WHERE c.table_name = ${tableName}
 				AND c.table_schema = ${schema}
-			ORDER BY c.column_name, c.ordinal_position
+			GROUP BY c.column_name, c.is_nullable, c.column_default, c.data_type, c.udt_name, c.ordinal_position
+			ORDER BY c.ordinal_position
 		`;
-
-		// ✅ Trier par ordre de définition dans la BDD (ordinal_position)
-		columns.sort((a, b) => a.ordinal_position - b.ordinal_position);
 
 		if (columns.length === 0) {
 			logger.warn({ database, tableName, schema }, 'No columns found for table');
@@ -213,9 +217,14 @@ export async function getTableMetadataFromPostgres(
 			dbType: col.data_type
 		}));
 
-		// Détecter la clé primaire
-		const primaryKeyField = fields.find((f) => f.isPrimaryKey);
-		const primaryKey = primaryKeyField?.name || fields[0]?.name || 'id';
+		// Détecter TOUTES les colonnes de clé primaire (pour clés composées)
+		const primaryKeyFields = fields.filter((f) => f.isPrimaryKey);
+		const primaryKeys = primaryKeyFields.length > 0
+			? primaryKeyFields.map((f) => f.name)
+			: [fields[0]?.name || 'id'];
+
+		// Garder primaryKey pour rétrocompatibilité (première clé primaire)
+		const primaryKey = primaryKeys[0];
 
 		// Détecter si c'est une vue ou une table
 		const tableType = await (
@@ -236,6 +245,7 @@ export async function getTableMetadataFromPostgres(
 				tableName,
 				schema,
 				primaryKey,
+				primaryKeys,
 				category,
 				fieldCount: fields.length
 			},
@@ -245,6 +255,7 @@ export async function getTableMetadataFromPostgres(
 		return {
 			name: tableName,
 			primaryKey,
+			primaryKeys,
 			schema,
 			fields,
 			category
