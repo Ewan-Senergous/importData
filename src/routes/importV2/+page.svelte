@@ -397,8 +397,9 @@
 					</Card.Root>
 
 					<!-- Autocomplétion pour sélectionner la catégorie -->
-					<div class="relative flex flex-col items-stretch gap-4 sm:flex-row sm:items-start">
-						<div class="relative flex-1">
+					<div class="flex flex-col gap-4">
+						<!-- Search input (pleine largeur) -->
+						<div class="relative">
 							<div
 								class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"
 							>
@@ -465,18 +466,24 @@
 							{/if}
 						</div>
 
-						<!-- Bouton responsive : pleine largeur mobile, auto desktop -->
-						{#if selectedCategory}
-							<Button variant="vert" onclick={handleDownloadTemplate} class="w-full sm:w-auto">
-								Télécharger template CSV
-								<CircleArrowRight class="ml-2 h-4 w-4" />
-							</Button>
-						{:else}
-							<Button variant="noir" onclick={() => (step = 1)} class="w-full sm:w-auto">
-								Étape suivante
-								<CircleArrowRight class="ml-2 h-4 w-4" />
-							</Button>
-						{/if}
+						<!-- Boutons en dessous du search input -->
+						<div class="flex flex-col gap-2 sm:flex-row">
+							{#if selectedCategory}
+								<Button variant="vert" onclick={handleDownloadTemplate} class="w-full sm:w-auto">
+									Télécharger template CSV
+									<CircleArrowRight class="ml-2 h-4 w-4" />
+								</Button>
+								<Button variant="noir" onclick={() => (step = 1)} class="w-full sm:w-auto">
+									Étape suivante
+									<CircleArrowRight class="ml-2 h-4 w-4" />
+								</Button>
+							{:else}
+								<Button variant="noir" onclick={() => (step = 1)} class="w-full sm:w-auto">
+									Étape suivante
+									<CircleArrowRight class="ml-2 h-4 w-4" />
+								</Button>
+							{/if}
+						</div>
 					</div>
 				</div>
 			{:else if step === 1}

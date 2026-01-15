@@ -28,8 +28,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// Stocker dans locals pour accès dans routes
 	event.locals.requestId = requestId;
 
-	// Log requête entrante (sans userAgent pour réduire le bruit)
-	httpLogger.info(
+	// Log requête entrante (TRACE pour éviter pollution même en DEBUG)
+	httpLogger.trace(
 		{
 			requestId,
 			method: event.request.method,
@@ -42,8 +42,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		// Appliquer le handle Logto
 		const response = await logtoHandle({ event, resolve });
 
-		// Log succès requête
-		httpLogger.info({ requestId, status: response.status }, 'Request completed');
+		// Log succès requête (TRACE pour éviter pollution même en DEBUG)
+		httpLogger.trace({ requestId, status: response.status }, 'Request completed');
 
 		return response;
 	} catch (error) {

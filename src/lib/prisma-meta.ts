@@ -231,7 +231,7 @@ async function createDatabases(): Promise<DatabaseConfig> {
 			path.join(projectRoot, 'prisma/cenov_preprod/schema.prisma'),
 			'utf-8'
 		);
-		console.log('[PRISMA-META] Schémas chargés avec succès depuis:', projectRoot);
+		// Schémas chargés avec succès (pas de log pour éviter pollution)
 	} catch (error) {
 		console.warn('[PRISMA-META] Erreur lecture schema.prisma depuis', projectRoot, ':', error);
 	}
