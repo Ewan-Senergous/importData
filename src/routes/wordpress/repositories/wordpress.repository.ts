@@ -336,18 +336,86 @@ export async function getExportStats() {
 
 /**
  * Récupère la liste simplifiée de tous les produits pour la sélection
+ * @param filters - Filtres optionnels (marque, catégorie)
  * @returns Liste des produits avec ID, UGS et nom uniquement
  */
-export async function getAllProductsSummary(): Promise<ProductSummary[]> {
+export async function getAllProductsSummary(filters?: {
+	supplierId?: number;
+	categoryId?: number;
+}): Promise<ProductSummary[]> {
 	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
 
-	return await prisma.product.findMany({
-		where: { pro_cenov_id: { not: null } },
-		select: {
-			pro_id: true,
-			pro_cenov_id: true,
-			pro_name: true
-		},
-		orderBy: { pro_id: 'asc' }
-	});
+	// Si pas de filtres, requête simple
+	if (!filters?.supplierId && !filters?.categoryId) {
+		console.log('📋 [SQL] getAllProductsSummary: pas de filtres');
+		return await prisma.product.findMany({
+			where: { pro_cenov_id: { not: null } },
+			select: {
+				pro_id: true,
+				pro_cenov_id: true,
+				pro_name: true
+			},
+			orderBy: { pro_id: 'asc' }
+		});
+	}
+
+	// Avec filtres, requête SQL
+	console.log('📋 [SQL] getAllProductsSummary avec filtres:', filters);
+
+	const products = await prisma.$queryRaw<ProductSummary[]>`
+		SELECT DISTINCT
+			p.pro_id,
+			p.pro_cenov_id,
+			p.pro_name
+		FROM produit.product p
+		LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+		WHERE p.pro_cenov_id IS NOT NULL
+			AND (${filters.supplierId}::int IS NULL OR p.fk_supplier = ${filters.supplierId})
+			AND (${filters.categoryId}::int IS NULL OR pc.fk_category = ${filters.categoryId})
+		ORDER BY p.pro_id ASC
+	`;
+
+	console.log('📋 [SQL] Résultat:', products.length, 'produits');
+	return products;
+}
+
+/**
+ * Récupère la liste des marques/fournisseurs ayant des produits
+ */
+export async function getSuppliersList(): Promise<{ sup_id: number; sup_label: string }[]> {
+	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+
+	console.log('🏭 [SQL] getSuppliersList');
+
+	const suppliers = await prisma.$queryRaw<{ sup_id: number; sup_label: string }[]>`
+		SELECT DISTINCT s.sup_id, s.sup_label
+		FROM public.supplier s
+		INNER JOIN produit.product p ON p.fk_supplier = s.sup_id
+		WHERE p.pro_cenov_id IS NOT NULL
+		ORDER BY s.sup_label ASC
+	`;
+
+	console.log('🏭 [SQL] Résultat:', suppliers.length, 'marques');
+	return suppliers;
+}
+
+/**
+ * Récupère la liste des catégories ayant des produits
+ */
+export async function getCategoriesList(): Promise<{ cat_id: number; cat_label: string }[]> {
+	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+
+	console.log('📁 [SQL] getCategoriesList');
+
+	const categories = await prisma.$queryRaw<{ cat_id: number; cat_label: string }[]>`
+		SELECT DISTINCT c.cat_id, c.cat_label
+		FROM produit.category c
+		INNER JOIN produit.product_category pc ON pc.fk_category = c.cat_id
+		INNER JOIN produit.product p ON p.pro_id = pc.fk_product
+		WHERE p.pro_cenov_id IS NOT NULL
+		ORDER BY c.cat_label ASC
+	`;
+
+	console.log('📁 [SQL] Résultat:', categories.length, 'catégories');
+	return categories;
 }

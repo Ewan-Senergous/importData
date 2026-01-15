@@ -1,8 +1,19 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import * as Card from '$lib/components/ui/card';
-	import { Download, Package, AlertCircle, Search } from 'lucide-svelte';
+	import * as Select from '$lib/components/ui/select';
+	import {
+		Download,
+		Package,
+		AlertCircle,
+		Search,
+		CircleX,
+		Folder,
+		CircleCheck,
+		RefreshCcw
+	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { PageData } from './$types';
@@ -13,6 +24,61 @@
 	// État de sélection
 	let selectedIds = new SvelteSet<number>();
 	let searchQuery = $state('');
+
+	// États des filtres
+	let selectedSupplier = $state<string>('');
+	let selectedCategory = $state<string>('');
+
+	// Sync depuis URL params (au mount et navigation)
+	$effect(() => {
+		selectedSupplier = data.activeFilters.supplierId?.toString() ?? '';
+		selectedCategory = data.activeFilters.categoryId?.toString() ?? '';
+	});
+
+	// Labels pour les selects
+	let supplierLabel = $derived(
+		selectedSupplier
+			? (data.suppliers.find((s) => s.sup_id.toString() === selectedSupplier)?.sup_label ??
+					'Marque')
+			: 'Toutes les marques'
+	);
+	let categoryLabel = $derived(
+		selectedCategory
+			? (data.categories.find((c) => c.cat_id.toString() === selectedCategory)?.cat_label ??
+					'Catégorie')
+			: 'Toutes les catégories'
+	);
+
+	// Appliquer les filtres automatiquement (navigation avec paramètres URL)
+	const applyFilters = (overrides?: { supplier?: string; category?: string }) => {
+		const supplier = overrides?.supplier ?? selectedSupplier;
+		const category = overrides?.category ?? selectedCategory;
+
+		const params = new URLSearchParams();
+		if (supplier) params.set('supplier', supplier);
+		if (category) params.set('category', category);
+
+		const queryString = params.toString();
+		console.log('🔍 [UI] Filtres appliqués:', { supplier, category });
+		goto(`/wordpress${queryString ? '?' + queryString : ''}`, { invalidateAll: true });
+	};
+
+	// Handlers pour changement de filtre (applique immédiatement)
+	const onSupplierChange = (value: string) => {
+		applyFilters({ supplier: value, category: selectedCategory });
+	};
+
+	const onCategoryChange = (value: string) => {
+		applyFilters({ supplier: selectedSupplier, category: value });
+	};
+
+	// Réinitialiser les filtres
+	const resetFilters = () => {
+		selectedSupplier = '';
+		selectedCategory = '';
+		console.log('🔄 [UI] Filtres réinitialisés');
+		goto('/wordpress', { invalidateAll: true });
+	};
 
 	// Filtrer produits selon recherche
 	let filteredProducts = $derived(
@@ -94,6 +160,59 @@
 		<Card.Content>
 			<h2 class="mb-4 text-xl font-semibold">📋 Sélection des produits :</h2>
 
+			<!-- Filtres Marque & Catégorie -->
+			<div
+				class="mb-4 flex flex-col gap-3 rounded-lg border border-gray-500 bg-gray-50 p-4 sm:flex-row sm:items-end"
+			>
+				<div class="flex-1">
+					<label class="mb-1 block text-sm font-medium text-black">
+						<Package class="mr-1 inline h-4 w-4" />
+						Marques :
+					</label>
+					<Select.Root type="single" bind:value={selectedSupplier} onValueChange={onSupplierChange}>
+						<Select.Trigger class="w-full">
+							{supplierLabel}
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Item value="" label="Toutes les marques">Toutes les marques</Select.Item>
+							{#each data.suppliers as supplier (supplier.sup_id)}
+								<Select.Item value={supplier.sup_id.toString()} label={supplier.sup_label}>
+									{supplier.sup_label}
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
+
+				<div class="flex-1">
+					<label class="mb-1 block text-sm font-medium text-black">
+						<Folder class="mr-1 inline h-4 w-4" />
+						Catégories :
+					</label>
+					<Select.Root type="single" bind:value={selectedCategory} onValueChange={onCategoryChange}>
+						<Select.Trigger class="w-full">
+							{categoryLabel}
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Item value="" label="Toutes les catégories">Toutes les catégories</Select.Item
+							>
+							{#each data.categories as category (category.cat_id)}
+								<Select.Item value={category.cat_id.toString()} label={category.cat_label}>
+									{category.cat_label}
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
+
+				{#if selectedSupplier || selectedCategory}
+					<Button variant="noir" onclick={resetFilters}>
+						<RefreshCcw class="mr-1 h-4 w-4" />
+						Reset
+					</Button>
+				{/if}
+			</div>
+
 			<!-- Barre de recherche + bouton toggle -->
 			<div class="mb-4 flex items-center gap-2">
 				<div class="relative flex-1">
@@ -120,15 +239,19 @@
 					onclick={toggleAll}
 					class="whitespace-nowrap"
 				>
-					{selectedIds.size === filteredProducts.length && filteredProducts.length > 0
-						? '✓ Tout'
-						: '✖ Aucun'}
+					{#if selectedIds.size === filteredProducts.length && filteredProducts.length > 0}
+						<CircleCheck class="mr-1 h-4 w-4" />
+						Tout
+					{:else}
+						<CircleX class="mr-1 h-4 w-4" />
+						Aucun
+					{/if}
 				</Button>
 			</div>
 
 			<!-- Liste des produits avec scroll -->
 			<div
-				class="mb-4 max-h-[300px] space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4"
+				class="mb-4 max-h-75 space-y-2 overflow-y-auto rounded-lg border border-gray-500 bg-gray-50 p-4"
 			>
 				{#each filteredProducts as product (product.pro_id)}
 					<label class="flex cursor-pointer items-center gap-3 rounded p-2 hover:bg-white">
