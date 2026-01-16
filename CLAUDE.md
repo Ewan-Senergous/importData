@@ -1,5 +1,6 @@
 # CLAUDE.md
 
+1
 Ce fichier fournit des instructions à Claude Code (claude.ai/code) pour travailler sur ce dépôt.
 
 ## ⚠️ Chemins Fichiers: Utiliser process.cwd() en Production
