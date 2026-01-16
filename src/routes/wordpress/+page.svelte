@@ -12,14 +12,19 @@
 		CircleX,
 		Folder,
 		CircleCheck,
-		RefreshCcw
+		RefreshCcw,
+		SearchX
 	} from 'lucide-svelte';
+	import * as Empty from '$lib/components/ui/empty';
 	import { toast } from 'svelte-sonner';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	let isDownloading = $state(false);
+
+	// État de sélection base de données
+	let selectedDatabase = $state<'cenov_dev' | 'cenov_preprod'>(data.activeFilters.database ?? 'cenov_dev');
 
 	// État de sélection
 	let selectedIds = new SvelteSet<number>();
@@ -31,6 +36,7 @@
 
 	// Sync depuis URL params (au mount et navigation)
 	$effect(() => {
+		selectedDatabase = data.activeFilters.database ?? 'cenov_dev';
 		selectedSupplier = data.activeFilters.supplierId?.toString() ?? '';
 		selectedCategory = data.activeFilters.categoryId?.toString() ?? '';
 	});
@@ -50,17 +56,26 @@
 	);
 
 	// Appliquer les filtres automatiquement (navigation avec paramètres URL)
-	const applyFilters = (overrides?: { supplier?: string; category?: string }) => {
+	const applyFilters = (overrides?: { database?: string; supplier?: string; category?: string }) => {
+		const database = overrides?.database ?? selectedDatabase;
 		const supplier = overrides?.supplier ?? selectedSupplier;
 		const category = overrides?.category ?? selectedCategory;
 
 		const params = new URLSearchParams();
+		if (database && database !== 'cenov_dev') params.set('database', database);
 		if (supplier) params.set('supplier', supplier);
 		if (category) params.set('category', category);
 
 		const queryString = params.toString();
-		console.log('🔍 [UI] Filtres appliqués:', { supplier, category });
+		console.log('🔍 [UI] Filtres appliqués:', { database, supplier, category });
 		goto(`/wordpress${queryString ? '?' + queryString : ''}`, { invalidateAll: true });
+	};
+
+	// Handler pour changement de base de données (reset les filtres)
+	const onDatabaseChange = (db: 'cenov_dev' | 'cenov_preprod') => {
+		selectedIds.clear();
+		searchQuery = '';
+		applyFilters({ database: db, supplier: '', category: '' });
 	};
 
 	// Handlers pour changement de filtre (applique immédiatement)
@@ -72,12 +87,13 @@
 		applyFilters({ supplier: selectedSupplier, category: value });
 	};
 
-	// Réinitialiser les filtres
+	// Réinitialiser les filtres (garde la base de données sélectionnée)
 	const resetFilters = () => {
 		selectedSupplier = '';
 		selectedCategory = '';
+		searchQuery = '';
 		console.log('🔄 [UI] Filtres réinitialisés');
-		goto('/wordpress', { invalidateAll: true });
+		applyFilters({ supplier: '', category: '' });
 	};
 
 	// Filtrer produits selon recherche
@@ -110,13 +126,16 @@
 
 	// Télécharger CSV
 	const downloadCSV = async () => {
-		console.log('🔵 Téléchargement:', selectedIds.size > 0 ? 'sélection' : 'tous');
+		console.log('🔵 Téléchargement:', selectedIds.size > 0 ? 'sélection' : 'tous', 'depuis', selectedDatabase);
 		isDownloading = true;
 
 		try {
-			const idsParam = selectedIds.size > 0 ? `?ids=${Array.from(selectedIds).join(',')}` : '';
+			const params = new URLSearchParams();
+			if (selectedIds.size > 0) params.set('ids', Array.from(selectedIds).join(','));
+			if (selectedDatabase !== 'cenov_dev') params.set('database', selectedDatabase);
+			const queryString = params.toString();
 
-			const response = await fetch(`/wordpress${idsParam}`);
+			const response = await fetch(`/wordpress${queryString ? '?' + queryString : ''}`);
 			if (!response.ok) throw new Error(`Erreur: ${response.status}`);
 
 			const blob = await response.blob();
@@ -159,6 +178,37 @@
 	<Card.Root variant="blanc" class="w-full max-w-none">
 		<Card.Content>
 			<h2 class="mb-4 text-xl font-semibold">📋 Sélection des produits :</h2>
+
+			<!-- Sélection base de données -->
+			<Card.Root variant="bleu" class="mb-4 py-4">
+				<Card.Content class="px-4">
+					<h3 class="mb-2 text-sm font-medium text-blue-700">Base de données cible :</h3>
+					<div class="flex gap-4">
+						<label class="flex cursor-pointer items-center">
+							<input
+								type="radio"
+								name="database"
+								value="cenov_dev"
+								checked={selectedDatabase === 'cenov_dev'}
+								onchange={() => onDatabaseChange('cenov_dev')}
+								class="mr-2"
+							/>
+							<span class="text-sm">CENOV_DEV ({data.dbTotals.cenov_dev} produits)</span>
+						</label>
+						<label class="flex cursor-pointer items-center">
+							<input
+								type="radio"
+								name="database"
+								value="cenov_preprod"
+								checked={selectedDatabase === 'cenov_preprod'}
+								onchange={() => onDatabaseChange('cenov_preprod')}
+								class="mr-2"
+							/>
+							<span class="text-sm">CENOV_PREPROD ({data.dbTotals.cenov_preprod} produits)</span>
+						</label>
+					</div>
+				</Card.Content>
+			</Card.Root>
 
 			<!-- Filtres Marque & Catégorie -->
 			<div
@@ -273,7 +323,23 @@
 				{/each}
 
 				{#if filteredProducts.length === 0}
-					<p class="py-4 text-center text-sm text-gray-500">Aucun produit trouvé</p>
+					<Empty.Root class="border-none bg-transparent">
+						<Empty.Header>
+							<Empty.Media variant="icon">
+								<SearchX class="h-6 w-6" />
+							</Empty.Media>
+							<Empty.Title>Aucun produit trouvé</Empty.Title>
+							<Empty.Description>
+								{#if searchQuery}
+									Aucun résultat pour "{searchQuery}"
+								{:else if selectedSupplier || selectedCategory}
+									Aucun produit ne correspond aux filtres sélectionnés
+								{:else}
+									Aucun produit disponible
+								{/if}
+							</Empty.Description>
+						</Empty.Header>
+					</Empty.Root>
 				{/if}
 			</div>
 
@@ -317,7 +383,7 @@
 		<Card.Content>
 			<!-- Section Statistiques -->
 			<div class="mb-6">
-				<h2 class="mb-4 text-xl font-semibold text-black">📊 Base de données CENOV_DEV :</h2>
+				<h2 class="mb-4 text-xl font-semibold text-black">📊 Base de données {selectedDatabase.toUpperCase()} :</h2>
 
 				<!-- Grille de statistiques -->
 				<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,5 +1,11 @@
 import { getClient } from '$lib/prisma-meta';
 import type { PrismaClient as CenovDevPrismaClient } from '../../../generated/prisma-cenov-dev/client';
+import type { PrismaClient as CenovPreprodPrismaClient } from '../../../generated/prisma-cenov-preprod/client';
+import { createChildLogger } from '$lib/server/logger';
+
+const logger = createChildLogger('wordpress');
+
+export type DatabaseType = 'cenov_dev' | 'cenov_preprod';
 
 export interface WordPressAttribute {
 	name: string;
@@ -37,11 +43,12 @@ export interface ProductSummary {
  * Tri : par kat_id croissant
  */
 async function getProductAttributes(
+	database: DatabaseType,
 	productIds: number[]
 ): Promise<Map<number, WordPressAttribute[]>> {
 	if (productIds.length === 0) return new Map();
 
-	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
 	// Charger produits avec leurs kits et attributs
 	const products = await prisma.product.findMany({
@@ -101,100 +108,143 @@ async function getProductAttributes(
 
 /**
  * Récupère tous les produits formatés pour l'export WordPress/WooCommerce
+ * @param database - Base de données cible (cenov_dev ou cenov_preprod)
  * @param productIds - Liste optionnelle d'IDs de produits à exporter (si vide, exporte tous)
  * @returns Liste des produits avec tous les champs requis par WordPress
  */
-export async function getProductsForWordPress(productIds?: number[]): Promise<WordPressProduct[]> {
-	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+export async function getProductsForWordPress(
+	database: DatabaseType = 'cenov_dev',
+	productIds?: number[]
+): Promise<WordPressProduct[]> {
+	logger.debug(
+		{ database, productIdsCount: productIds?.length || 0 },
+		'getProductsForWordPress - Début'
+	);
+
+	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
+
+	// ⚠️ cenov_preprod n'a pas les champs: pro_name, pro_type, is_published, is_featured, pro_visibility, pro_description, pro_short_description, in_stock
+	const hasExtendedFields = database === 'cenov_dev';
+
+	logger.debug({ hasExtendedFields }, 'Schéma détecté pour export WordPress');
 
 	// Si des IDs sont fournis, filtrer les produits
 	if (productIds && productIds.length > 0) {
-		const products = await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
-      WITH RECURSIVE category_hierarchy AS (
-        -- Catégories racines
-        SELECT
-          cat_id,
-          fk_parent,
-          cat_label,
-          cat_wp_name,
-          COALESCE(cat_wp_name, cat_label) as display_name,
-          COALESCE(cat_wp_name, cat_label)::TEXT as path,
-          1 as level
-        FROM produit.category
-        WHERE fk_parent IS NULL
+		logger.info({ productIdsCount: productIds.length }, 'Export WordPress avec sélection');
 
-        UNION ALL
+		const products = hasExtendedFields
+			? await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
+					WITH RECURSIVE category_hierarchy AS (
+						SELECT
+							cat_id, fk_parent, cat_label, cat_wp_name,
+							COALESCE(cat_wp_name, cat_label) as display_name,
+							COALESCE(cat_wp_name, cat_label)::TEXT as path,
+							1 as level
+						FROM produit.category
+						WHERE fk_parent IS NULL
 
-        -- Sous-catégories (récursion)
-        SELECT
-          c.cat_id,
-          c.fk_parent,
-          c.cat_label,
-          c.cat_wp_name,
-          COALESCE(c.cat_wp_name, c.cat_label),
-          ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
-          ch.level + 1
-        FROM produit.category c
-        INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
-        WHERE ch.level < 10
-      )
-      SELECT
-        p.pro_id,
-        COALESCE(p.pro_type::text, 'simple') AS type,
-        p.pro_cenov_id AS sku,
-        p.pro_name AS name,
-        COALESCE(p.is_published, false) AS published,
-        COALESCE(p.is_featured, false) AS featured,
-        COALESCE(p.pro_visibility::text, 'visible') AS visibility,
-        p.pro_short_description AS short_description,
-        p.pro_description AS description,
-        COALESCE(p.in_stock, true) AS in_stock,
-        pp.pp_amount::TEXT AS regular_price,
-        STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
-        d.doc_link_source AS images,
-        s.sup_label AS brand
+						UNION ALL
 
-      FROM produit.product p
+						SELECT
+							c.cat_id, c.fk_parent, c.cat_label, c.cat_wp_name,
+							COALESCE(c.cat_wp_name, c.cat_label),
+							ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
+							ch.level + 1
+						FROM produit.category c
+						INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
+						WHERE ch.level < 10
+					)
+					SELECT
+						p.pro_id,
+						COALESCE(p.pro_type::text, 'simple') AS type,
+						p.pro_cenov_id AS sku,
+						p.pro_name AS name,
+						COALESCE(p.is_published, false) AS published,
+						COALESCE(p.is_featured, false) AS featured,
+						COALESCE(p.pro_visibility::text, 'visible') AS visibility,
+						p.pro_short_description AS short_description,
+						p.pro_description AS description,
+						COALESCE(p.in_stock, true) AS in_stock,
+						pp.pp_amount::TEXT AS regular_price,
+						STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
+						d.doc_link_source AS images,
+						s.sup_label AS brand
+					FROM produit.product p
+					LEFT JOIN LATERAL (
+						SELECT pp_amount FROM produit.price_purchase
+						WHERE fk_product = p.pro_id ORDER BY pp_date DESC LIMIT 1
+					) pp ON true
+					LEFT JOIN LATERAL (
+						SELECT doc_link_source FROM public.document
+						WHERE product_id = p.pro_id AND is_active = true
+						ORDER BY created_at DESC LIMIT 1
+					) d ON true
+					LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
+					LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+					LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
+					WHERE p.pro_cenov_id IS NOT NULL AND p.pro_id = ANY(${productIds}::int[])
+					GROUP BY p.pro_id, p.pro_type, p.pro_cenov_id, p.pro_name, p.is_published,
+									 p.is_featured, p.pro_visibility, p.pro_short_description, p.pro_description,
+									 p.in_stock, pp.pp_amount, d.doc_link_source, s.sup_label
+					ORDER BY p.pro_id ASC
+				`
+			: await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
+					WITH RECURSIVE category_hierarchy AS (
+						SELECT
+							cat_id, fk_parent, cat_label, cat_wp_name,
+							COALESCE(cat_wp_name, cat_label) as display_name,
+							COALESCE(cat_wp_name, cat_label)::TEXT as path,
+							1 as level
+						FROM produit.category
+						WHERE fk_parent IS NULL
 
-      -- Dernier prix d'achat
-      LEFT JOIN LATERAL (
-        SELECT pp_amount
-        FROM produit.price_purchase
-        WHERE fk_product = p.pro_id
-        ORDER BY pp_date DESC
-        LIMIT 1
-      ) pp ON true
+						UNION ALL
 
-      -- Première image active
-      LEFT JOIN LATERAL (
-        SELECT doc_link_source
-        FROM public.document
-        WHERE product_id = p.pro_id AND is_active = true
-        ORDER BY created_at DESC
-        LIMIT 1
-      ) d ON true
+						SELECT
+							c.cat_id, c.fk_parent, c.cat_label, c.cat_wp_name,
+							COALESCE(c.cat_wp_name, c.cat_label),
+							ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
+							ch.level + 1
+						FROM produit.category c
+						INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
+						WHERE ch.level < 10
+					)
+					SELECT
+						p.pro_id,
+						'simple'::text AS type,
+						p.pro_cenov_id AS sku,
+						NULL::varchar AS name,
+						false AS published,
+						false AS featured,
+						'visible'::text AS visibility,
+						NULL::text AS short_description,
+						NULL::text AS description,
+						true AS in_stock,
+						pp.pp_amount::TEXT AS regular_price,
+						STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
+						d.doc_link_source AS images,
+						s.sup_label AS brand
+					FROM produit.product p
+					LEFT JOIN LATERAL (
+						SELECT pp_amount FROM produit.price_purchase
+						WHERE fk_product = p.pro_id ORDER BY pp_date DESC LIMIT 1
+					) pp ON true
+					LEFT JOIN LATERAL (
+						SELECT doc_link_source FROM public.document
+						WHERE product_id = p.pro_id AND is_active = true
+						ORDER BY created_at DESC LIMIT 1
+					) d ON true
+					LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
+					LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+					LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
+					WHERE p.pro_cenov_id IS NOT NULL AND p.pro_id = ANY(${productIds}::int[])
+					GROUP BY p.pro_id, p.pro_cenov_id, pp.pp_amount, d.doc_link_source, s.sup_label
+					ORDER BY p.pro_id ASC
+				`;
 
-      -- Fournisseur (brand)
-      LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
+		const attributesMap = await getProductAttributes(database, productIds);
+		logger.info({ count: products.length }, 'Export WordPress résultat');
 
-      -- Catégories hiérarchiques
-      LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
-      LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
-
-      WHERE p.pro_cenov_id IS NOT NULL
-        AND p.pro_id = ANY(${productIds}::int[])
-
-      GROUP BY p.pro_id, p.pro_type, p.pro_cenov_id, p.pro_name, p.is_published,
-               p.is_featured, p.pro_visibility, p.pro_short_description, p.pro_description,
-               p.in_stock, pp.pp_amount, d.doc_link_source, s.sup_label
-
-      ORDER BY p.pro_id ASC;
-    `;
-
-		// Charger attributs
-		const attributesMap = await getProductAttributes(productIds);
-
-		// Enrichir produits avec attributs
 		return products.map((p) => ({
 			...p,
 			attributes: attributesMap.get(p.pro_id) || []
@@ -202,92 +252,123 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
 	}
 
 	// Sinon, retourner tous les produits
-	const products = await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
-    WITH RECURSIVE category_hierarchy AS (
-      -- Catégories racines
-      SELECT
-        cat_id,
-        fk_parent,
-        cat_label,
-        cat_wp_name,
-        COALESCE(cat_wp_name, cat_label) as display_name,
-        COALESCE(cat_wp_name, cat_label)::TEXT as path,
-        1 as level
-      FROM produit.category
-      WHERE fk_parent IS NULL
+	logger.info('Export WordPress complet (tous les produits)');
 
-      UNION ALL
+	const products = hasExtendedFields
+		? await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
+				WITH RECURSIVE category_hierarchy AS (
+					SELECT
+						cat_id, fk_parent, cat_label, cat_wp_name,
+						COALESCE(cat_wp_name, cat_label) as display_name,
+						COALESCE(cat_wp_name, cat_label)::TEXT as path,
+						1 as level
+					FROM produit.category
+					WHERE fk_parent IS NULL
 
-      -- Sous-catégories (récursion)
-      SELECT
-        c.cat_id,
-        c.fk_parent,
-        c.cat_label,
-        c.cat_wp_name,
-        COALESCE(c.cat_wp_name, c.cat_label),
-        ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
-        ch.level + 1
-      FROM produit.category c
-      INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
-      WHERE ch.level < 10
-    )
-    SELECT
-      p.pro_id,
-      COALESCE(p.pro_type::text, 'simple') AS type,
-      p.pro_cenov_id AS sku,
-      p.pro_name AS name,
-      COALESCE(p.is_published, false) AS published,
-      COALESCE(p.is_featured, false) AS featured,
-      COALESCE(p.pro_visibility::text, 'visible') AS visibility,
-      p.pro_short_description AS short_description,
-      p.pro_description AS description,
-      COALESCE(p.in_stock, true) AS in_stock,
-      pp.pp_amount::TEXT AS regular_price,
-      STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
-      d.doc_link_source AS images,
-      s.sup_label AS brand
+					UNION ALL
 
-    FROM produit.product p
+					SELECT
+						c.cat_id, c.fk_parent, c.cat_label, c.cat_wp_name,
+						COALESCE(c.cat_wp_name, c.cat_label),
+						ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
+						ch.level + 1
+					FROM produit.category c
+					INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
+					WHERE ch.level < 10
+				)
+				SELECT
+					p.pro_id,
+					COALESCE(p.pro_type::text, 'simple') AS type,
+					p.pro_cenov_id AS sku,
+					p.pro_name AS name,
+					COALESCE(p.is_published, false) AS published,
+					COALESCE(p.is_featured, false) AS featured,
+					COALESCE(p.pro_visibility::text, 'visible') AS visibility,
+					p.pro_short_description AS short_description,
+					p.pro_description AS description,
+					COALESCE(p.in_stock, true) AS in_stock,
+					pp.pp_amount::TEXT AS regular_price,
+					STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
+					d.doc_link_source AS images,
+					s.sup_label AS brand
+				FROM produit.product p
+				LEFT JOIN LATERAL (
+					SELECT pp_amount FROM produit.price_purchase
+					WHERE fk_product = p.pro_id ORDER BY pp_date DESC LIMIT 1
+				) pp ON true
+				LEFT JOIN LATERAL (
+					SELECT doc_link_source FROM public.document
+					WHERE product_id = p.pro_id AND is_active = true
+					ORDER BY created_at DESC LIMIT 1
+				) d ON true
+				LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
+				LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+				LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
+				WHERE p.pro_cenov_id IS NOT NULL
+				GROUP BY p.pro_id, p.pro_type, p.pro_cenov_id, p.pro_name, p.is_published,
+								 p.is_featured, p.pro_visibility, p.pro_short_description, p.pro_description,
+								 p.in_stock, pp.pp_amount, d.doc_link_source, s.sup_label
+				ORDER BY p.pro_id ASC
+			`
+		: await prisma.$queryRaw<Array<WordPressProduct & { pro_id: number }>>`
+				WITH RECURSIVE category_hierarchy AS (
+					SELECT
+						cat_id, fk_parent, cat_label, cat_wp_name,
+						COALESCE(cat_wp_name, cat_label) as display_name,
+						COALESCE(cat_wp_name, cat_label)::TEXT as path,
+						1 as level
+					FROM produit.category
+					WHERE fk_parent IS NULL
 
-    -- Dernier prix d'achat
-    LEFT JOIN LATERAL (
-      SELECT pp_amount
-      FROM produit.price_purchase
-      WHERE fk_product = p.pro_id
-      ORDER BY pp_date DESC
-      LIMIT 1
-    ) pp ON true
+					UNION ALL
 
-    -- Première image active
-    LEFT JOIN LATERAL (
-      SELECT doc_link_source
-      FROM public.document
-      WHERE product_id = p.pro_id AND is_active = true
-      ORDER BY created_at DESC
-      LIMIT 1
-    ) d ON true
+					SELECT
+						c.cat_id, c.fk_parent, c.cat_label, c.cat_wp_name,
+						COALESCE(c.cat_wp_name, c.cat_label),
+						ch.path || ' > ' || COALESCE(c.cat_wp_name, c.cat_label),
+						ch.level + 1
+					FROM produit.category c
+					INNER JOIN category_hierarchy ch ON c.fk_parent = ch.cat_id
+					WHERE ch.level < 10
+				)
+				SELECT
+					p.pro_id,
+					'simple'::text AS type,
+					p.pro_cenov_id AS sku,
+					NULL::varchar AS name,
+					false AS published,
+					false AS featured,
+					'visible'::text AS visibility,
+					NULL::text AS short_description,
+					NULL::text AS description,
+					true AS in_stock,
+					pp.pp_amount::TEXT AS regular_price,
+					STRING_AGG(DISTINCT ch.path, ', ' ORDER BY ch.path) AS categories,
+					d.doc_link_source AS images,
+					s.sup_label AS brand
+				FROM produit.product p
+				LEFT JOIN LATERAL (
+					SELECT pp_amount FROM produit.price_purchase
+					WHERE fk_product = p.pro_id ORDER BY pp_date DESC LIMIT 1
+				) pp ON true
+				LEFT JOIN LATERAL (
+					SELECT doc_link_source FROM public.document
+					WHERE product_id = p.pro_id AND is_active = true
+					ORDER BY created_at DESC LIMIT 1
+				) d ON true
+				LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
+				LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
+				LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
+				WHERE p.pro_cenov_id IS NOT NULL
+				GROUP BY p.pro_id, p.pro_cenov_id, pp.pp_amount, d.doc_link_source, s.sup_label
+				ORDER BY p.pro_id ASC
+			`;
 
-    -- Fournisseur (brand)
-    LEFT JOIN public.supplier s ON p.fk_supplier = s.sup_id
-
-    -- Catégories hiérarchiques
-    LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
-    LEFT JOIN category_hierarchy ch ON pc.fk_category = ch.cat_id
-
-    WHERE p.pro_cenov_id IS NOT NULL
-
-    GROUP BY p.pro_id, p.pro_type, p.pro_cenov_id, p.pro_name, p.is_published,
-             p.is_featured, p.pro_visibility, p.pro_short_description, p.pro_description,
-             p.in_stock, pp.pp_amount, d.doc_link_source, s.sup_label
-
-    ORDER BY p.pro_id ASC;
-  `;
-
-	// Charger attributs pour tous les produits
 	const allProductIds = products.map((p) => p.pro_id);
-	const attributesMap = await getProductAttributes(allProductIds);
+	const attributesMap = await getProductAttributes(database, allProductIds);
 
-	// Enrichir produits avec attributs
+	logger.info({ count: products.length }, 'Export WordPress résultat complet');
+
 	return products.map((p) => ({
 		...p,
 		attributes: attributesMap.get(p.pro_id) || []
@@ -295,61 +376,141 @@ export async function getProductsForWordPress(productIds?: number[]): Promise<Wo
 }
 
 /**
+ * Compte le nombre total de produits avec UGS (champ commun à toutes les bases)
+ * Utilise SQL brut pour éviter les problèmes de schéma différent
+ * @param database - Base de données cible
+ * @returns Nombre total de produits
+ */
+export async function getProductCount(database: DatabaseType): Promise<number> {
+	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
+
+	const result = await prisma.$queryRaw<[{ count: bigint }]>`
+		SELECT COUNT(*)::bigint AS count
+		FROM produit.product
+		WHERE pro_cenov_id IS NOT NULL
+	`;
+
+	return Number(result[0].count);
+}
+
+/**
  * Récupère les statistiques d'export pour affichage dans l'interface
+ * NOTE: Utilise des champs spécifiques à cenov_dev (is_published, in_stock)
+ * Pour cenov_preprod, ces stats seront à 0
+ * @param database - Base de données cible (cenov_dev ou cenov_preprod)
  * @returns Statistiques : total, publiés, en stock, sans nom, sans prix
  */
-export async function getExportStats() {
-	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+export async function getExportStats(database: DatabaseType = 'cenov_dev') {
+	logger.debug({ database }, 'getExportStats - Début');
 
-	const [total, published, in_stock, missing_name, missing_price] = await Promise.all([
-		// Total produits avec UGS
+	// Stats détaillées pour cenov_dev (avec champs étendus)
+	if (database === 'cenov_dev') {
+		const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+
+		const [total, published, in_stock, missing_name, missing_price] = await Promise.all([
+			// Total
+			prisma.product.count({ where: { pro_cenov_id: { not: null } } }),
+
+			// Produits publiés
+			prisma.product.count({ where: { is_published: true, pro_cenov_id: { not: null } } }),
+
+			// Produits en stock
+			prisma.product.count({ where: { in_stock: true, pro_cenov_id: { not: null } } }),
+
+			// Produits sans nom
+			prisma.product.count({ where: { pro_name: null, pro_cenov_id: { not: null } } }),
+
+			// Produits sans prix (SQL brut car relation complexe)
+			prisma.$queryRaw<[{ count: bigint }]>`
+				SELECT COUNT(*)::bigint AS count
+				FROM produit.product p
+				WHERE p.pro_cenov_id IS NOT NULL
+					AND NOT EXISTS (
+						SELECT 1 FROM produit.price_purchase WHERE fk_product = p.pro_id
+					)
+			`.then((r) => Number(r[0].count))
+		]);
+
+		logger.info(
+			{ total, published, in_stock, missing_name, missing_price },
+			'getExportStats cenov_dev résultat'
+		);
+
+		return {
+			total: Number(total),
+			published: Number(published),
+			in_stock: Number(in_stock),
+			missing_name: Number(missing_name),
+			missing_price
+		};
+	}
+
+	// Stats pour cenov_preprod (sans champs étendus)
+	const prisma = (await getClient('cenov_preprod')) as unknown as CenovPreprodPrismaClient;
+
+	const [total, missing_price] = await Promise.all([
+		// Total - méthode ORM pure
 		prisma.product.count({ where: { pro_cenov_id: { not: null } } }),
 
-		// Produits publiés
-		prisma.product.count({ where: { is_published: true, pro_cenov_id: { not: null } } }),
-
-		// Produits en stock
-		prisma.product.count({ where: { in_stock: true, pro_cenov_id: { not: null } } }),
-
-		// Produits sans nom (fallback sur UGS)
-		prisma.product.count({ where: { pro_name: null, pro_cenov_id: { not: null } } }),
-
-		// Produits sans prix
+		// Produits sans prix (SQL brut car relation complexe)
 		prisma.$queryRaw<[{ count: bigint }]>`
-      SELECT COUNT(*)::bigint AS count
-      FROM produit.product p
-      WHERE p.pro_cenov_id IS NOT NULL
-        AND NOT EXISTS (
-          SELECT 1 FROM produit.price_purchase WHERE fk_product = p.pro_id
-        )
-    `.then((r) => Number(r[0].count))
+			SELECT COUNT(*)::bigint AS count
+			FROM produit.product p
+			WHERE p.pro_cenov_id IS NOT NULL
+				AND NOT EXISTS (
+					SELECT 1 FROM produit.price_purchase WHERE fk_product = p.pro_id
+				)
+		`.then((r) => Number(r[0].count))
 	]);
+
+	logger.info({ total, missing_price }, 'getExportStats cenov_preprod résultat');
 
 	return {
 		total: Number(total),
-		published: Number(published),
-		in_stock: Number(in_stock),
-		missing_name: Number(missing_name),
-		missing_price: Number(missing_price)
+		published: 0, // Champ n'existe pas dans preprod
+		in_stock: 0, // Champ n'existe pas dans preprod
+		missing_name: 0, // Champ pro_name n'existe pas dans preprod
+		missing_price
 	};
 }
 
 /**
  * Récupère la liste simplifiée de tous les produits pour la sélection
+ * @param database - Base de données cible (cenov_dev ou cenov_preprod)
  * @param filters - Filtres optionnels (marque, catégorie)
  * @returns Liste des produits avec ID, UGS et nom uniquement
  */
-export async function getAllProductsSummary(filters?: {
-	supplierId?: number;
-	categoryId?: number;
-}): Promise<ProductSummary[]> {
-	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+export async function getAllProductsSummary(
+	database: DatabaseType = 'cenov_dev',
+	filters?: {
+		supplierId?: number;
+		categoryId?: number;
+	}
+): Promise<ProductSummary[]> {
+	logger.debug({ database, filters }, 'getAllProductsSummary - Début');
 
-	// Si pas de filtres, requête simple
-	if (!filters?.supplierId && !filters?.categoryId) {
-		console.log('📋 [SQL] getAllProductsSummary: pas de filtres');
-		return await prisma.product.findMany({
-			where: { pro_cenov_id: { not: null } },
+	// Cenov_dev: utiliser méthodes ORM avec pro_name
+	if (database === 'cenov_dev') {
+		const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+
+		// Construire le where dynamiquement
+		const where = {
+			pro_cenov_id: { not: null },
+			...(filters?.supplierId && { fk_supplier: filters.supplierId }),
+			...(filters?.categoryId && {
+				product_category: {
+					some: { fk_category: filters.categoryId }
+				}
+			})
+		};
+
+		logger.info(
+			{ hasFilters: Boolean(filters?.supplierId || filters?.categoryId) },
+			'getAllProductsSummary cenov_dev'
+		);
+
+		const products = await prisma.product.findMany({
+			where,
 			select: {
 				pro_id: true,
 				pro_cenov_id: true,
@@ -357,16 +518,41 @@ export async function getAllProductsSummary(filters?: {
 			},
 			orderBy: { pro_id: 'asc' }
 		});
+
+		logger.info({ count: products.length }, 'getAllProductsSummary résultat');
+		return products;
 	}
 
-	// Avec filtres, requête SQL
-	console.log('📋 [SQL] getAllProductsSummary avec filtres:', filters);
+	// Cenov_preprod: utiliser SQL brut car pro_name n'existe pas
+	const prisma = (await getClient('cenov_preprod')) as unknown as CenovPreprodPrismaClient;
 
+	logger.info(
+		{ hasFilters: Boolean(filters?.supplierId || filters?.categoryId) },
+		'getAllProductsSummary cenov_preprod'
+	);
+
+	// Sans filtres: requête simple
+	if (!filters?.supplierId && !filters?.categoryId) {
+		const products = await prisma.$queryRaw<ProductSummary[]>`
+			SELECT
+				p.pro_id,
+				p.pro_cenov_id,
+				NULL::varchar AS pro_name
+			FROM produit.product p
+			WHERE p.pro_cenov_id IS NOT NULL
+			ORDER BY p.pro_id ASC
+		`;
+
+		logger.info({ count: products.length }, 'getAllProductsSummary résultat');
+		return products;
+	}
+
+	// Avec filtres: requête SQL
 	const products = await prisma.$queryRaw<ProductSummary[]>`
 		SELECT DISTINCT
 			p.pro_id,
 			p.pro_cenov_id,
-			p.pro_name
+			NULL::varchar AS pro_name
 		FROM produit.product p
 		LEFT JOIN produit.product_category pc ON p.pro_id = pc.fk_product
 		WHERE p.pro_cenov_id IS NOT NULL
@@ -375,17 +561,20 @@ export async function getAllProductsSummary(filters?: {
 		ORDER BY p.pro_id ASC
 	`;
 
-	console.log('📋 [SQL] Résultat:', products.length, 'produits');
+	logger.info({ count: products.length }, 'getAllProductsSummary résultat avec filtres');
 	return products;
 }
 
 /**
  * Récupère la liste des marques/fournisseurs ayant des produits
+ * @param database - Base de données cible (cenov_dev ou cenov_preprod)
  */
-export async function getSuppliersList(): Promise<{ sup_id: number; sup_label: string }[]> {
-	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+export async function getSuppliersList(
+	database: DatabaseType = 'cenov_dev'
+): Promise<{ sup_id: number; sup_label: string }[]> {
+	logger.debug({ database }, 'getSuppliersList - Début');
 
-	console.log('🏭 [SQL] getSuppliersList');
+	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
 	const suppliers = await prisma.$queryRaw<{ sup_id: number; sup_label: string }[]>`
 		SELECT DISTINCT s.sup_id, s.sup_label
@@ -395,17 +584,20 @@ export async function getSuppliersList(): Promise<{ sup_id: number; sup_label: s
 		ORDER BY s.sup_label ASC
 	`;
 
-	console.log('🏭 [SQL] Résultat:', suppliers.length, 'marques');
+	logger.info({ count: suppliers.length }, 'getSuppliersList résultat');
 	return suppliers;
 }
 
 /**
  * Récupère la liste des catégories ayant des produits
+ * @param database - Base de données cible (cenov_dev ou cenov_preprod)
  */
-export async function getCategoriesList(): Promise<{ cat_id: number; cat_label: string }[]> {
-	const prisma = (await getClient('cenov_dev')) as unknown as CenovDevPrismaClient;
+export async function getCategoriesList(
+	database: DatabaseType = 'cenov_dev'
+): Promise<{ cat_id: number; cat_label: string }[]> {
+	logger.debug({ database }, 'getCategoriesList - Début');
 
-	console.log('📁 [SQL] getCategoriesList');
+	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
 	const categories = await prisma.$queryRaw<{ cat_id: number; cat_label: string }[]>`
 		SELECT DISTINCT c.cat_id, c.cat_label
@@ -416,6 +608,6 @@ export async function getCategoriesList(): Promise<{ cat_id: number; cat_label: 
 		ORDER BY c.cat_label ASC
 	`;
 
-	console.log('📁 [SQL] Résultat:', categories.length, 'catégories');
+	logger.info({ count: categories.length }, 'getCategoriesList résultat');
 	return categories;
 }
