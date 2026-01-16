@@ -50,32 +50,60 @@ async function getProductAttributes(
 
 	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
+	// CENOV_DEV a les champs kat_visible et kat_global
+	// CENOV_PREPROD n'a PAS ces champs
+	const hasExtendedFields = database === 'cenov_dev';
+
 	// Charger produits avec leurs kits et attributs
-	const products = await prisma.product.findMany({
-		where: { pro_id: { in: productIds } },
-		select: {
-			pro_id: true,
-			fk_kit: true,
-			kit: {
+	const products = hasExtendedFields
+		? await prisma.product.findMany({
+				where: { pro_id: { in: productIds } },
 				select: {
-					kit_attribute: {
+					pro_id: true,
+					fk_kit: true,
+					kit: {
 						select: {
-							kat_id: true,
-							kat_value: true,
-							kat_visible: true,
-							kat_global: true,
-							attribute_kit_attribute_fk_attribute_characteristicToattribute: {
+							kit_attribute: {
 								select: {
-									atr_value: true
-								}
+									kat_id: true,
+									kat_value: true,
+									kat_visible: true,
+									kat_global: true,
+									attribute_kit_attribute_fk_attribute_characteristicToattribute: {
+										select: {
+											atr_value: true
+										}
+									}
+								},
+								orderBy: { kat_id: 'asc' }
 							}
-						},
-						orderBy: { kat_id: 'asc' }
+						}
 					}
 				}
-			}
-		}
-	});
+			})
+		: await prisma.product.findMany({
+				where: { pro_id: { in: productIds } },
+				select: {
+					pro_id: true,
+					fk_kit: true,
+					kit: {
+						select: {
+							kit_attribute: {
+								select: {
+									kat_id: true,
+									kat_value: true,
+									attribute_kit_attribute_fk_attribute_characteristicToattribute: {
+										select: {
+											atr_value: true
+										}
+									}
+								},
+								orderBy: { kat_id: 'asc' }
+							}
+						}
+					}
+				}
+			});
 
 	// Grouper attributs par pro_id
 	const attributesMap = new Map<number, WordPressAttribute[]>();
@@ -94,8 +122,9 @@ async function getProductAttributes(
 				attributes.push({
 					name: atrValue || '',
 					value,
-					visible: ka.kat_visible ?? true,
-					global: ka.kat_global ?? true
+					// CENOV_PREPROD : valeurs par défaut car champs absents
+					visible: hasExtendedFields && 'kat_visible' in ka ? ka.kat_visible ?? true : true,
+					global: hasExtendedFields && 'kat_global' in ka ? ka.kat_global ?? true : true
 				});
 			}
 		}
@@ -377,20 +406,19 @@ export async function getProductsForWordPress(
 
 /**
  * Compte le nombre total de produits avec UGS (champ commun à toutes les bases)
- * Utilise SQL brut pour éviter les problèmes de schéma différent
  * @param database - Base de données cible
  * @returns Nombre total de produits
  */
 export async function getProductCount(database: DatabaseType): Promise<number> {
 	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
-	const result = await prisma.$queryRaw<[{ count: bigint }]>`
-		SELECT COUNT(*)::bigint AS count
-		FROM produit.product
-		WHERE pro_cenov_id IS NOT NULL
-	`;
+	const count = await prisma.product.count({
+		where: {
+			pro_cenov_id: { not: null }
+		}
+	});
 
-	return Number(result[0].count);
+	return count;
 }
 
 /**
@@ -576,13 +604,22 @@ export async function getSuppliersList(
 
 	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
-	const suppliers = await prisma.$queryRaw<{ sup_id: number; sup_label: string }[]>`
-		SELECT DISTINCT s.sup_id, s.sup_label
-		FROM public.supplier s
-		INNER JOIN produit.product p ON p.fk_supplier = s.sup_id
-		WHERE p.pro_cenov_id IS NOT NULL
-		ORDER BY s.sup_label ASC
-	`;
+	const suppliers = await prisma.supplier.findMany({
+		where: {
+			product: {
+				some: {
+					pro_cenov_id: { not: null }
+				}
+			}
+		},
+		select: {
+			sup_id: true,
+			sup_label: true
+		},
+		orderBy: {
+			sup_label: 'asc'
+		}
+	});
 
 	logger.info({ count: suppliers.length }, 'getSuppliersList résultat');
 	return suppliers;
@@ -599,14 +636,24 @@ export async function getCategoriesList(
 
 	const prisma = (await getClient(database)) as unknown as CenovDevPrismaClient;
 
-	const categories = await prisma.$queryRaw<{ cat_id: number; cat_label: string }[]>`
-		SELECT DISTINCT c.cat_id, c.cat_label
-		FROM produit.category c
-		INNER JOIN produit.product_category pc ON pc.fk_category = c.cat_id
-		INNER JOIN produit.product p ON p.pro_id = pc.fk_product
-		WHERE p.pro_cenov_id IS NOT NULL
-		ORDER BY c.cat_label ASC
-	`;
+	const categories = await prisma.category.findMany({
+		where: {
+			product_category: {
+				some: {
+					product: {
+						pro_cenov_id: { not: null }
+					}
+				}
+			}
+		},
+		select: {
+			cat_id: true,
+			cat_label: true
+		},
+		orderBy: {
+			cat_label: 'asc'
+		}
+	});
 
 	logger.info({ count: categories.length }, 'getCategoriesList résultat');
 	return categories;

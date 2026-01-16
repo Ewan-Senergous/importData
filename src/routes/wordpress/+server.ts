@@ -23,6 +23,10 @@ export const GET: RequestHandler = async (event) => {
 
 		console.log('📥 Démarrage export WordPress (API GET)...');
 
+		// Parser la base de données depuis query params
+		const databaseParam = event.url.searchParams.get('database');
+		const database = databaseParam === 'cenov_preprod' ? 'cenov_preprod' : 'cenov_dev';
+
 		// Parser les IDs depuis query params
 		const idsParam = event.url.searchParams.get('ids');
 		const productIds = idsParam
@@ -36,10 +40,11 @@ export const GET: RequestHandler = async (event) => {
 			'🔵 Export:',
 			productIds ? `${productIds.length} produits sélectionnés` : 'tous les produits'
 		);
+		console.log('🔵 Base de données:', database);
 
 		// Récupérer les produits (filtrés ou tous)
-		console.log('🔵 Récupération produits depuis CENOV_DEV...');
-		const products = await getProductsForWordPress(productIds);
+		console.log(`🔵 Récupération produits depuis ${database.toUpperCase()}...`);
+		const products = await getProductsForWordPress(database, productIds);
 		console.log(`✅ ${products.length} produits récupérés`);
 
 		// Générer le CSV
@@ -49,18 +54,19 @@ export const GET: RequestHandler = async (event) => {
 
 		// Générer nom de fichier avec timestamp
 		const timestamp = new Date().toISOString().split('T')[0];
+		const dbSuffix = database === 'cenov_preprod' ? '_preprod' : '_dev';
 		let filename: string;
 
 		if (productIds?.length === 1 && products.length === 1) {
 			// Un seul produit : utiliser son pro_cenov_id (sku)
 			const productSku = products[0].sku || 'product';
-			filename = `${productSku}.csv`;
+			filename = `${productSku}${dbSuffix}.csv`;
 		} else if (productIds && productIds.length > 0) {
 			// Plusieurs produits sélectionnés : nom avec date
-			filename = `wordpress_products_selection_${timestamp}.csv`;
+			filename = `wordpress_products_selection${dbSuffix}_${timestamp}.csv`;
 		} else {
 			// Tous les produits : nom avec date
-			filename = `wordpress_products_all_${timestamp}.csv`;
+			filename = `wordpress_products_all${dbSuffix}_${timestamp}.csv`;
 		}
 
 		console.log(`✅ Export WordPress terminé : ${filename}`);
