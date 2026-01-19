@@ -263,8 +263,25 @@
 				{/if}
 			</div>
 
-			<!-- Barre de recherche + bouton toggle -->
+			<!-- Barre de recherche + checkbox "Sélectionner tout" -->
 			<div class="mb-4 flex items-center gap-2">
+				<!-- Checkbox "Sélectionner tout (X)" -->
+				<label class="flex cursor-pointer items-center gap-2 whitespace-nowrap">
+					<input
+						type="checkbox"
+						checked={selectedIds.size === filteredProducts.length && filteredProducts.length > 0}
+						onchange={toggleAll}
+						class="h-4 w-4 cursor-pointer"
+					/>
+					<span class="hidden text-sm font-medium text-gray-700 sm:inline">
+						Sélectionner tout ({filteredProducts.length})
+					</span>
+					<span class="text-sm font-medium text-gray-700 sm:hidden">
+						Tout ({filteredProducts.length})
+					</span>
+				</label>
+
+				<!-- Barre de recherche -->
 				<div class="relative flex-1">
 					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 					<!-- Mobile : placeholder court -->
@@ -282,6 +299,8 @@
 						class="hidden pl-10 sm:block"
 					/>
 				</div>
+
+				<!-- Bouton toggle Tout/Aucun -->
 				<Button
 					variant={selectedIds.size === filteredProducts.length && filteredProducts.length > 0
 						? 'vert'
