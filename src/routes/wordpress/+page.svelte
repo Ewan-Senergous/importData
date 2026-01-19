@@ -24,7 +24,7 @@
 	let isDownloading = $state(false);
 
 	// État de sélection base de données
-	let selectedDatabase = $state<'cenov_dev' | 'cenov_preprod'>(data.activeFilters.database ?? 'cenov_dev');
+	let selectedDatabase = $state<'cenov_dev' | 'cenov_preprod'>('cenov_dev');
 
 	// État de sélection
 	let selectedIds = new SvelteSet<number>();

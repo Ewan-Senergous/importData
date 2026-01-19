@@ -71,7 +71,9 @@ async function getProductAttributes(
 									kat_global: true,
 									attribute_kit_attribute_fk_attribute_characteristicToattribute: {
 										select: {
-											atr_value: true
+											atr_value: true,
+											atr_wp_name: true,
+											atr_label: true
 										}
 									}
 								},
@@ -94,7 +96,9 @@ async function getProductAttributes(
 									kat_value: true,
 									attribute_kit_attribute_fk_attribute_characteristicToattribute: {
 										select: {
-											atr_value: true
+											atr_value: true,
+											atr_wp_name: true,
+											atr_label: true
 										}
 									}
 								},
@@ -105,6 +109,9 @@ async function getProductAttributes(
 				}
 			});
 
+	// Attributs à exclure de l'export WordPress (dimensions gérées séparément)
+	const EXCLUDED_ATTRIBUTES = new Set(['LONGUEUR', 'LARGEUR', 'HAUTEUR']);
+
 	// Grouper attributs par pro_id
 	const attributesMap = new Map<number, WordPressAttribute[]>();
 
@@ -113,14 +120,21 @@ async function getProductAttributes(
 
 		if (product.kit) {
 			for (const ka of product.kit.kit_attribute) {
-				const atrValue =
-					ka.attribute_kit_attribute_fk_attribute_characteristicToattribute.atr_value;
+				const attr = ka.attribute_kit_attribute_fk_attribute_characteristicToattribute;
+
+				// FILTRER : exclure LONGUEUR, LARGEUR, HAUTEUR
+				if (EXCLUDED_ATTRIBUTES.has(attr.atr_value || '')) {
+					continue;
+				}
 
 				// Garder valeur brute de la BDD (même NULL, !NP!, etc.)
 				const value = ka.kat_value || '';
 
+				// Priorité WordPress : atr_wp_name > atr_value > atr_label (cohérent avec catégories)
+				const name = attr.atr_wp_name ?? attr.atr_value ?? attr.atr_label ?? '';
+
 				attributes.push({
-					name: atrValue || '',
+					name,
 					value,
 					// CENOV_PREPROD : valeurs par défaut car champs absents
 					visible: hasExtendedFields && 'kat_visible' in ka ? ka.kat_visible ?? true : true,
