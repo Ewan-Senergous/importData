@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Ce fichier fournit des instructions à Claude Code (claude.ai/code) pour travailler sur ce dépôt.
+Ce fichier fournit des instructions à Claude Code pour travailler sur ce dépôt.
 
 ## ⚠️ Chemins Fichiers: Utiliser process.cwd() en Production
 
@@ -53,7 +53,7 @@ Si une solution ne fonctionne pas après **2-3 tentatives**, **ARRÊTER** et uti
 - Conflits entre outils (Prettier vs ESLint, TypeScript vs Svelte)
 - Problèmes de chemins relatifs/absolus qui ne se résolvent pas
 - Erreurs de permissions ou accès fichiers sur Windows
-- Gitqui bloquent sans raison claire
+- Git qui bloquent sans raison claire
 - Migration framework (Svelte 4 → 5, SvelteKit v1 → v2)
 
 **Règle d'or :** Ne pas s'acharner. La recherche web est là pour ça.
@@ -91,13 +91,12 @@ pnpm lint       # Vérification Prettier + ESLint
 pnpm check     # Type checking avec Svelte
 ```
 
-**Vérification qualité complète :**
+**Tests :**
 
 ```bash
-/quality-check  # Commande slash : Lint + Format + Check en une seule fois
+pnpm test:unit    # Exécuter les tests Vitest
+pnpm test         # Exécuter les tests une fois
 ```
-
-La commande `/quality-check` exécute les 3 vérifications (`lint`, `format`, `check`) et génère un rapport structuré des erreurs.
 
 **⚠️ Bug Prisma Generate - Suppression Points-virgules :**
 
@@ -135,13 +134,6 @@ La commande `/quick-push` automatise le workflow Git complet :
 - `:art:` - Amélioration structure/format
 - `:zap:` - Amélioration performance
 - `:memo:` - Mise à jour documentation
-
-**Tests :**
-
-```bash
-pnpm test:unit    # Exécuter les tests Vitest
-pnpm test         # Exécuter les tests une fois
-```
 
 **Opérations base de données :**
 
@@ -204,36 +196,6 @@ pnpm prisma:pull-preprod                   # Récupérer schéma depuis BDD (cen
 pnpm prisma:generate-all                   # Générer les trois clients (automatique au pnpm install)
 ```
 
-**⚠️ Commandes manuelles Prisma 7 (si nécessaire) :**
-
-```bash
-# Avec Prisma 7, les commandes nécessitant la DB doivent être exécutées depuis le dossier contenant prisma.config.ts
-# Commandes qui nécessitent datasource.url : pull, push, migrate, studio
-
-# CENOV:
-cd prisma/cenov && npx prisma db pull
-cd prisma/cenov && npx prisma db push
-cd prisma/cenov && npx prisma migrate dev
-cd prisma/cenov && npx prisma studio
-
-# CENOV_DEV:
-cd prisma/cenov_dev && npx prisma db pull
-cd prisma/cenov_dev && npx prisma db push
-cd prisma/cenov_dev && npx prisma migrate dev
-cd prisma/cenov_dev && npx prisma studio
-
-# CENOV_PREPROD:
-cd prisma/cenov_preprod && npx prisma db pull
-cd prisma/cenov_preprod && npx prisma db push
-cd prisma/cenov_preprod && npx prisma migrate dev
-cd prisma/cenov_preprod && npx prisma studio
-
-# generate fonctionne toujours avec --schema depuis la racine
-npx prisma generate --schema prisma/cenov/schema.prisma
-npx prisma generate --schema prisma/cenov_dev/schema.prisma
-npx prisma generate --schema prisma/cenov_preprod/schema.prisma
-```
-
 **Installation des dépendances :**
 
 ```bash
@@ -286,37 +248,6 @@ import { env } from '$lib/env.client';
 - ✅ Valeurs par défaut centralisées dans le schéma
 - ✅ Architecture sécurisée - Séparation server/client
 
-**Scripts BDD-IA (Export base de données) :**
-
-```bash
-node scripts/BDD-IA/cenov_dev/fetch-dev-tables.mjs    # Exporter toutes les tables
-node scripts/BDD-IA/cenov_dev/fetch-dev-views.mjs    # Exporter toutes les vues
-node scripts/BDD-IA/cenov_dev/fetch-dev-data.mjs   # Tout exporter (recommandé)
-```
-
-_Exporte toutes les données Cenov en lecture seule vers des fichiers JSON dans `scripts/BDD-IA/output/`_
-
-**Scripts DMMF (Métadonnées Prisma) :**
-
-```bash
-node scripts/Script\ DMMF/extract-dmmf-metadata.mjs    # Extraire métadonnées DMMF
-```
-
-_Extrait les métadonnées Prisma DMMF (Data Model Meta Format) de CENOV_DEV vers `scripts/Script DMMF/output/` - 8 fichiers optimisés pour différents usages_
-
-**Fichiers DMMF générés :**
-
-1. **quick-stats.json** (~60 lignes) - Aperçu rapide structure DB
-2. **models-index.json** (~150 lignes) - Navigation modèles avec dépendances
-3. **relations-graph.json** (~200 lignes) - Graphe complet relations FK
-4. **import-order.json** (~120 lignes) - Ordre d'import optimal (tri topologique)
-5. **validation-rules.json** (~400 lignes) - Règles validation par champ
-6. **native-types.json** (~80 lignes) - Mapping Prisma ↔ PostgreSQL
-7. **summary-dmmf.json** (~100 lignes) - Statistiques essentielles
-8. **full-dmmf.json** (~13 580 lignes) - DMMF complet brut (référence technique)
-
-**📖 Documentation complète :** Voir `scripts/Script DMMF/output/README.md` pour guide d'utilisation détaillé, cas d'usage et exemples
-
 ## Vue d'Ensemble de l'Architecture
 
 ### Stack Technique
@@ -337,36 +268,34 @@ L'application utilise **TROIS bases de données séparées** :
 
 1. **Base CENOV** (`DATABASE_URL`) - Base principale de production
    - Système principal de gestion des produits, kits et pièces
-   - **12 tables** (568 lignes totales) : 7 schéma `produit` (368 lignes) + 5 schéma `public` (200 lignes)
-   - **Schéma produit** : categorie, categorie_attribut, cross_ref, famille, produit, produit_categorie, tarif_achat
-   - **Schéma public** : attribut, fournisseur, kit, kit_attribute, part_nc
-   - **6 vues** (1685 lignes totales) : 3 schéma `produit` (916 lignes) + 3 schéma `public` (769 lignes)
-   - **Vues produit** : v_produit_categorie_attribut, v_tarif_achat, mv_categorie
+   - **12 tables** : 7 schéma `produit` + 5 schéma `public`
+   - **Tables produit** : categorie, categorie_attribut, cross_ref, famille, produit, produit_categorie, tarif_achat
+   - **Tables public** : attribut, fournisseur, kit, kit_attribute, part_nc
+   - **5 vues** : 2 schéma `produit` + 3 schéma `public`
+   - **Vues produit** : v_produit_categorie_attribut, v_tarif_achat
    - **Vues public** : v_categorie, v_kit_caracteristique, v_produit_categorie_attribut
 
 2. **Base CENOV_DEV** (`CENOV_DEV_DATABASE_URL`) - Base développement étendue
    - Catalogue produits étendu et gestion fournisseurs avancée
-   - **15 tables** (572 lignes totales) : 7 schéma `produit` (371 lignes) + 8 schéma `public` (201 lignes)
-   - **Schéma produit** : category, category_attribute, cross_ref, family, price_purchase, product, product_category
-   - **Schéma public** : attribute, attribute_value, document, document_link, kit, kit_attribute, part_nc, supplier
-   - **8 vues** (1791 lignes totales) : 4 schéma `produit` (1015 lignes) + 4 schéma `public` (776 lignes)
-   - **Vues produit** : import_name, v_produit_categorie_attribut, v_tarif_achat, mv_categorie
-   - **Vues public** : attribute_required, v_categorie, v_kit_caracteristique, v_produit_categorie_attribut
+   - **15 tables** : 7 schéma `produit` + 8 schéma `public`
+   - **Tables produit** : category, category_attribute, cross_ref, family, price_purchase, product, product_category
+   - **Tables public** : attribute, attribute_unit, attribute_value, document, kit, kit_attribute, part_nc, supplier
+   - **6 vues** : 3 schéma `produit` + 3 schéma `public`
+   - **Vues produit** : mv_categorie, v_price_purchase, v_produit_categorie_attribut
+   - **Vues public** : attribute_required, v_categorie, v_kit_caracteristique
 
 3. **Base CENOV_PREPROD** (`CENOV_PREPROD_DATABASE_URL`) - Base pré-production
    - Environnement de pré-production pour tests avant déploiement
-   - **16 tables** : 7 schéma `produit` + 9 schéma `public`
-   - **Schéma produit** : category, category_attribute, cross_ref, family, price_purchase, product, product_category
-   - **Schéma public** : attribute, attribute_unit, attribute_value, document, document_link, kit, kit_attribute, part_nc, supplier
-   - **7 vues** : 4 schéma `produit` + 3 schéma `public`
-   - **Vues produit** : import_name, mv_categorie, v_price_purchase, v_produit_categorie_attribut
+   - **15 tables** : 7 schéma `produit` + 8 schéma `public`
+   - **Tables produit** : category, category_attribute, cross_ref, family, price_purchase, product, product_category
+   - **Tables public** : attribute, attribute_unit, attribute_value, document, kit, kit_attribute, part_nc, supplier
+   - **6 vues** : 3 schéma `produit` + 3 schéma `public`
+   - **Vues produit** : mv_categorie, v_price_purchase, v_produit_categorie_attribut
    - **Vues public** : attribute_required, v_categorie, v_kit_caracteristique
 
-**Export base de données:** Données complètes exportées en JSON dans `scripts/BDD-IA/output/` pour analyse IA :
-
-- **CENOV** : 12 tables (568 lignes), 6 vues (1685 lignes)
-- **CENOV_DEV** : 15 tables (572 lignes), 8 vues (1791 lignes)
-- **CENOV_PREPROD** : 16 tables, 7 vues
+- **CENOV** : 12 tables, 5 vues
+- **CENOV_DEV** : 15 tables, 6 vues
+- **CENOV_PREPROD** : 15 tables, 6 vues
 
 ## Principe Anti-Hardcoding avec Prisma DMMF
 
@@ -559,44 +488,6 @@ const prismaPreprod = (await getClient('cenov_preprod')) as unknown as CenovPrep
 - Infos base: Utiliser propriétés DMMF au lieu de comparaisons de chaînes
 - Détection dynamique préférée aux listes statiques pour la maintenabilité
 
-### Workflow Prisma
-
-**Workflow Triple Schéma :**
-
-**Pour la base CENOV (principale) :**
-
-1. Éditer `prisma/cenov/schema.prisma`
-2. Exécuter: `npx prisma generate --schema prisma/cenov/schema.prisma`
-3. Exécuter: `npx prisma db push --schema prisma/cenov/schema.prisma` (ou migrate)
-
-**Pour la base CENOV_DEV :**
-
-1. Éditer `prisma/cenov_dev/schema.prisma`
-2. Exécuter: `npx prisma generate --schema prisma/cenov_dev/schema.prisma`
-3. Exécuter: `npx prisma db push --schema prisma/cenov_dev/schema.prisma` (ou migrate)
-
-**Pour la base CENOV_PREPROD :**
-
-1. Éditer `prisma/cenov_preprod/schema.prisma`
-2. Exécuter: `npx prisma generate --schema prisma/cenov_preprod/schema.prisma`
-3. Exécuter: `npx prisma db push --schema prisma/cenov_preprod/schema.prisma` (ou migrate)
-
-**⚠️ Problèmes Courants & Solutions :**
-
-- **Erreur "Model already exists":** Toujours spécifier le flag `--schema` pour éviter les conflits
-- **Conflits de génération:** Ne jamais exécuter `prisma generate` sans flag `--schema`
-- **Mauvais client importé:** Vérifier les chemins d'import - utiliser les clients générés depuis les bons répertoires
-
-**Corrections rapides :**
-
-```bash
-# Nettoyer et régénérer les trois clients:
-rm -rf prisma/generated/ node_modules/.prisma/
-npx prisma generate --schema prisma/cenov/schema.prisma
-npx prisma generate --schema prisma/cenov_dev/schema.prisma
-npx prisma generate --schema prisma/cenov_preprod/schema.prisma
-```
-
 ### Authentification
 
 Utilise Logto pour l'authentification avec :
@@ -612,14 +503,6 @@ Fonctionnalité d'import de fichiers Excel pour :
 - Catégories et attributs
 - Hiérarchies de kits et caractéristiques
 - Localisé dans les routes `/import` et `/products/import`
-
-### Tests
-
-Les tests d'intégration couvrent :
-
-- Opérations CRUD pour catégories et kits
-- Fonctionnalité d'import
-- Localisés dans `tests/integration/`
 
 ## Notes de Développement
 
@@ -870,15 +753,7 @@ globalThis.foo ??= defaultValue;
 **Éviter ce problème à l'avenir :**
 
 - Toujours ajouter la clé dès la création de la boucle : `{#each items as item (item.id)}`
-- Vérifier avec `/quality-check` avant de commit
 - Si hésitation, utiliser l'index : `{#each items as item, i (i)}`
-
-**Correction en masse :**
-
-```bash
-# Corriger ligne spécifique avec sed
-sed -i '113s/{#each columns as column}/{#each columns as column (column.key)}/' src/file.svelte
-```
 
 ## Notifications Toast (Sonner)
 
@@ -1008,25 +883,6 @@ $: if (condition) {
 	// La variable peut ne plus être "observée" par Svelte
 }
 ```
-
-**🎯 Techniques de Diagnostic :**
-
-1. **Identifier les logs suspects :**
-
-   ```bash
-   # Chercher tous les console.log dans les déclarations réactives
-   grep -n "console\.(log\|warn\|error)" src/routes/export/*.svelte
-   ```
-
-2. **Vérifier les logs dans les déclarations réactives :**
-   - `$: { ... console.log(...) ... }` ← Suspect
-   - `$: console.log(...)` ← Très suspect
-   - Dans les `$effect(() => { console.log(...) })` ← OK (informatif)
-
-3. **Tester la théorie :**
-   - Supprimer temporairement un `console.log` suspect
-   - Tester si la fonctionnalité se casse
-   - Si oui → le log maintenait la réactivité
 
 ### Solution : Migration Svelte 5 Propre
 
@@ -1227,20 +1083,3 @@ $effect(() => {
 	console.log('Processing...'); // ← Debug séparé
 });
 ```
-
-### Outils de Vérification
-
-**Commandes utiles pour vérifier la migration :**
-
-```bash
-# Vérifier les patterns Svelte 5
-grep -rn "export let" src/routes/        # Doit être vide après migration
-grep -rn "\$:" src/routes/               # Doit être minimal après migration
-grep -rn "svelte:component" src/routes/  # Doit être vide après migration
-
-# Vérifier la réactivité propre
-grep -rn "console\.log.*\$" src/routes/  # Ne doit pas exister
-grep -rn "\$:.*console" src/routes/      # Ne doit pas exister
-```
-
-Cette approche systématique permet de diagnostiquer et résoudre efficacement les problèmes de réactivité subtils dans Svelte, particulièrement lors des migrations vers Svelte 5.
