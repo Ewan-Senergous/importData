@@ -9,9 +9,7 @@
 		Package,
 		AlertCircle,
 		Search,
-		CircleX,
 		Folder,
-		CircleCheck,
 		RefreshCcw,
 		SearchX
 	} from 'lucide-svelte';
@@ -56,7 +54,11 @@
 	);
 
 	// Appliquer les filtres automatiquement (navigation avec paramètres URL)
-	const applyFilters = (overrides?: { database?: string; supplier?: string; category?: string }) => {
+	const applyFilters = (overrides?: {
+		database?: string;
+		supplier?: string;
+		category?: string;
+	}) => {
 		const database = overrides?.database ?? selectedDatabase;
 		const supplier = overrides?.supplier ?? selectedSupplier;
 		const category = overrides?.category ?? selectedCategory;
@@ -126,7 +128,12 @@
 
 	// Télécharger CSV
 	const downloadCSV = async () => {
-		console.log('🔵 Téléchargement:', selectedIds.size > 0 ? 'sélection' : 'tous', 'depuis', selectedDatabase);
+		console.log(
+			'🔵 Téléchargement:',
+			selectedIds.size > 0 ? 'sélection' : 'tous',
+			'depuis',
+			selectedDatabase
+		);
 		isDownloading = true;
 
 		try {
@@ -256,7 +263,7 @@
 				</div>
 
 				{#if selectedSupplier || selectedCategory}
-					<Button variant="noir" onclick={resetFilters}>
+					<Button variant="noir" class="font-bold" onclick={resetFilters}>
 						<RefreshCcw class="mr-1 h-4 w-4" />
 						Reset
 					</Button>
@@ -299,23 +306,6 @@
 						class="hidden pl-10 sm:block"
 					/>
 				</div>
-
-				<!-- Bouton toggle Tout/Aucun -->
-				<Button
-					variant={selectedIds.size === filteredProducts.length && filteredProducts.length > 0
-						? 'vert'
-						: 'noir'}
-					onclick={toggleAll}
-					class="whitespace-nowrap"
-				>
-					{#if selectedIds.size === filteredProducts.length && filteredProducts.length > 0}
-						<CircleCheck class="mr-1 h-4 w-4" />
-						Tout
-					{:else}
-						<CircleX class="mr-1 h-4 w-4" />
-						Aucun
-					{/if}
-				</Button>
 			</div>
 
 			<!-- Liste des produits avec scroll -->
@@ -369,12 +359,9 @@
 					1
 						? 's'
 						: ''}
-					{#if selectedIds.size === 0}
-						<span class="text-gray-500">(tous seront exportés)</span>
-					{/if}
 				</p>
 
-				<Button variant="vert" onclick={downloadCSV} disabled={isDownloading}>
+				<Button variant="vert" class="font-bold" onclick={downloadCSV} disabled={isDownloading}>
 					<Download class="mr-2 h-5 w-5" />
 					{isDownloading ? 'Génération...' : `Télécharger CSV (${selectedIds.size})`}
 				</Button>
@@ -402,7 +389,9 @@
 		<Card.Content>
 			<!-- Section Statistiques -->
 			<div class="mb-6">
-				<h2 class="mb-4 text-xl font-semibold text-black">📊 Base de données {selectedDatabase.toUpperCase()} :</h2>
+				<h2 class="mb-4 text-xl font-semibold text-black">
+					📊 Base de données {selectedDatabase.toUpperCase()} :
+				</h2>
 
 				<!-- Grille de statistiques -->
 				<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
