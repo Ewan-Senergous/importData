@@ -283,9 +283,11 @@ async function loadCategoriesForDatabase(database: 'cenov_dev' | 'cenov_preprod'
 	const categories = allCategories.map((cat) => {
 		// Remonter hiérarchie EN MÉMOIRE (pas de requêtes SQL !)
 		const hierarchy: number[] = [];
+		const visited = new Set<number>(); // Protection contre cycles
 		let currentCatId: number | null = cat.cat_id;
 
-		while (currentCatId !== null) {
+		while (currentCatId !== null && !visited.has(currentCatId)) {
+			visited.add(currentCatId);
 			hierarchy.push(currentCatId);
 			currentCatId = parentMap.get(currentCatId) ?? null;
 		}
