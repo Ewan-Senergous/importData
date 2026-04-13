@@ -12,14 +12,9 @@ FROM
       )
       JOIN attribute attribute_carac ON (
         (
-          (
-            (attribute_carac.atr_nature) :: text = 'CARAC' :: text
-          )
-          AND (
-            kat.fk_attribute_characteristic = attribute_carac.atr_id
-          )
+          kat.fk_attribute_characteristic = attribute_carac.atr_id
         )
       )
     )
-    JOIN attribute ON ((kat.fk_attribute_unite = attribute.atr_id))
+    LEFT JOIN attribute ON ((kat.fk_attribute_unite = attribute.atr_id))
   );

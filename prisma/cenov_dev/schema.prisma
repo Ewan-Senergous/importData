@@ -6,7 +6,7 @@ generator cenov_dev_client {
 
 datasource cenov_dev_db {
   provider = "postgresql"
-  schemas  = ["produit", "public"]
+  schemas  = ["produit", "public", "sas"]
 }
 
 model cross_ref {
@@ -44,12 +44,13 @@ model kit_attribute {
   fk_kit                                                         Int
   fk_attribute_characteristic                                    Int
   fk_attribute_unite                                             Int?
-  kat_value                                                      String?    @cenov_dev_db.VarChar(50)
+  kat_value                                                      String?
   created_at                                                     DateTime?  @default(now()) @cenov_dev_db.Timestamp(6)
   updated_at                                                     DateTime?  @default(now()) @cenov_dev_db.Timestamp(6)
   kat_id                                                         Int        @id @default(autoincrement())
   kat_global                                                     Boolean?   @default(true)
   kat_visible                                                    Boolean?   @default(true)
+  kat_status                                                     String?    @default("valide") @cenov_dev_db.VarChar(20)
   attribute_kit_attribute_fk_attribute_characteristicToattribute attribute  @relation("kit_attribute_fk_attribute_characteristicToattribute", fields: [fk_attribute_characteristic], references: [atr_id], onDelete: NoAction, onUpdate: NoAction, map: "kit_attribute_fk_attribute_carac_fkey")
   attribute_kit_attribute_fk_attribute_uniteToattribute          attribute? @relation("kit_attribute_fk_attribute_uniteToattribute", fields: [fk_attribute_unite], references: [atr_id], onDelete: Cascade, onUpdate: NoAction, map: "kit_attribute_fk_attribute_fkey")
   kit                                                            kit        @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction)
@@ -69,19 +70,21 @@ model part_nc {
 }
 
 model category {
-  cat_id             Int                  @id @default(autoincrement())
-  fk_parent          Int?
-  cat_code           String?              @cenov_dev_db.VarChar(100)
-  cat_label          String               @cenov_dev_db.VarChar(100)
-  cat_picture        String?              @cenov_dev_db.VarChar(255)
-  cat_wp_id          Int?                 @unique
-  cat_wp_name        String?              @cenov_dev_db.VarChar(255)
-  created_at         DateTime?            @default(now()) @cenov_dev_db.Timestamp(6)
-  updated_at         DateTime?            @default(now()) @cenov_dev_db.Timestamp(6)
-  category           category?            @relation("categoryTocategory", fields: [fk_parent], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "category_fk_parent_fkey")
-  other_category     category[]           @relation("categoryTocategory")
-  category_attribute category_attribute[]
-  product_category   product_category[]
+  cat_id                  Int                       @id @default(autoincrement())
+  fk_parent               Int?
+  cat_code                String?                   @cenov_dev_db.VarChar(100)
+  cat_label               String                    @cenov_dev_db.VarChar(100)
+  cat_picture             String?                   @cenov_dev_db.VarChar(255)
+  cat_wp_id               Int?                      @unique
+  cat_wp_name             String?                   @cenov_dev_db.VarChar(255)
+  created_at              DateTime?                 @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @cenov_dev_db.Timestamp(6)
+  category                category?                 @relation("categoryTocategory", fields: [fk_parent], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "category_fk_parent_fkey")
+  other_category          category[]                @relation("categoryTocategory")
+  category_attribute      category_attribute[]
+  product_category        product_category[]
+  attribute_synonym       attribute_synonym[]
+  extraction_reading_note extraction_reading_note[]
 
   @@unique([fk_parent, cat_code])
   @@schema("produit")
@@ -94,6 +97,9 @@ model category_attribute {
   created_at       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
   updated_at       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
   fk_atr_id        Int?
+  cat_atr_min      Decimal?  @cenov_dev_db.Decimal
+  cat_atr_max      Decimal?  @cenov_dev_db.Decimal
+  cat_atr_libre    Boolean?  @default(false)
   attribute        attribute @relation(fields: [fk_attribute], references: [atr_id], onDelete: NoAction, onUpdate: NoAction, map: "category_attribute_fk_attribute_fkey")
   category         category  @relation(fields: [fk_category], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "category_attribute_fk_category_fkey")
 
@@ -102,16 +108,18 @@ model category_attribute {
 }
 
 model family {
-  fam_id       Int       @id @default(autoincrement())
-  fk_parent    Int?
-  fam_label    String    @cenov_dev_db.VarChar(100)
-  fk_supplier  Int
-  fk_category  Int?
-  created_at   DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  updated_at   DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  family       family?   @relation("familyTofamily", fields: [fk_parent], references: [fam_id], onDelete: NoAction, onUpdate: NoAction, map: "family_fk_parent_fkey")
-  other_family family[]  @relation("familyTofamily")
-  supplier     supplier  @relation(fields: [fk_supplier], references: [sup_id], onDelete: NoAction, onUpdate: NoAction, map: "family_fk_supplier_fkey")
+  fam_id                  Int                       @id @default(autoincrement())
+  fk_parent               Int?
+  fam_label               String                    @cenov_dev_db.VarChar(100)
+  fk_supplier             Int
+  fk_category             Int?
+  created_at              DateTime?                 @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @cenov_dev_db.Timestamp(6)
+  family                  family?                   @relation("familyTofamily", fields: [fk_parent], references: [fam_id], onDelete: NoAction, onUpdate: NoAction, map: "family_fk_parent_fkey")
+  other_family            family[]                  @relation("familyTofamily")
+  supplier                supplier                  @relation(fields: [fk_supplier], references: [sup_id], onDelete: NoAction, onUpdate: NoAction, map: "family_fk_supplier_fkey")
+  attribute_synonym       attribute_synonym[]
+  extraction_reading_note extraction_reading_note[]
 
   @@unique([fam_label, fk_parent, fk_supplier])
   @@schema("produit")
@@ -192,12 +200,11 @@ model attribute {
   atr_description                                                    String?
   atr_wp_name                                                        String?              @cenov_dev_db.VarChar(255)
   atr_wp_id                                                          Int?                 @unique
-  atr_imposed_value                                                  String?              @cenov_dev_db.VarChar(255)
+  atr_imposed_value                                                  Boolean?
   atr_check                                                          Boolean?
   atr_symbol_fr                                                      String?              @cenov_dev_db.VarChar(50)
   category_attribute                                                 category_attribute[]
-  attribute_unit_attribute_unit_fk_attributeToattribute              attribute_unit[]     @relation("attribute_unit_fk_attributeToattribute")
-  attribute_unit_attribute_unit_fk_unitToattribute                   attribute_unit[]     @relation("attribute_unit_fk_unitToattribute")
+  attribute_synonym                                                  attribute_synonym[]
   attribute_value                                                    attribute_value[]
   kit_attribute_kit_attribute_fk_attribute_characteristicToattribute kit_attribute[]      @relation("kit_attribute_fk_attribute_characteristicToattribute")
   kit_attribute_kit_attribute_fk_attribute_uniteToattribute          kit_attribute[]      @relation("kit_attribute_fk_attribute_uniteToattribute")
@@ -207,16 +214,18 @@ model attribute {
 }
 
 model supplier {
-  sup_id          Int       @id(map: "supplier_pk") @default(autoincrement())
-  sup_code        String    @unique @cenov_dev_db.VarChar(50)
-  sup_label       String    @cenov_dev_db.VarChar(70)
-  sup_parent_name String?   @cenov_dev_db.VarChar(70)
-  sup_brand_name  String?   @cenov_dev_db.VarChar(70)
-  cat_code        String?   @cenov_dev_db.VarChar(100)
-  created_at      DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  updated_at      DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  family          family[]
-  product         product[]
+  sup_id                  Int                       @id(map: "supplier_pk") @default(autoincrement())
+  sup_code                String                    @unique @cenov_dev_db.VarChar(50)
+  sup_label               String                    @cenov_dev_db.VarChar(70)
+  sup_parent_name         String?                   @cenov_dev_db.VarChar(70)
+  sup_brand_name          String?                   @cenov_dev_db.VarChar(70)
+  cat_code                String?                   @cenov_dev_db.VarChar(100)
+  created_at              DateTime?                 @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @cenov_dev_db.Timestamp(6)
+  family                  family[]
+  product                 product[]
+  attribute_synonym       attribute_synonym[]
+  extraction_reading_note extraction_reading_note[]
 
   @@schema("public")
 }
@@ -234,34 +243,159 @@ model attribute_value {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model document {
-  doc_data_source      String?   @cenov_dev_db.VarChar(500)
-  doc_link_source      String?   @cenov_dev_db.VarChar(200)
-  doc_type_file_source String?   @cenov_dev_db.VarChar(50)
-  doc_id               Int       @id @default(autoincrement())
-  doc_file_name        String?   @cenov_dev_db.VarChar(255)
-  created_at           DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  updated_at           DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  doc_category         String?   @cenov_dev_db.VarChar(50)
-  doc_title            String?   @cenov_dev_db.VarChar(255)
-  doc_version          String?   @cenov_dev_db.VarChar(20)
-  is_active            Boolean?  @default(true)
-  product_id           Int?
-  product              product?  @relation(fields: [product_id], references: [pro_id], onDelete: NoAction, onUpdate: NoAction)
+  doc_data_source         String?   @cenov_dev_db.VarChar(500)
+  doc_link_source         String?   @cenov_dev_db.VarChar(200)
+  doc_type_file_source    String?   @cenov_dev_db.VarChar(50)
+  doc_id                  Int       @id @default(autoincrement())
+  doc_file_name           String?   @cenov_dev_db.VarChar(255)
+  created_at              DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at              DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  doc_category            String?   @cenov_dev_db.VarChar(50)
+  doc_title               String?   @cenov_dev_db.VarChar(255)
+  doc_version             String?   @cenov_dev_db.VarChar(20)
+  is_active               Boolean?  @default(true)
+  product_id              Int?
+  doc_extraction_template Json?
+  product                 product?  @relation(fields: [product_id], references: [pro_id], onDelete: NoAction, onUpdate: NoAction)
 
   @@schema("public")
 }
 
-model attribute_unit {
-  fk_attribute                                     Int
-  fk_unit                                          Int
-  created_at                                       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  updated_at                                       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
-  is_default                                       Boolean?  @default(true)
-  attribute_attribute_unit_fk_attributeToattribute attribute @relation("attribute_unit_fk_attributeToattribute", fields: [fk_attribute], references: [atr_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_attribute_default_unit_attribute")
-  attribute_attribute_unit_fk_unitToattribute      attribute @relation("attribute_unit_fk_unitToattribute", fields: [fk_unit], references: [atr_id], onUpdate: NoAction, map: "fk_attribute_default_unit_unit")
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model attribute_synonym {
+  syn_id              Int        @id @default(autoincrement())
+  fk_attribute        Int?
+  syn_label           String     @cenov_dev_db.VarChar(200)
+  fk_supplier         Int?
+  syn_status          String?    @default("proposé") @cenov_dev_db.VarChar(20)
+  created_at          DateTime?  @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at          DateTime?  @default(now()) @cenov_dev_db.Timestamp(6)
+  fk_category         Int?
+  fk_family           Int?
+  syn_context         String?    @cenov_dev_db.VarChar(50)
+  syn_value_canonical String?
+  attribute           attribute? @relation(fields: [fk_attribute], references: [atr_id], onDelete: NoAction, onUpdate: NoAction)
+  category            category?  @relation(fields: [fk_category], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
+  family              family?    @relation(fields: [fk_family], references: [fam_id], onDelete: NoAction, onUpdate: NoAction)
+  supplier            supplier?  @relation(fields: [fk_supplier], references: [sup_id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([fk_attribute, fk_unit])
+  @@index([fk_supplier], map: "idx_synonym_supplier")
   @@schema("public")
+}
+
+model extraction_reading_note {
+  ern_id               Int       @id @default(autoincrement())
+  fk_supplier          Int?
+  fk_category          Int?
+  fk_family            Int?
+  ern_note             String
+  ern_status           String?   @default("validé") @cenov_dev_db.VarChar(20)
+  created_at           DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at           DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  ern_created_at       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  ern_last_verified_at DateTime? @cenov_dev_db.Timestamp(6)
+  ern_verified_by      String?   @cenov_dev_db.VarChar(50)
+  category             category? @relation(fields: [fk_category], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
+  family               family?   @relation(fields: [fk_family], references: [fam_id], onDelete: NoAction, onUpdate: NoAction)
+  supplier             supplier? @relation(fields: [fk_supplier], references: [sup_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model web_asset {
+  id             Int             @id @default(autoincrement())
+  ext_id         Int?
+  asset_type     String
+  url            String
+  label          String?
+  created_at     DateTime?       @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at     DateTime?       @default(now()) @cenov_dev_db.Timestamp(6)
+  extraction_log extraction_log? @relation(fields: [ext_id], references: [ext_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model web_site_profile {
+  domain           String    @id
+  fetch_mode       String    @default("static")
+  layer            Int       @default(1)
+  content_selector String?
+  interactions     Json?
+  web_notes        String?
+  url_famille_map  Json?     @default("{}")
+  pdf_selector     String?
+  last_verified    DateTime? @cenov_dev_db.Timestamp(6)
+  success_rate     Float?    @default(1.0)
+  last_failure     String?
+  created_at       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @cenov_dev_db.Timestamp(6)
+  field_map        Json?     @default("{}")
+
+  @@schema("public")
+}
+
+model extraction_log {
+  ext_id                  Int         @id @default(autoincrement())
+  fk_document             Int?
+  ext_date                DateTime?   @default(now()) @cenov_dev_db.Timestamp(6)
+  ext_model               String?     @cenov_dev_db.VarChar(50)
+  ext_family_id           Int?
+  ext_nb_variantes        Int?
+  ext_nb_mapped           Int?
+  ext_nb_non_mapped       Int?
+  ext_nb_anomalies        Int?
+  ext_nb_missing_required Int?
+  ext_raw_json            Json?
+  ext_mapped_json         Json?
+  ext_status              String?     @default("en_cours") @cenov_dev_db.VarChar(20)
+  created_at              DateTime?   @default(now()) @cenov_dev_db.Timestamp(6)
+  updated_at              DateTime?   @default(now()) @cenov_dev_db.Timestamp(6)
+  ext_prompt              String?
+  ext_source_file         String?
+  source_url              String?
+  web_asset               web_asset[]
+
+  @@index([ext_source_file], map: "idx_ext_source_file")
+  @@schema("sas")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model table_technique {
+  cenov_id             String?
+  supplier_id          String?
+  supplier_name        String?
+  supplier_number      String?
+  category_id          String?
+  modification_date    String?
+  data_source          String?
+  type_file_source     String?
+  link_source          String?
+  data_validation      String?
+  attribute_validation String?
+  att0000053           String?
+  att0000054           String?
+  att0000055           String?
+  att0000056           String?
+  ATT0000039__mbar_    Int?    @map("ATT0000039 [mbar]")
+  ATT0000040__kW_      Float?  @map("ATT0000040 [kW]")
+  att0000041           String?
+  att0000049           Float?
+  att0000057           String?
+  att0000042           String?
+  att0000043           String?
+  att0000044           String?
+  att0000045           String?
+  att0000046           String?
+  att0000047           String?
+  att0000048           String?
+  att0000050           String?
+  att0000051           String?
+  att0000052           String?
+  att0000058           String?
+  att0000059           String?
+
+  @@ignore
+  @@schema("sas")
 }
 
 view v_produit_categorie_attribut {
@@ -298,7 +432,7 @@ view v_categorie {
 view v_kit_caracteristique {
   kit_label String @cenov_dev_db.VarChar(100)
   atr_label String @cenov_dev_db.VarChar(100)
-  valeur    String @cenov_dev_db.VarChar(50)
+  valeur    String
   unit      String @cenov_dev_db.VarChar(60)
 
   @@schema("public")

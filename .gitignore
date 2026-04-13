@@ -39,3 +39,5 @@ prisma/cenov_preprod/generated/
 # Prisma old files (deprecated structure)
 prisma/schema.prisma
 prisma/views/
+
+CLAUDE.local.md

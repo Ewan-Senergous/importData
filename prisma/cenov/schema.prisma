@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["produit", "public"]
+  schemas  = ["produit", "public", "sas"]
 }
 
 model categorie {
@@ -161,6 +161,45 @@ model part_nc {
   kit        kit?      @relation(fields: [fk_kit], references: [kit_id], onDelete: NoAction, onUpdate: NoAction, map: "part_fk_kit_fkey")
 
   @@schema("public")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model table_technique {
+  cenov_id             String?
+  supplier_id          String?
+  supplier_name        String?
+  supplier_number      String?
+  category_id          String?
+  modification_date    String?
+  data_source          String?
+  type_file_source     String?
+  link_source          String?
+  data_validation      String?
+  attribute_validation String?
+  att0000053           String?
+  att0000054           String?
+  att0000055           String?
+  att0000056           String?
+  ATT0000039__mbar_    Int?    @map("ATT0000039 [mbar]")
+  ATT0000040__kW_      Float?  @map("ATT0000040 [kW]")
+  att0000041           String?
+  att0000049           Float?
+  att0000057           String?
+  att0000042           String?
+  att0000043           String?
+  att0000044           String?
+  att0000045           String?
+  att0000046           String?
+  att0000047           String?
+  att0000048           String?
+  att0000050           String?
+  att0000051           String?
+  att0000052           String?
+  att0000058           String?
+  att0000059           String?
+
+  @@ignore
+  @@schema("sas")
 }
 
 view v_tarif_achat {

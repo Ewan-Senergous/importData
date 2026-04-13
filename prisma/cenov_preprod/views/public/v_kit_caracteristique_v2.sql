@@ -10,7 +10,7 @@ FROM
         kit
         JOIN kit_attribute kat ON ((kit.kit_id = kat.fk_kit))
       )
-      JOIN attribute attribute_carac ON (
+      LEFT JOIN attribute attribute_carac ON (
         (
           (
             (attribute_carac.atr_nature) :: text = 'CARAC' :: text
@@ -21,5 +21,5 @@ FROM
         )
       )
     )
-    JOIN attribute ON ((kat.fk_attribute_unite = attribute.atr_id))
+    LEFT JOIN attribute ON ((kat.fk_attribute_unite = attribute.atr_id))
   );
