@@ -137,8 +137,8 @@ async function getProductAttributes(
 					name,
 					value,
 					// CENOV_PREPROD : valeurs par défaut car champs absents
-					visible: hasExtendedFields && 'kat_visible' in ka ? ka.kat_visible ?? true : true,
-					global: hasExtendedFields && 'kat_global' in ka ? ka.kat_global ?? true : true
+					visible: hasExtendedFields && 'kat_visible' in ka ? (ka.kat_visible ?? true) : true,
+					global: hasExtendedFields && 'kat_global' in ka ? (ka.kat_global ?? true) : true
 				});
 			}
 		}

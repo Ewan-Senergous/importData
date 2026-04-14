@@ -502,6 +502,24 @@
 						</p>
 					</div>
 
+					<!-- Format attendu -->
+					<Alert.Root variant="warning" class="mb-4">
+						<AlertCircle class="h-4 w-4" />
+						<Alert.Title>Format attendu</Alert.Title>
+						<Alert.Description>
+							<p class="mb-1">
+								<strong>Import table simple :</strong> la 1re ligne du CSV doit contenir
+								<code class="rounded bg-yellow-100 px-1 text-xs">
+									# Table: nom_table
+								</code>, la 2e ligne les colonnes de la table, puis les données.
+							</p>
+							<p>
+								<strong>Import produits :</strong> pas d'en-tête de table, les colonnes métier
+								directement en 1re ligne.
+							</p>
+						</Alert.Description>
+					</Alert.Root>
+
 					<div
 						class="mb-4 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-blue-400 hover:bg-blue-50"
 						role="button"

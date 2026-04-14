@@ -4,16 +4,20 @@
 // Imports pour utilisation locale dans ce fichier
 import {
 	Rocket as RocketIcon,
-	Settings as SettingsIcon,
+	Bug as BugIcon,
+	FlaskConical as FlaskConicalIcon,
 	LockOpen as LockOpenIcon,
 	Package as PackageIcon,
+	FolderCode as FolderCodeIcon,
 	Eye as EyeIcon,
 	Table as TableIconComponent
 } from 'lucide-svelte';
 
 // Re-export des icônes pour utilisation externe
 export { Rocket } from 'lucide-svelte';
-export { Settings } from 'lucide-svelte';
+export { Bug } from 'lucide-svelte';
+export { FlaskConical } from 'lucide-svelte';
+export { FolderCode } from 'lucide-svelte';
 export { LockOpen } from 'lucide-svelte';
 export { Package } from 'lucide-svelte';
 export { Eye } from 'lucide-svelte';
@@ -21,8 +25,8 @@ export { Table as TableIcon } from 'lucide-svelte';
 
 // ========== TYPES ==========
 export type DatabaseName = 'cenov' | 'cenov_dev' | 'cenov_preprod';
-export type SchemaName = 'produit' | 'public';
-export type BadgeVariant = 'bleu' | 'orange' | 'vert' | 'noir' | 'purple' | 'cyan' | 'jaune';
+export type SchemaName = 'produit' | 'public' | 'sas';
+export type BadgeVariant = 'bleu' | 'orange' | 'vert' | 'noir' | 'purple' | 'cyan' | 'jaune' | 'lime';
 
 // ========== CONFIGURATION ==========
 export const DATABASE_CONFIG = {
@@ -33,13 +37,13 @@ export const DATABASE_CONFIG = {
 		label: 'CENOV'
 	},
 	cenov_dev: {
-		icon: SettingsIcon,
+		icon: BugIcon,
 		variant: 'orange' as const,
-		emoji: '⚙️',
+		emoji: '🐛',
 		label: 'CENOV_DEV'
 	},
 	cenov_preprod: {
-		icon: RocketIcon,
+		icon: FlaskConicalIcon,
 		variant: 'jaune' as const,
 		emoji: '🧪',
 		label: 'CENOV_PREPROD'
@@ -56,6 +60,11 @@ export const SCHEMA_CONFIG = {
 		icon: LockOpenIcon,
 		label: 'Public',
 		variant: 'cyan' as const
+	},
+	sas: {
+		icon: FolderCodeIcon,
+		label: 'SAS',
+		variant: 'lime' as const
 	}
 } as const;
 
@@ -80,8 +89,8 @@ export function getDatabaseBadgeInfo(database: string) {
 
 // Obtenir icône database
 export function getDatabaseIcon(database: string) {
-	if (database.includes('preprod')) return RocketIcon;
-	if (database.includes('dev')) return SettingsIcon;
+	if (database.includes('preprod')) return FlaskConicalIcon;
+	if (database.includes('dev')) return BugIcon;
 	return RocketIcon;
 }
 

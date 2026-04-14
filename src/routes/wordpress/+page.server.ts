@@ -21,7 +21,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	try {
 		// Récupérer base de données et filtres depuis URL
 		const databaseParam = url.searchParams.get('database');
-		const database: DatabaseType = databaseParam === 'cenov_preprod' ? 'cenov_preprod' : 'cenov_dev';
+		const database: DatabaseType =
+			databaseParam === 'cenov_preprod' ? 'cenov_preprod' : 'cenov_dev';
 		const supplierId = url.searchParams.get('supplier');
 		const categoryId = url.searchParams.get('category');
 
@@ -86,7 +87,10 @@ export const load: PageServerLoad = async ({ url }) => {
 			}
 		};
 	} catch (err) {
-		logger.error({ error: err, database: url.searchParams.get('database') }, 'Erreur chargement données WordPress');
+		logger.error(
+			{ error: err, database: url.searchParams.get('database') },
+			'Erreur chargement données WordPress'
+		);
 		throw error(500, 'Erreur lors du chargement des données');
 	}
 };

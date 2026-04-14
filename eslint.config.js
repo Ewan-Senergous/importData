@@ -20,7 +20,8 @@ export default ts.config(
 		ignores: [
 			'prisma/generated/**/*',
 			'prisma/cenov_dev/generated/**/*',
-			'prisma/cenov_preprod/generated/**/*'
+			'prisma/cenov_preprod/generated/**/*',
+			'src/generated/**/*'
 		]
 	},
 	{
@@ -36,7 +37,8 @@ export default ts.config(
 			'svelte.config.js',
 			'prisma/generated/**/*',
 			'prisma/cenov_dev/generated/**/*',
-			'prisma/cenov_preprod/generated/**/*'
+			'prisma/cenov_preprod/generated/**/*',
+			'src/generated/**/*'
 		],
 		languageOptions: {
 			parserOptions: {

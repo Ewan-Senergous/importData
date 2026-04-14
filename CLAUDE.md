@@ -423,6 +423,22 @@ console.error('Error:', error);
 
 **Niveaux disponibles:** `trace`, `debug`, `info`, `warn`, `error`, `fatal`
 
+**RÈGLE - Pas d'accents dans les messages Pino:**
+
+Pino pretty-print ne gere pas l'UTF-8 sur Windows. Ecrire les messages en francais **sans accents**.
+
+```typescript
+// ❌ MAUVAIS - Accents UTF-8
+log.info('Validation démarrée');
+log.warn('Erreur détectée');
+log.info('Import terminé');
+
+// ✅ CORRECT - Francais sans accents
+log.info('Validation commencee');
+log.warn('Erreur detectee');
+log.info('Import termine');
+```
+
 ## 📚 Documentation Détaillée
 
 Pour des guides approfondis, consultez la documentation spécialisée :

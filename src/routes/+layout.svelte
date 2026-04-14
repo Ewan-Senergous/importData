@@ -25,11 +25,12 @@
 
 	// Navigation items avec types stricts pour resolve
 	const navItems: Array<{
-		href: '/' | '/importV2' | '/export' | '/wordpress' | '/database-explorer';
+		href: '/' | '/importV2' | '/export' | '/wordpress' | '/database-explorer' | '/import-csv-bdd';
 		label: string;
 	}> = [
 		{ href: '/', label: 'Accueil' },
 		{ href: '/importV2', label: 'Import CSV' },
+		{ href: '/import-csv-bdd', label: 'Import CSV Table Simple' },
 		{ href: '/export', label: 'Export' },
 		{ href: '/wordpress', label: 'WordPress' },
 		{ href: '/database-explorer', label: 'BDD Explorer' }

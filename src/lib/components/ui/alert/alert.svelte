@@ -12,7 +12,7 @@
 					'text-green-800 bg-green-50 border-green-500 *:data-[slot=alert-description]:text-green-600 [&>svg]:text-current dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
 				info: 'text-blue-800 bg-blue-50 border-blue-500 *:data-[slot=alert-description]:text-blue-600 [&>svg]:text-current dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
 				warning:
-					'text-yellow-800 bg-yellow-50 border-yellow-500 *:data-[slot=alert-description]:text-yellow-600 [&>svg]:text-current dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
+					'text-yellow-900 bg-yellow-50 border-yellow-500 *:data-[slot=alert-description]:text-yellow-800 [&>svg]:text-current dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
 			}
 		},
 		defaultVariants: {

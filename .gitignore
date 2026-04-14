@@ -35,6 +35,7 @@ prisma/generated/
 prisma/cenov_dev/generated/
 prisma/cenov/generated/
 prisma/cenov_preprod/generated/
+src/generated/
 
 # Prisma old files (deprecated structure)
 prisma/schema.prisma

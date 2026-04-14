@@ -18,7 +18,8 @@
 					'bg-yellow-100 text-yellow-800 border-yellow-400 dark:bg-gray-700 dark:text-yellow-400',
 				cyan: 'bg-cyan-100 text-cyan-800 border-cyan-400 dark:bg-gray-700 dark:text-cyan-400',
 				purple:
-					'bg-purple-100 text-purple-800 border-purple-400 dark:bg-gray-700 dark:text-purple-400'
+					'bg-purple-100 text-purple-800 border-purple-400 dark:bg-gray-700 dark:text-purple-400',
+				lime: 'bg-lime-100 text-lime-800 border-lime-400 dark:bg-gray-700 dark:text-lime-400'
 			}
 		},
 		defaultVariants: {
